@@ -34,8 +34,11 @@ jobs:
           fi
 
       - name: Build ROM
-        run: make -j$(nproc)
-
+        run: |
+          # Force the use of arm-none-eabi tools
+          export PATH=/usr/bin:$PATH
+          # We define the compiler explicitly
+          make CC=arm-none-eabi-gcc AR=arm-none-eabi-ar -j$(nproc)
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
