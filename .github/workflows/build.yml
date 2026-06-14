@@ -16,15 +16,22 @@ jobs:
       - name: Install Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y binutils-arm-none-eabi gcc-arm-none-eabi libpng-dev make
+          sudo apt-get install -y binutils-arm-none-eabi gcc-arm-none-eabi libpng-dev make git
+
+      - name: Debug Folder Structure
+        run: ls -R
 
       - name: Build agbcc
         run: |
-          cd tools/agbcc
-          # Ensure the script is executable in the Linux environment
-          chmod +x build.sh
-          ./build.sh
-          cd ../..
+          if [ -d "tools/agbcc" ]; then
+            cd tools/agbcc
+            chmod +x build.sh
+            ./build.sh
+            cd ../..
+          else
+            echo "Error: Directory tools/agbcc not found. Please verify your repository structure."
+            exit 1
+          fi
 
       - name: Build ROM
         run: make -j$(nproc)
