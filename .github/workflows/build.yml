@@ -20,33 +20,30 @@ jobs:
 
       - name: Build agbcc
         run: |
-          # 1. Build the core gcc component
-          cd tools/agbcc/gcc
+          # Find the build script regardless of its location
+          BUILD_SCRIPT=$(find tools/agbcc -name "build.sh" | head -n 1)
+          echo "Found build script at: $BUILD_SCRIPT"
+          
+          # Navigate to the folder containing the build script
+          cd "$(dirname "$BUILD_SCRIPT")"
           chmod +x build.sh
           ./build.sh
-          cd ..
+          cd ../..
           
-          # 2. Build libc
-          cd libc
-          make
-          cd ..
+          # Navigate to libc and libgcc if they exist
+          [ -d "tools/agbcc/libc" ] && cd tools/agbcc/libc && make && cd ../../..
+          [ -d "tools/agbcc/libgcc" ] && cd tools/agbcc/libgcc && make && cd ../../..
           
-          # 3. Build libgcc
-          cd libgcc
-          make
-          cd ..
-          
-          # 4. Finalize bin directory for the ROM Makefile
-          mkdir -p bin
-          if [ -f "gcc/agbcc" ]; then
-            cp gcc/agbcc bin/agbcc
-            cp gcc/xgcc bin/xgcc
-            echo "Compiler successfully built and moved to tools/agbcc/bin"
+          # Copy to bin
+          mkdir -p tools/agbcc/bin
+          if [ -f "tools/agbcc/gcc/agbcc" ]; then
+            cp tools/agbcc/gcc/agbcc tools/agbcc/bin/agbcc
+            cp tools/agbcc/gcc/xgcc tools/agbcc/bin/xgcc
+            echo "Compiler build complete."
           else
-            echo "::error::agbcc binary not found in gcc/ directory."
+            echo "::error::agbcc binary failed to generate in tools/agbcc/gcc/"
             exit 1
           fi
-          cd ../..
 
       - name: Build ROM
         run: |
