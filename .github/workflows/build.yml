@@ -20,18 +20,31 @@ jobs:
 
       - name: Build agbcc
         run: |
-          cd tools/agbcc
-          chmod -R +x .
-          # Force the build and explicitly install the binaries
-          ./build.sh
-          # Some versions of agbcc need an install step, or manual move
-          mkdir -p bin
-          cp gcc/agbcc bin/agbcc
-          cp gcc/xgcc bin/xgcc
-          cd ../..
+          if [ -d "tools/agbcc" ]; then
+            cd tools/agbcc
+            chmod -R +x .
+            # Run the build script
+            ./build.sh
+            # Check for the binary and move to expected location
+            if [ -f "gcc/agbcc" ]; then
+              mkdir -p bin
+              cp gcc/agbcc bin/agbcc
+              cp gcc/xgcc bin/xgcc
+              echo "agbcc successfully built and copied."
+            else
+              echo "Error: agbcc binary not found in gcc/ directory."
+              ls -l gcc/
+              exit 1
+            fi
+            cd ../..
+          else
+            echo "Error: Directory tools/agbcc not found."
+            exit 1
+          fi
+
       - name: Build ROM
         run: |
-          # Explicitly set the compilers to the arm-none-eabi versions
+          # Use cross-compiler flags to force correct toolchain usage
           make CC=arm-none-eabi-gcc AR=arm-none-eabi-ar LD=arm-none-eabi-ld OBJCOPY=arm-none-eabi-objcopy -j$(nproc)
 
       - name: Upload Artifact
