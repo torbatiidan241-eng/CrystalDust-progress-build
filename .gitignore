@@ -1,0 +1,30 @@
+# --- Build Artifacts ---
+*.o
+*.i
+*.s
+*.a
+*.elf
+*.gba
+*.map
+*.sym
+*.log
+
+# --- Tooling & Compiler ---
+tools/agbcc/gcc/agbcc
+tools/agbcc/gcc/agbcc.exe
+tools/agbcc/gcc/old_agbcc
+tools/agbcc/gcc/old_agbcc.exe
+tools/agbcc/gcc/gen*
+tools/agbcc/gcc/s-*
+tools/agbcc/gcc/insn-*
+tools/agbcc/libc/arm/*.o
+tools/agbcc/libc/stdio/*.o
+tools/agbcc/libc/stdlib/*.o
+
+# --- IDE & OS Files ---
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*~
