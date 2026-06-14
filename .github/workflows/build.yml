@@ -16,20 +16,13 @@ jobs:
       - name: Install Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y binutils-arm-none-eabi gcc-arm-none-eabi libpng-dev make git
+          sudo apt-get install -y binutils-arm-none-eabi gcc-arm-none-eabi libpng-dev make
 
-<<<<<<< HEAD
       - name: Build agbcc
         run: |
           cd tools/agbcc
           # Ensure the script is executable in the Linux environment
           chmod +x build.sh
-=======
-      # This is the missing piece
-      - name: Build agbcc
-        run: |
-          cd tools/agbcc
->>>>>>> fbf0d4c7404a9be530d1363d2a69d68cd7a39430
           ./build.sh
           cd ../..
 
@@ -40,8 +33,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: CrystalDust-ROM
-<<<<<<< HEAD
           path: '*.gba'
-=======
-          path: '*.gba'
->>>>>>> fbf0d4c7404a9be530d1363d2a69d68cd7a39430
