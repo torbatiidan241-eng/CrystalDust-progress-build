@@ -21,34 +21,25 @@ jobs:
       - name: Build agbcc
         run: |
           cd tools/agbcc
-          # Ensure build scripts are executable
           chmod -R +x .
-          
-          # Force the use of legacy-friendly flags to ignore modern strictness
-          # -w: suppress all warnings
-          # -fgnu89-inline: critical for legacy GCC compilation
+          # Force clean and build with legacy flags
+          make clean
           export CFLAGS="-w -fgnu89-inline"
+          ./build.sh
           
-          # Clean any previous failed attempts
-          make clean || true
-          
-          # Attempt to build, capturing output to a file for better debugging
-          ./build.sh > build_log.txt 2>&1 || { cat build_log.txt; exit 1; }
-          
-          # Setup bin directory as expected by the ROM Makefile
-          mkdir -p bin
+          # CRITICAL: Verify binary exists before moving on
           if [ -f "gcc/agbcc" ]; then
+            mkdir -p bin
             cp gcc/agbcc bin/agbcc
+            cp gcc/xgcc bin/xgcc
+            echo "Compiler verified."
+          else
+            echo "::error::agbcc failed to build. Check tools/agbcc/build.sh output."
+            exit 1
           fi
           cd ../..
 
       - name: Build ROM
         run: |
-          # Use explicit cross-compiler variables to avoid path issues
+          # Use explicit cross-compiler variables and prevent fallback
           make CC=arm-none-eabi-gcc AR=arm-none-eabi-ar LD=arm-none-eabi-ld OBJCOPY=arm-none-eabi-objcopy -j$(nproc)
-
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: CrystalDust-ROM
-          path: '*.gba'
