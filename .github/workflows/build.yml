@@ -20,12 +20,13 @@ jobs:
 
       - name: Build agbcc
         run: |
-          if [ -d "tools/agbcc" ]; then
-            cd tools/agbcc
-            # Recursively make all files in the toolchain executable
-            chmod -R +x .
-            ./build.sh
-            cd ../..
+          cd tools/agbcc
+          # Clean any old build artifacts first
+          make clean || true 
+          # Ensure permissions are correct
+          chmod -R +x .
+          ./build.sh
+          cd ../..
           else
             echo "Error: Directory tools/agbcc not found."
             exit 1
