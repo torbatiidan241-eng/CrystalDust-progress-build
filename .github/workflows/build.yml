@@ -16,8 +16,13 @@ jobs:
       - name: Install Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y binutils-arm-none-eabi gcc-arm-none-eabi libpng-dev make
-
+          # agbcc is the compiler, binutils-arm-none-eabi is for the assembly linking
+          sudo apt-get install -y binutils-arm-none-eabi gcc-arm-none-eabi libpng-dev make git
+          
+          # Note: You may need to clone/install agbcc if it's not provided 
+          # by the Ubuntu repositories. Many projects include a 
+          # 'tools/agbcc' setup script.
+          
       - name: Build ROM
         run: make -j$(nproc)
 
