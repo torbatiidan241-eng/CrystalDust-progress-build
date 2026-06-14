@@ -18,9 +18,13 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y binutils-arm-none-eabi gcc-arm-none-eabi libpng-dev make
 
-      - name: Restore baserom.gba
+      - name: Build agbcc
         run: |
-          echo "${{ secrets.BASEROM_BASE64 }}" | base64 --decode > baserom.gba
+          cd tools/agbcc
+          # Ensure the script is executable in the Linux environment
+          chmod +x build.sh
+          ./build.sh
+          cd ../..
 
       - name: Build ROM
         run: make -j$(nproc)
@@ -29,4 +33,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: CrystalDust-ROM
-          path: *.gba
+          path: '*.gba'
