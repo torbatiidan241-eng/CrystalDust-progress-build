@@ -18,18 +18,16 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y binutils-arm-none-eabi gcc-arm-none-eabi libpng-dev make git
 
-      - name: Debug Folder Structure
-        run: ls -R
-
       - name: Build agbcc
         run: |
           if [ -d "tools/agbcc" ]; then
             cd tools/agbcc
-            chmod +x build.sh
+            # Recursively make all files in the toolchain executable
+            chmod -R +x .
             ./build.sh
             cd ../..
           else
-            echo "Error: Directory tools/agbcc not found. Please verify your repository structure."
+            echo "Error: Directory tools/agbcc not found."
             exit 1
           fi
 
