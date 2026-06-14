@@ -20,31 +20,31 @@ jobs:
 
       - name: Build agbcc
         run: |
-          # Find the build script regardless of its location
-          BUILD_SCRIPT=$(find tools/agbcc -name "build.sh" | head -n 1)
-          echo "Found build script at: $BUILD_SCRIPT"
+          # Navigate to the toolchain directory
+          cd tools/agbcc
           
-          # Navigate to the folder containing the build script
-          cd "$(dirname "$BUILD_SCRIPT")"
-          chmod +x build.sh
+          # CRITICAL: Fix permissions for all scripts
+          # This ensures 'move-if-change' and others can run
+          find . -type f -name "*.sh" -exec chmod +x {} +
+          chmod +x gcc/move-if-change
+          
+          # Build script execution
           ./build.sh
+          
+          # Build libc/libgcc if they exist
+          [ -d "libc" ] && cd libc && make && cd ..
+          [ -d "libgcc" ] && cd libgcc && make && cd ..
           cd ../..
           
-          # Navigate to libc and libgcc if they exist
-          [ -d "tools/agbcc/libc" ] && cd tools/agbcc/libc && make && cd ../../..
-          [ -d "tools/agbcc/libgcc" ] && cd tools/agbcc/libgcc && make && cd ../../..
-          
-          # Copy to bin
+          # Finalize
           mkdir -p tools/agbcc/bin
           if [ -f "tools/agbcc/gcc/agbcc" ]; then
             cp tools/agbcc/gcc/agbcc tools/agbcc/bin/agbcc
             cp tools/agbcc/gcc/xgcc tools/agbcc/bin/xgcc
-            echo "Compiler build complete."
           else
-            echo "::error::agbcc binary failed to generate in tools/agbcc/gcc/"
+            echo "::error::agbcc binary not found."
             exit 1
           fi
-
       - name: Build ROM
         run: |
           # Force the use of the newly built toolchain and cross-compiler flags
