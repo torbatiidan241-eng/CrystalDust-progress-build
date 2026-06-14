@@ -1,0 +1,10 @@
+mapscripts Route23_MapScripts {
+    MAP_SCRIPT_ON_TRANSITION{
+        setflag(FLAG_LANDMARK_POKEMON_LEAGUE)
+    }
+}
+
+script Route23_Eventscript_IndigoPlateauSign {
+    msgbox("INDIGO PLATEAU\nThe Ultimate Goal for TRAINERS!\p{POKEMON} LEAGUE HQ", MSGBOX_SIGN)
+    end
+}

@@ -1,0 +1,169 @@
+const OBJ_EVENT_ID_GAMEBOY_KID = 13
+
+mapscripts NationalPark_MapScripts {
+    MAP_SCRIPT_ON_TRANSITION {
+        setflag(FLAG_LANDMARK_NATIONAL_PARK)
+    }
+}
+
+script NationalPark_EventScript_CardsGirl {
+    msgbox("Look!\nCheck out my cards!\pThey have special barcodes on them\nthat you can scan with the e-Reader.", MSGBOX_NPC)
+}
+
+script NationalPark_EventScript_MailWoman {
+    msgbox("This is MAIL I got from my daughter.\nIt cheers me up.", MSGBOX_NPC)
+}
+
+script NationalPark_EventScript_QuickClawTeacher {
+    lock
+    faceplayer
+    if (!flag(FLAG_GOT_QUICK_CLAW)) {
+        msgbox("Pay attention, please!\p…Oops, I have to quit thinking like\na teacher all the time.\pYou must be a {POKEMON} TRAINER.\pSince you're working so hard, I\nwant you to have this.")
+        giveitem(ITEM_QUICK_CLAW)
+        if (!var (VAR_RESULT)) {
+            goto(Common_EventScript_ShowBagIsFull)
+        } else {
+            setflag(FLAG_GOT_QUICK_CLAW)
+        }
+    }
+    msgbox("Let one of your {POKEMON} hold that\nQUICK CLAW.\pSometimes it will strike first\nduring battle.")
+    release
+}
+
+script NationalPark_EventScript_Youngster1 {
+    msgbox("I'm playing with cards that have\na stripe down the side.\pYou can scan them and see {POKEMON}\nstats on the screen!", MSGBOX_NPC)
+}
+
+script NationalPark_EventScript_Youngster2 {
+    msgbox("I get the other guy's {POKEMON}\ncards if I win.", MSGBOX_NPC)
+}
+
+script NationalPark_EventScript_ScaredWoman {
+    msgbox("I take walks in the PARK, but I\nnever go into the grass.\lTRAINERS always want to battle…", MSGBOX_NPC)
+}
+
+script NationalPark_EventScript_Persian {
+    lock
+    faceplayer
+    waitse
+    playmoncry(SPECIES_PERSIAN, 0)
+    msgbox("PERSIAN: Fufushaa!")
+    waitmoncry
+    release
+}
+
+script NationalPark_EventScript_Jack {
+    // TODO: Check phone strings for textbox fit
+    trainerbattle_single(TRAINER_JACK_1, "The world of {POKEMON} is deep.\pThere are still lots of things\nwe don't know.\pBut I know more than you do!", "Wha-wha-what?")
+
+    specialvar(VAR_RESULT, ShouldTryRematchBattle)
+    if(var(VAR_RESULT) == 1)
+    {
+        trainerbattle_rematch(TRAINER_JACK_1, "Hi! I was waiting for you to show!\nLet's get started right away!", "Wha-what-what?")
+        end
+    }
+
+    if (!flag(FLAG_PHONE_CARD_SCHOOLBOY_JACK))
+    {
+        if (!flag(FLAG_SCHOOLBOY_JACK_OFFERED_NUMBER))
+        {
+            msgbox("Your knowledge is impressive! I like\nthat! Want to trade battle tips?\pI'll phone if I get good info.\nWould you tell me your number?", MSGBOX_YESNO) 
+            setflag(FLAG_SCHOOLBOY_JACK_OFFERED_NUMBER)
+        }
+        else
+        {
+            msgbox("Want to trade battle tips? I'll\nphone if I get good info.\lWould you tell me your number?", MSGBOX_YESNO)
+        }
+        if (var (VAR_RESULT) == 1)
+        {
+            registerphonecontact(FLAG_PHONE_CARD_SCHOOLBOY_JACK) 
+            msgbox("I'll call you if I hear anything!", MSGBOX_AUTOCLOSE)
+        }
+        else
+        {
+            msgbox("Oh, OK. Too bad…\pWell, if you ever want my number,\ncome see me, OK?", MSGBOX_AUTOCLOSE)
+        }
+        end
+    }
+    msgbox("There is a lot to learn.\nFor example…\pThere are 50 kinds of TMs.\nTraded {POKEMON} level up faster.", MSGBOX_AUTOCLOSE)
+}
+
+script NationalPark_EventScript_Beverly {
+    // TODO: Check phone strings for textbox fit
+    trainerbattle_single(TRAINER_BEVERLY, "My {POKEMON} are simply darling.\pLet me tell you how proud my\ndarlings make me.", "I can beat you in pride, but…")
+
+    if(flag(FLAG_CALL_BEVERLY_GIFT))
+    {
+        msgbox("Oh? {PLAYER}?\nI waited here for you.\lI brought you a little gift.", MSGBOX_AUTOCLOSE)
+        giveitem(ITEM_NUGGET, 1)
+        if(var(VAR_0x8007) == FALSE)
+        {
+            msgbox("Oh?\nYou have no room?\lPlease come back for it later.", MSGBOX_AUTOCLOSE)
+        }
+        else
+        {
+            clearflag(FLAG_CALL_BEVERLY_GIFT)
+        }
+        end
+    }
+
+    setvar(VAR_0x8004, SPECIES_MARILL)
+    special(IsPlayersMonOfSpeciesInParty)
+    if(var(VAR_RESULT) == 1)
+    {
+        if (!flag(FLAG_PHONE_CARD_POKEFAN_BEVERLY))
+        {
+            if (!flag(FLAG_POKEFAN_BEVERLY_OFFERED_NUMBER))
+            {
+                msgbox("Your MARILL is so cute and\nadorable!\pYou love {POKEMON} just like\nI do!\pWant to trade phone numbers?\nLet's chat! It'll be so much fun!", MSGBOX_YESNO) 
+                setflag(FLAG_POKEFAN_BEVERLY_OFFERED_NUMBER)
+            }
+            else
+            {
+                msgbox("Your MARILL is so cute and\nadorable!\pWe should chat, it will be fun.\nCan I have your phone number?", MSGBOX_YESNO)
+            }
+            if (var(VAR_RESULT) == 1)
+            {
+                registerphonecontact(FLAG_PHONE_CARD_POKEFAN_BEVERLY) 
+                msgbox("To be honest, I want a MARILL.\nBut I make do with my cute SNUBBULL.", MSGBOX_AUTOCLOSE)
+            }
+            else
+            {
+                msgbox("Oh… That's disappointing…\nGoodbye, MARILL…", MSGBOX_AUTOCLOSE)
+            }
+            end
+        }
+    }
+    msgbox("I must say, your {POKEMON} are quite\ncute, too.", MSGBOX_AUTOCLOSE)
+}
+
+// original after-battle text had "win" instead of "wins", but this trainer only has one Pokemon so "wins" makes more sense grammatically 
+script NationalPark_EventScript_William {
+    trainerbattle_single(TRAINER_WILLIAM, "We adore our {POKEMON}, even if they\ndislike us.\pThat's what being a {POKE}FAN is all\nabout.", "M-my {POKEMON}!")
+    msgbox("I lost the battle, but my {POKEMON}\nwins the prize for being most lovely.", MSGBOX_AUTOCLOSE)
+}
+
+script NationalPark_EventScript_Krise {
+    trainerbattle_single(TRAINER_KRISE, "Hello? Why are you staring at me?\nOh, a battle?", "…Hmmm…")
+    msgbox("I thought you were staring at me\nbecause I'm cute!", MSGBOX_AUTOCLOSE)
+}
+
+script NationalPark_EventScript_GameboyKid {
+    lock
+    faceplayer
+    msgbox("Hey, do you know how to get my\ne-Reader to read this card?\pI keep swiping and getting read\nerrors and-{PLAY_SE SE_INTRO_LOGO_DING}{PAUSE 30}oh! It scanned!")
+    turnobject(OBJ_EVENT_ID_GAMEBOY_KID, DIR_SOUTH)
+    release
+}
+
+script NationalPark_EventScript_RelaxationSquare {
+    msgbox("RELAXATION SQUARE\nNATIONAL PARK", MSGBOX_SIGN)
+}
+
+script NationalPark_EventScript_BattleNotice {
+    msgbox("What is this notice?\pPlease battle only in the grass.\nNATIONAL PARK WARDEN'S OFFICE", MSGBOX_SIGN)
+}
+
+script NationalPark_EventScript_TrainerTips {
+    msgbox("TRAINER TIPS\pScan cards using your e-Reader to\ndownload exciting events with\lMYSTERY EVENT.", MSGBOX_SIGN)
+}

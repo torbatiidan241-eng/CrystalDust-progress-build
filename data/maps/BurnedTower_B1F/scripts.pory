@@ -1,0 +1,240 @@
+mapscripts BurnedTower_B1F_MapScripts {
+    MAP_SCRIPT_ON_TRANSITION{
+        if(!flag(FLAG_SYS_GAME_CLEAR) || flag(FLAG_DEFEATED_SUICUNE) || !flag(FLAG_FOUGHT_SUICUNE))
+        {
+            setflag(FLAG_TEMP_2)
+            setvar(VAR_TEMP_0, 1)
+        }
+        if(flag(FLAG_AWAKENED_LEGENDARY_BEASTS))
+        {
+            setvar(VAR_TEMP_1, 1)
+        }
+    }
+    MAP_SCRIPT_ON_LOAD{
+        if(!flag(FLAG_AWAKENED_LEGENDARY_BEASTS) || flag(FLAG_EUSINE_IN_BURNED_TOWER_B1F))
+        {
+            setflag(FLAG_TEMP_1)
+        }
+        if(!flag(FLAG_AWAKENED_LEGENDARY_BEASTS))
+        {
+            setmetatile(6, 17, 0x281, 0)
+            setmetatile(6, 16, 0x283, 1)
+        }
+    }
+    MAP_SCRIPT_ON_WARP_INTO_MAP_TABLE[
+        VAR_TEMP_0, 0{
+            if(!flag(FLAG_AWAKENED_LEGENDARY_BEASTS))
+            {
+                callnative(PatchAsleepBeastsPalettesToSlots)
+                end
+            }
+        }
+    ]
+    MAP_SCRIPT_ON_RETURN_TO_FIELD
+    {
+        if(!flag(FLAG_AWAKENED_LEGENDARY_BEASTS))
+        {
+            callnative(PatchAsleepBeastsPalettesToSlots)
+        }
+    }
+    MAP_SCRIPT_ON_RESUME {
+        if (flag(FLAG_SYS_CTRL_OBJ_DELETE))
+        {
+            specialvar(VAR_RESULT, GetBattleOutcome)
+            if (var(VAR_RESULT) == B_OUTCOME_CAUGHT)
+            {
+                removeobject(VAR_LAST_TALKED)
+            }
+        }
+    }
+}
+
+script BurnedTower_B1F_EventScript_RegeneratedSuicune {
+	playmoncry(SPECIES_SUICUNE, 0)
+    waitmoncry
+    setvar(VAR_LAST_TALKED, 7)
+	setflag(FLAG_SYS_CANT_RUN_FROM_BATTLE)
+    setwildbattle(SPECIES_SUICUNE, 40, ITEM_NONE)
+    setflag(FLAG_SYS_CTRL_OBJ_DELETE)
+    dowildbattle
+    clearflag(FLAG_SYS_CTRL_OBJ_DELETE)
+    specialvar(VAR_RESULT, GetBattleOutcome)
+    switch (var(VAR_RESULT))
+    {
+        case B_OUTCOME_CAUGHT:
+            call(BurnedTower_B1F_EventScript_RegeneratedSuicuneCaught)
+        case B_OUTCOME_WON:
+            call(Common_EventScript_RemoveStaticPokemon)
+        case B_OUTCOME_RAN:
+        case B_OUTCOME_PLAYER_TELEPORTED:
+            call(Common_EventScript_RemoveStaticPokemon)
+    }
+    setflag(FLAG_DEFEATED_SUICUNE)
+	release
+	end
+}script BurnedTower_B1F_EventScript_RegeneratedSuicuneCaught{
+	setflag(FLAG_CAUGHT_SUICUNE)
+}
+
+script BurnedTower_B1F_EventScript_Trigger{
+    if(flag(FLAG_AWAKENED_LEGENDARY_BEASTS))
+    {
+        setvar(VAR_TEMP_1, 1)
+        end
+    }
+    lockall
+    fadeoutbgm(0)
+    delay(0x60)
+    callnative(AwakenRaikou)
+    playmoncry(SPECIES_RAIKOU, 0)
+    waitmoncry
+    delay(0x10)
+    callnative(AwakenEntei)
+    playmoncry(SPECIES_ENTEI, 0)
+    waitmoncry
+    delay(0x20)
+    callnative(AwakenSuicune)
+    playmoncry(SPECIES_SUICUNE, 0)
+    waitmoncry
+    delay(0x10)
+    playse(SE_LEDGE)
+    applymovement(5, BurnedTower_B1F_Movement_JumpDown)
+    delay(0x10)
+    turnobject(OBJ_EVENT_ID_PLAYER, DIR_WEST)
+    waitmovement(5)
+    playse(SE_LEDGE)
+    applymovement(5, BurnedTower_B1F_Movement_JumpLeft)
+    waitmovement(5)
+    playse(SE_LEDGE)
+    applymovement(5, BurnedTower_B1F_Movement_JumpLeft)
+    waitmovement(5)
+    playse(SE_LEDGE)
+    applymovement(5, BurnedTower_B1F_Movement_JumpLeft)
+    waitmovement(5)
+    removeobject(5) //hide Raikou
+    delay(0x20)
+    turnobject(OBJ_EVENT_ID_PLAYER, DIR_EAST)
+    playse(SE_LEDGE)
+    applymovement(6, BurnedTower_B1F_Movement_JumpRight)
+    waitmovement(0)
+    playse(SE_LEDGE)
+    applymovement(6, BurnedTower_B1F_Movement_JumpDown)
+    waitmovement(0)
+    playse(SE_LEDGE)
+    applymovement(6, BurnedTower_B1F_Movement_JumpRight)
+    waitmovement(0)
+    playse(SE_LEDGE)
+    applymovement(6, BurnedTower_B1F_Movement_JumpRight)
+    waitmovement(0)
+    removeobject(6) // hide Entei
+    delay(0x20)
+    turnobject(OBJ_EVENT_ID_PLAYER, DIR_NORTH)
+    playse(SE_LEDGE)
+    applymovement(4, BurnedTower_B1F_Movement_JumpRight)
+    waitmovement(4)
+    turnobject(OBJ_EVENT_ID_PLAYER, DIR_EAST)
+    playse(SE_LEDGE)
+    applymovement(4, BurnedTower_B1F_Movement_JumpDown)
+    waitmovement(4)
+    playse(SE_LEDGE)
+    applymovement(4, BurnedTower_B1F_Movement_JumpDown)
+    waitmovement(4)
+    turnobject(OBJ_EVENT_ID_PLAYER, DIR_SOUTH)
+    playse(SE_LEDGE)
+    applymovement(4, BurnedTower_B1F_Movement_JumpLeft)
+    waitmovement(4)
+    playse(SE_LEDGE)
+    applymovement(4, BurnedTower_B1F_Movement_JumpLeft)
+    waitmovement(4)
+    turnobject(OBJ_EVENT_ID_PLAYER, DIR_WEST)
+    playse(SE_LEDGE)
+    applymovement(4, BurnedTower_B1F_Movement_JumpUp)
+    waitmovement(4)
+    applymovement(4, BurnedTower_B1F_Movement_WalkFastUp)
+    waitmovement(4)
+    turnobject(OBJ_EVENT_ID_PLAYER, DIR_NORTH)
+    playse(SE_LEDGE)
+    applymovement(4, BurnedTower_B1F_Movement_JumpRight)
+    waitmovement(4)
+    delay(0x20)
+    playmoncry(SPECIES_SUICUNE, 0)
+    waitmoncry
+    delay(0x30)
+    applymovement(4, BurnedTower_B1F_Movement_WalkFastUp)
+    waitmovement(4)
+    playse(SE_LEDGE)
+    applymovement(4, BurnedTower_B1F_Movement_JumpRight)
+    waitmovement(4)
+    playse(SE_LEDGE)
+    applymovement(4, BurnedTower_B1F_Movement_JumpDown)
+    waitmovement(4)
+    turnobject(OBJ_EVENT_ID_PLAYER, DIR_EAST)
+    playse(SE_LEDGE)
+    applymovement(4, BurnedTower_B1F_Movement_JumpDown)
+    waitmovement(4)
+    turnobject(OBJ_EVENT_ID_PLAYER, DIR_SOUTH)
+    playse(SE_LEDGE)
+    applymovement(4, BurnedTower_B1F_Movement_JumpDown)
+    waitmovement(4)
+    playse(SE_LEDGE)
+    applymovement(4, BurnedTower_B1F_Movement_JumpDown)
+    waitmovement(4)
+    removeobject(4)
+    delay(0x30)
+    fadeinbgm(0)
+    addobject(3)
+    setmetatile(6, 17, 0x296, 0)
+    setmetatile(6, 16, 0x28E, 1)
+    special(DrawWholeMapView)
+    setflag(FLAG_AWAKENED_LEGENDARY_BEASTS)
+    special(InitRoamer)
+    setvar(VAR_TEMP_1, 1)
+    setflag(FLAG_SAW_SUICUNE_ON_ROUTE_42)
+    setflag(FLAG_SAW_SUICUNE_ON_ROUTE_36)
+    releaseall
+    end
+}movement BurnedTower_B1F_Movement_JumpDown{
+    jump_2_down_fast
+}movement BurnedTower_B1F_Movement_JumpLeft{
+    jump_2_left_fast
+}movement BurnedTower_B1F_Movement_JumpRight{
+    jump_2_right_fast
+}movement(local) BurnedTower_B1F_Movement_JumpUp{
+    jump_2_up_fast
+}movement(local) BurnedTower_B1F_Movement_WalkFastUp{
+    walk_fast_up
+}
+
+script BurnedTower_B1F_EventScript_Eusine{
+    lockall
+    msgbox("EUSINE: I dug a hole here, too…\nI was shocked!\pSUICUNE raced by like a blur, right\nin front of my eyes!\pFor ten years I chased SUICUNE, and\nI finally got to see it.\pI'm all choked up!\p{PLAYER}, I owe all this to you!\nThank you!\pI heard that the legendary {POKEMON}\nof ECRUTEAK test chosen humans by\lallowing them to get close.\pI'm going to track SUICUNE.\n{PLAYER}, let's meet again!\pFarewell!", MSGBOX_DEFAULT)
+    closemessage
+    getplayerxy(VAR_0x8008, VAR_RESULT)
+    if(var(VAR_RESULT) == 15)
+    {
+        applymovement(3, BurnedTower_B1F_Movement_EusineExits2)
+        waitmovement(0)
+    }
+    else
+    {
+        applymovement(3, BurnedTower_B1F_Movement_EusineExits)
+        waitmovement(0)
+    }
+    removeobject(3)
+    playse(SE_EXIT)
+    delay(0x40)
+    setflag(FLAG_EUSINE_IN_BURNED_TOWER_B1F)
+    releaseall
+    end
+}movement(local) BurnedTower_B1F_Movement_EusineExits{
+    walk_down
+    walk_left * 4
+    walk_down * 2
+    walk_right
+}movement(local) BurnedTower_B1F_Movement_EusineExits2{
+    walk_left * 2
+    walk_down
+    walk_left * 2
+    walk_down * 2
+    walk_right
+}

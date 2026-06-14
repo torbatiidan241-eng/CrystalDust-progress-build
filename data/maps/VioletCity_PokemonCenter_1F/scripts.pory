@@ -1,0 +1,214 @@
+const ELMS_AIDE = 5
+
+mapscripts VioletCity_PokemonCenter_1F_MapScripts {
+    MAP_SCRIPT_ON_TRANSITION {
+        setrespawn(HEAL_LOCATION_VIOLET_CITY)
+    }
+}
+
+script VioletCity_PokemonCenter_1F_EventScript_Gameboy_Kid {
+    msgbox("A guy named BILL made the {POKEMON}\n"
+           "PC storage system.", MSGBOX_NPC)
+}
+
+script VioletCity_PokemonCenter_1F_EventScript_Gentleman {
+    msgbox("Around three years ago, TEAM ROCKET\n"
+           "was up to no good with {POKEMON}.\p"
+           "But justice prevailed--a young kid\n"
+           "broke 'em up.", MSGBOX_NPC)
+}
+
+script VioletCity_PokemonCenter_1F_EventScript_Youngster {
+    msgbox("{POKEMON} are smart. They won't obey\n"
+           "a TRAINER they don't respect.\p"
+           "Without the right GYM BADGES,\n"
+           "they'll do just as they please.", MSGBOX_NPC)
+}
+
+script VioletCity_PokemonCenter_1F_EventScript_Aide {
+    lock
+    faceplayer
+
+    if (!flag(FLAG_REFUSED_ELMS_EGG))
+    {
+        msgbox("{PLAYER}!\n"
+               "Long time, no see.\p"
+               "PROF. ELM asked me to find you.\n"
+               "He has another favor to ask.\p"
+               "Would you take the {POKEMON} EGG?", MSGBOX_YESNO)
+    }
+    else
+    {
+        msgbox("{PLAYER}, will you take the EGG?", MSGBOX_YESNO)
+    }
+
+    if (var(VAR_RESULT) == YES)
+    {
+        getpartysize
+        if (var(VAR_RESULT) != 6)
+        {
+	        textcolor(MSG_COLOR_SYS)
+            setflag(FLAG_GOT_ELMS_EGG)
+	        playfanfare(MUS_OBTAIN_EGG)
+            message("{PLAYER} received the EGG\n"
+                    "from ELM's AIDE.")
+            waitfanfare
+            giveegg(SPECIES_TOGEPI)
+            textcolor(MSG_COLOR_PREV)
+            msgbox("We discovered that a {POKEMON} won't\n"
+                   "hatch until it grows in the EGG.\p"
+                   "It also has to be with other active\n"
+                   "{POKEMON} to hatch.\p"
+                   "{PLAYER}, you're the only person\n"
+                   "we can rely on.\p"
+                   "Please call PROF. ELM when that\n"
+                   "EGG hatches!")
+            closemessage
+
+            if (var(VAR_FACING) == DIR_NORTH)
+            {
+                applymovement(OBJ_EVENT_ID_PLAYER, VioletCity_PokemonCenter_1F_Movement_PlayerWatchesAide)
+                applymovement(ELMS_AIDE, VioletCity_PokemonCenter_1F_Movement_AideAroundPlayer)
+                waitmovement(0)
+            }
+            else
+            {
+                applymovement(OBJ_EVENT_ID_PLAYER, Common_Movement_WalkInPlaceFastestDown)
+                applymovement(ELMS_AIDE, VioletCity_PokemonCenter_1F_Movement_AideStraightOut)
+                waitmovement(0)
+            }
+            
+            playse(SE_PIN)
+            applymovement(ELMS_AIDE, Common_Movement_ExclamationMark)
+            waitmovement(0)
+            applymovement(ELMS_AIDE, Common_Movement_Delay48)
+            waitmovement(0)
+
+            switch (var(VAR_FACING))
+            {
+                case DIR_NORTH:
+                    applymovement(ELMS_AIDE, VioletCity_PokemonCenter_1F_Movement_AideToPlayerCenter)
+                    waitmovement(0)
+                case DIR_WEST:
+                    applymovement(ELMS_AIDE, VioletCity_PokemonCenter_1F_Movement_AideToPlayerRight)
+                    waitmovement(0)
+                case DIR_EAST:
+                    applymovement(ELMS_AIDE, VioletCity_PokemonCenter_1F_Movement_AideToPlayerLeft)
+                    waitmovement(0)
+            }
+
+            msgbox("Oh, that's right!\n"
+                   "I have something else with me.\p"
+                   "Your mom asked me to deliver these\n"
+                   "when I saw you.")
+            
+            textcolor(MSG_COLOR_SYS)
+            playfanfare(MUS_OBTAIN_ITEM)
+            message("{PLAYER} received the\n"
+                    "RUNNING SHOES from the AIDE.")
+            waitmessage
+            waitfanfare
+
+            msgbox("{PLAYER} switched shoes with the\n"
+                   "RUNNING SHOES.")
+            setflag(FLAG_RECEIVED_RUNNING_SHOES)
+            
+            signmsg
+            msgbox("Press the B Button to run.\n"
+                   "There's almost always room to run!")
+            normalmsg
+            textcolor(MSG_COLOR_PREV)
+
+            msgbox("I need to head back to the lab now.\n"
+                   "Good luck with the EGG!")
+            closemessage
+
+            switch (var(VAR_FACING))
+            {
+                case DIR_NORTH:
+                    applymovement(ELMS_AIDE, VioletCity_PokemonCenter_1F_Movement_AideFromPlayerCenter)
+                    waitmovement(0)
+                case DIR_WEST:
+                    applymovement(ELMS_AIDE, VioletCity_PokemonCenter_1F_Movement_AideFromPlayerRight)
+                    waitmovement(0)
+                case DIR_EAST:
+                    applymovement(ELMS_AIDE, VioletCity_PokemonCenter_1F_Movement_AideFromPlayerLeft)
+                    waitmovement(0)
+            }
+
+	        playse(SE_EXIT)
+            removeobject(ELMS_AIDE)
+            waitse
+            clearflag(FLAG_HIDE_NEW_BARK_TOWN_ELMS_LAB_AIDE)
+            setvar(VAR_ROUTE32_STATE, 1)
+            setflag(FLAG_SYS_B_DASH)
+        }
+        else
+        {
+            msgbox("Oh, no. You can't carry any more\n"
+                   "{POKEMON} with you.\p"
+                   "I'll wait here while you make\n"
+                   "room for the EGG.")
+        }
+    }
+    else
+    {
+        msgbox("B-but…\n"
+               "PROF. ELM asked for you…")
+        setflag(FLAG_REFUSED_ELMS_EGG)
+    }
+
+    release
+}
+
+movement VioletCity_PokemonCenter_1F_Movement_AideStraightOut {
+    walk_down * 1
+    walk_right
+    walk_down * 2
+}
+
+movement VioletCity_PokemonCenter_1F_Movement_AideAroundPlayer {
+    walk_right
+    walk_down * 3
+}
+
+movement VioletCity_PokemonCenter_1F_Movement_AideToPlayerCenter {
+    walk_up
+    walk_left
+    face_up
+}
+
+movement VioletCity_PokemonCenter_1F_Movement_AideToPlayerRight {
+    walk_up * 2
+}
+
+movement VioletCity_PokemonCenter_1F_Movement_AideToPlayerLeft {
+    walk_up * 2
+    walk_left * 2
+    face_up
+}
+
+movement VioletCity_PokemonCenter_1F_Movement_AideFromPlayerCenter {
+    walk_down
+    walk_right
+    walk_down
+    delay_4
+}
+
+movement VioletCity_PokemonCenter_1F_Movement_AideFromPlayerRight {
+    walk_down * 3
+    delay_4
+}
+
+movement VioletCity_PokemonCenter_1F_Movement_AideFromPlayerLeft {
+    walk_right * 2
+    walk_down * 3
+    delay_4
+}
+
+movement VioletCity_PokemonCenter_1F_Movement_PlayerWatchesAide {
+    delay_16
+    walk_in_place_fastest_right
+    delay_16
+    walk_in_place_fastest_down
+}

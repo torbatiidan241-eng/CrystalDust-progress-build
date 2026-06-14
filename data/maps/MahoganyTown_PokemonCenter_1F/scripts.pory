@@ -1,0 +1,20 @@
+mapscripts MahoganyTown_PokemonCenter_1F_MapScripts {
+    MAP_SCRIPT_ON_TRANSITION {
+        setrespawn(HEAL_LOCATION_MAHOGANY_TOWN)
+    }
+}
+
+script MahoganyTown_PokemonCenter_1F_Eventscript_Boy{
+    msgbox("I stop {POKEMON} from evolving\ntoo early.\pI make them learn certain moves\nbefore I let them evolve.", MSGBOX_NPC)
+    end
+}
+
+script MahoganyTown_PokemonCenter_1F_Eventscript_Girl{
+    msgbox("{POKEMON} do become stronger when\nthey evolve, but they also learn\lmoves more slowly.", MSGBOX_NPC)
+    end
+}
+
+script MahoganyTown_PokemonCenter_1F_Eventscript_Man{
+    msgbox("What's this?\nTEAM ROCKET has come back?\pI saw some men in black at\nthe LAKE OF RAGE…", MSGBOX_NPC)
+    end
+}

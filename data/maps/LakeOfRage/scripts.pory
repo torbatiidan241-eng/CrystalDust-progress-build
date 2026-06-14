@@ -1,0 +1,230 @@
+mapscripts LakeOfRage_MapScripts {
+	MAP_SCRIPT_ON_TRANSITION {
+		setflag(FLAG_LANDMARK_LAKE_OF_RAGE)
+		gettime
+		if(var(VAR_0x8003) != DAY_WEDNESDAY)
+		{
+			setflag(FLAG_TEMP_2)
+		}
+		if(!flag(FLAG_CLEARED_ROCKET_HIDEOUT))
+		{
+			setflag(FLAG_TEMP_1)
+		}
+		if((!flag(FLAG_DEFEATED_RED_GYARADOS) || flag(FLAG_DECIDED_TO_HELP_LANCE)) || flag(FLAG_CLEARED_ROCKET_HIDEOUT))
+		{
+			setflag(FLAG_TEMP_3)
+		}
+		end
+	}
+	MAP_SCRIPT_ON_RESUME {
+        if (flag(FLAG_SYS_CTRL_OBJ_DELETE))
+        {
+            specialvar(VAR_RESULT, GetBattleOutcome)
+            if (var(VAR_RESULT) == B_OUTCOME_CAUGHT)
+            {
+                removeobject(VAR_LAST_TALKED)
+            }
+        }
+    }
+}
+
+script LakeOfRage_EventScript_Lance {
+	lock
+	if(flag(FLAG_REFUSED_TO_HELP_LANCE))
+	{
+		faceplayer
+		msgbox("LANCE: Hm?\nAre you going to help me?", MSGBOX_YESNO)
+		if(!var(VAR_RESULT))
+		{
+			msgbox(LakeOfRage_Text_RefuseLance, MSGBOX_DEFAULT)
+			release
+			end
+		}
+		goto(LakeOfRage_EventScript_AgreeLance)
+	}
+	msgbox("This lake is full of GYARADOS but\nnothing else…\pSo the MAGIKARP are being forced\nto evolve…", MSGBOX_DEFAULT)
+	release
+	faceplayer
+	msgbox("Did you come here because of the\nrumors?\pYou're {PLAYER}?\nI'm LANCE, a trainer like you.\pI heard some rumors, so I came\nto investigate…\pI saw the way you battled\nearlier, {PLAYER}.\pI can tell that you're a trainer\nwith considerable skill.\pIf you don't mind, could you help\nme investigate?", MSGBOX_YESNO)
+	if(!var(VAR_RESULT))
+	{
+		setflag(FLAG_REFUSED_TO_HELP_LANCE)
+		msgbox(LakeOfRage_Text_RefuseLance, MSGBOX_DEFAULT)
+		release
+		end
+	}
+	goto(LakeOfRage_EventScript_AgreeLance)
+}script LakeOfRage_EventScript_AgreeLance{
+	msgbox("LANCE: Excellent!\pIt seems that the LAKE's MAGIKARP\nare being forced to evolve.\pA mysterious radio broadcast coming\nfrom MAHOGANY is the cause.\pI'll be waiting for you,\n{PLAYER}.", MSGBOX_DEFAULT)
+	release
+	setmetatile(25, 29, 0x2D5, 0)
+	setmetatile(25, 28, 0x2D6, 0)
+	setmetatile(25, 27, 0x2D6, 0)
+	special(DrawWholeMapView)
+	applymovement(10, SproutTower_3F_Movement_RivalSpin)
+	waitmovement(0)
+	playse(SE_WARP_IN)
+	applymovement(10, SproutTower_3F_Movement_RivalFlyAway)
+	waitmovement(0)
+	removeobject(10)
+	setmetatile(25, 29, 0x225, 0)
+	setmetatile(25, 28, 0x1AE, 0)
+	setmetatile(25, 27, 0x1AE, 0)
+	special(DrawWholeMapView)
+	setflag(FLAG_DECIDED_TO_HELP_LANCE)
+	release
+	end
+}text LakeOfRage_Text_RefuseLance{
+	"Oh… Well, if you change your mind,\nplease help me."
+}
+
+script LakeOfRage_EventScript_RedGyarados {
+    message("GYARADOS: Gyashaa!")
+	waitmessage
+	playmoncry(SPECIES_GYARADOS, 2)
+	waitmoncry
+    closemessage
+    setvar(VAR_LAST_TALKED, 9)
+	setflag(FLAG_SYS_CANT_RUN_FROM_BATTLE)
+    setwildbattle(SPECIES_GYARADOS, 30, ITEM_NONE)
+    setflag(FLAG_SYS_CTRL_OBJ_DELETE)
+    dowildbattle
+    clearflag(FLAG_SYS_CTRL_OBJ_DELETE)
+    specialvar(VAR_RESULT, GetBattleOutcome)
+    switch (var(VAR_RESULT))
+    {
+        case B_OUTCOME_CAUGHT:
+            call(LakeOfRage_EventScript_RedGyaradosCaught)
+        case B_OUTCOME_WON:
+            call(Common_EventScript_RemoveStaticPokemon)
+        case B_OUTCOME_RAN:
+        case B_OUTCOME_PLAYER_TELEPORTED:
+            call(Common_EventScript_RemoveStaticPokemon)
+    }
+    setflag(FLAG_DEFEATED_RED_GYARADOS)
+	if(!flag(FLAG_DECIDED_TO_HELP_LANCE))
+	{
+		giveitem(ITEM_RED_SCALE, 1)
+		addobject(10)
+		clearflag(FLAG_TEMP_3)
+	}
+	release
+	end
+}script LakeOfRage_EventScript_RedGyaradosCaught{
+	setflag(FLAG_CAUGHT_RED_GYARADOS)
+}
+
+script LakeOfRage_Eventscript_LakeSign {
+    msgbox("The LAKE OF RAGE, also known as\nGYARADOS LAKE.", MSGBOX_SIGN)
+    end
+}
+
+script LakeOfRage_Eventscript_GuruHouseSign{
+	if(!flag(FLAG_CLEARED_ROCKET_HIDEOUT))
+	{
+		msgbox("FISHING GURU's HOUSE", MSGBOX_SIGN)
+		end
+	}
+	// Stores species name in gStringVar1, trainer's name in gStringVar2, and size in gStringVar3
+	special(GetMagikarpSizeRecordInfo)
+	msgbox("FISHING GURU's HOUSE\pCURRENT RECORD\n{STR_VAR_3} caught by {STR_VAR_2}", MSGBOX_SIGN)
+	end
+}
+
+script LakeOfRage_Eventscript_OldMan{
+	if(flag(FLAG_CLEARED_ROCKET_HIDEOUT))
+	{
+		msgbox("Hahah!\nThe MAGIKARP are biting!", MSGBOX_NPC)
+		end
+	}
+	msgbox("The GYARADOS are angry!\nIt's a bad omen!", MSGBOX_NPC)
+		end
+}
+
+script LakeOfRage_Eventscript_RightLakeGuy { // beneath Cooltrainer Lois
+    msgbox("I heard this lake was made by\nrampaging GYARADOS.\pI wonder if there is any connection\nto their mass outbreak now?", MSGBOX_NPC)
+    end
+}
+
+script LakeOfRage_Eventscript_Girl { // near guru's house
+    msgbox("Did my eyes deceive me?\nI saw a red GYARADOS in the LAKE…\pBut I thought GYARADOS were usually\nblue?", MSGBOX_NPC)
+    end
+}
+
+
+script LakeOfRage_Eventscript_WesleyOfWednesday {
+    lock
+	faceplayer
+	if (!flag(FLAG_RECEIVED_BLACK_BELT_FROM_WESLEY))
+	{
+		gettime
+		if (var(VAR_0x8003) == DAY_WEDNESDAY)
+		{
+			if (!flag(FLAG_MET_WESLEY_OF_WEDNESDAY))
+			{
+				msgbox("WESLEY: Well, how do you do?\pSeeing as how it's WEDNESDAY today,\nI'm WESLEY of WEDNESDAY.\pPleased to meet you.\nPlease take a souvenir.")
+				setflag(FLAG_MET_WESLEY_OF_WEDNESDAY)
+			}
+			else
+			{
+				msgbox("WESLEY: Pleased to meet you.\nPlease take a souvenir.")
+			}
+			giveitem(ITEM_BLACK_BELT)
+			if (!var(VAR_RESULT))
+			{
+				goto(Common_EventScript_ShowBagIsFull)
+			}
+			setflag(FLAG_RECEIVED_BLACK_BELT_FROM_WESLEY)
+			msgbox("WESLEY: The BLACK BELT beefs up\nthe power of FIGHTING-type moves.")
+		}
+		else
+		{
+			msgbox("WESLEY: Today's not WEDNESDAY.\nThat's too bad.")
+		}
+	}
+	else
+	{
+		msgbox("WESLEY: Since you found me, you must\nhave met my brothers and sisters.\pOr did you just get lucky?")
+	}
+	release
+}
+
+script LakeOfRage_Eventscript_CooltrainerAaron { //on left side of lake
+    trainerbattle_single(TRAINER_AARON, "If a TRAINER spots another TRAINER,\nhe has to make a challenge.\pThat is our destiny.", "Whew…\nGood battle.")
+    msgbox("{POKEMON} and their TRAINER become\npowerful through constant battling.", MSGBOX_AUTOCLOSE)
+    end
+}
+
+// Has to have separate handling as she can be battled with a regenerated red Gyarados
+// in the lake and her GSC dialogue doesn't make sense with a red Gyarados present.
+script LakeOfRage_Eventscript_CooltrainerLois {
+	if(!defeated(TRAINER_LOIS))
+	{
+		playbgm(MUS_ENCOUNTER_FEMALE, 0)
+		if(!flag(FLAG_DEFEATED_RED_GYARADOS)) // Gyarados present. In GSC, this trainer was hidden before beating the Rocket Hideout.
+		{
+			msgbox("The red GYARADOS left for a while,\nbut now it's back!\pNow that I've seen it, I'm bored.\nI know--let's battle!", MSGBOX_NPC)
+		}
+		else
+		{
+			msgbox("What happened to the red GYARADOS?\nIt's gone?\pOh, darn. I came here for nothing?\nI know--let's battle!", MSGBOX_NPC)
+		}
+		trainerbattle_no_intro(TRAINER_LOIS, "Good going!")
+		release
+		end
+	}
+    msgbox("Come to think of it, I've seen a\npink BUTTERFREE.", MSGBOX_NPC)
+    end
+}
+
+script LakeOfRage_Eventscript_FishermanAndre { // the one looking left
+    trainerbattle_single(TRAINER_ANDRE, "Let me battle with the {POKEMON} I\njust caught!", "I might be an expert angler, but I\nstink as a {POKEMON} TRAINER…")
+    msgbox("I won't lose as an angler!\nI catch {POKEMON} all day.", MSGBOX_AUTOCLOSE)
+    end
+}
+
+script LakeOfRage_Eventscript_FishermanRaymond { // the one looking up nearest sign
+    trainerbattle_single(TRAINER_RAYMOND, "No matter what I do, all I catch are\nthe same {POKEMON}…", "My line's all tangled up…")
+    msgbox("Why can't I catch any good {POKEMON}?", MSGBOX_AUTOCLOSE)
+    end
+}

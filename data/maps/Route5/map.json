@@ -1,0 +1,89 @@
+{
+  "id": "MAP_ROUTE5",
+  "name": "Route5",
+  "layout": "LAYOUT_ROUTE5",
+  "music": "MUS_RG_ROUTE3",
+  "region_map_section": "MAPSEC_ROUTE_5",
+  "requires_flash": false,
+  "weather": "WEATHER_NONE",
+  "map_type": "MAP_TYPE_ROUTE",
+  "allow_cycling": true,
+  "allow_escaping": false,
+  "allow_running": true,
+  "show_map_name": true,
+  "floor_number": 0,
+  "phone_service": true,
+  "battle_scene": "MAP_BATTLE_SCENE_NORMAL",
+  "connections": [
+    {
+      "direction": "up",
+      "offset": 0,
+      "map": "MAP_CERULEAN_CITY"
+    },
+    {
+      "direction": "down",
+      "offset": -10,
+      "map": "MAP_SAFFRON_CITY"
+    }
+  ],
+  "object_events": [
+    {
+      "type": "original",
+      "graphics_id": "OBJ_EVENT_GFX_POKEFAN_M",
+      "in_connection": false,
+      "x": 31,
+      "y": 32,
+      "elevation": 3,
+      "movement_type": "MOVEMENT_TYPE_NONE",
+      "movement_range_x": 0,
+      "movement_range_y": 0,
+      "trainer_type": "TRAINER_TYPE_NONE",
+      "trainer_sight_or_berry_tree_id": "0",
+      "script": "Route6_EventScript_BlockingGuy",
+      "flag": "FLAG_RETURNED_MACHINE_PART"
+    }
+  ],
+  "warp_events": [
+    {
+      "x": 31,
+      "y": 31,
+      "elevation": 0,
+      "dest_map": "MAP_ROUTE5_UNDERGROUND_PATH_ENTRANCE",
+      "dest_warp_id": 0
+    },
+    {
+      "x": 24,
+      "y": 32,
+      "elevation": 0,
+      "dest_map": "MAP_ROUTE5_GATEHOUSE",
+      "dest_warp_id": 0
+    },
+    {
+      "x": 25,
+      "y": 32,
+      "elevation": 0,
+      "dest_map": "MAP_ROUTE5_GATEHOUSE",
+      "dest_warp_id": 0
+    },
+    {
+      "x": 23,
+      "y": 25,
+      "elevation": 0,
+      "dest_map": "MAP_ROUTE5_HOUSE",
+      "dest_warp_id": 0
+    }
+  ],
+  "coord_events": [
+
+  ],
+  "bg_events": [
+    {
+      "type": "sign",
+      "x": 32,
+      "y": 32,
+      "elevation": 0,
+      "player_facing_dir": "BG_EVENT_PLAYER_FACING_ANY",
+      "script": "Route6_EventScript_UndergroundPathSign"
+    }
+  ]
+}

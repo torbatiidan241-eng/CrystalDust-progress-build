@@ -1,0 +1,157 @@
+mapscripts Route27_MapScripts {
+    MAP_SCRIPT_ON_TRANSITION {
+        setvar(VAR_TEMP_0, 1)
+    }
+    MAP_SCRIPT_ON_FRAME_TABLE[
+        VAR_TEMP_0, 0 {
+            getplayerxy(VAR_RESULT, VAR_0x8001)
+            setvar(VAR_0x8001, 22)
+            subvar(VAR_0x8001, VAR_RESULT)
+            lockall
+            turnobject(1, DIR_WEST)
+            playse(SE_PIN)
+            applymovement(1, Common_Movement_ExclamationMark)
+            delay(0x40)
+            waitmovement(0)
+            while (var (VAR_0x8001) != 0) {
+                applymovement(1, Route27_Movement_FatGuyToPlayer)
+                waitmovement(0)
+                subvar(VAR_0x8001, 1)
+            }
+            turnobject(OBJ_EVENT_ID_PLAYER, DIR_EAST)
+            textcolor(0)
+            msgbox("Hey!\pDo you know what you just did?\nYou've taken your first step into\lKANTO!\pCheck your {POKE}GEAR MAP and see.")
+            setvar(VAR_TEMP_0, 1)
+            setflag(FLAG_ENTERED_KANTO)
+            releaseall
+            end
+        }
+    ]
+}
+movement Route27_Movement_FatGuyToPlayer {
+    walk_left
+}
+
+script Route27_Eventscript_FatGuy {
+    msgbox("Do you know what you just did?\nYou've taken your first step into\lKANTO!\pCheck your {POKE}GEAR MAP and see.", MSGBOX_NPC)
+    end
+}
+
+script Route27_Eventscript_TohjoFallsSign {
+    msgbox("TOHJO FALLS\nTHE LINK BETWEEN KANTO AND JOHTO", MSGBOX_SIGN)
+    end
+}
+//trainers from left to right
+script Route27_Eventscript_CooltrainerMegan {
+    trainerbattle_single(TRAINER_MEGAN, "It's rare to see anyone come here.\nAre you training on your own?", "Oh!\nYou're really strong!")
+    msgbox("I'm checking out pre- and post-\nevolution {POKEMON}.\pEvolution really does make {POKEMON}\nstronger.\pBut evolved forms also learn moves\nlater on.", MSGBOX_AUTOCLOSE)
+    end
+}
+
+script Route27_Eventscript_CooltrainerBlake {
+    trainerbattle_single(TRAINER_BLAKE, "You look pretty strong.\nLet me battle you!", "Yow!")
+    msgbox("If you prevail on this harsh trek,\nthe truth will be revealed!\pHeh, sorry. I just wanted to say\nsomething cool.", MSGBOX_AUTOCLOSE)
+    end
+}
+
+script Route27_Eventscript_CooltrainerBrian { // on bridge
+    trainerbattle_single(TRAINER_BRIAN, "Hm?\nYou're good, aren't you?", "Just as I thought!")
+    msgbox("A good TRAINER can recognize other\ngood TRAINERS.", MSGBOX_AUTOCLOSE)
+    end
+}
+
+script Route27_Eventscript_BirdKeeperJose {
+    // TODO: Check phone strings for textbox fit
+    trainerbattle_single(TRAINER_JOSE_1, "Tweet! Tweet! Tetweet!", "Tweet!")
+
+    if(flag(FLAG_CALL_JOSE_GIFT))
+    {
+        msgbox("Kept me waiting!\nLook, this is it!\pSee?\nIsn't it some kind of pretty?", MSGBOX_AUTOCLOSE)
+        giveitem(ITEM_STAR_PIECE, 1)
+        if(var(VAR_0x8007) == FALSE)
+        {
+            msgbox("Huh? you don't have anywhere to\nput this.\pBetter come back for it.", MSGBOX_AUTOCLOSE)
+        }
+        else
+        {
+            clearflag(FLAG_CALL_JOSE_GIFT)
+        }
+        end
+    }
+    specialvar(VAR_RESULT, ShouldTryRematchBattle)
+    if(var(VAR_RESULT) == 1)
+    {
+        trainerbattle_rematch(TRAINER_JOSE_1, "Tweet! Tweeeeet!\nKept me waiting!\pGo, FARFETCH'D!", "Tweet!")
+        end
+    }
+
+    if (!flag(FLAG_PHONE_CARD_BIRD_KEEPER_JOSE))
+    {
+        bufferspeciesname(0, SPECIES_FARFETCHD)
+        if (!flag(FLAG_BIRD_KEEPER_JOSE_OFFERED_NUMBER))
+        {
+            msgbox("If my {STR_VAR_1} sees anything\npretty, it goes and gets it.\pDo you like pretty things?\nI could share if it gets some more.\pWhat's your phone number?\nI'll call.\lDon't expect a whole lot, OK?\n", MSGBOX_YESNO)
+            setflag(FLAG_BIRD_KEEPER_JOSE_OFFERED_NUMBER)
+        }
+        else
+        {
+            msgbox("Do you like pretty things?\pI could share if FARFETCH'D\ngoes and gets more.\pWhat's your phone number?\nI'll call.", MSGBOX_YESNO)
+        }
+        if (var (VAR_RESULT) == 1)
+        {
+            registerphonecontact(FLAG_PHONE_CARD_BIRD_KEEPER_JOSE)
+            msgbox("I'll call you as soon as I get\nsomething pretty.", MSGBOX_AUTOCLOSE)
+        }
+        else
+        {
+            msgbox("You sure? Well, tell me if you\nchange your mind.", MSGBOX_AUTOCLOSE)
+        }
+        end
+    }
+    msgbox("BIRD KEEPERS like me mimic bird\nwhistles to command {POKEMON}.", MSGBOX_AUTOCLOSE)
+    end
+}
+
+script Route27_Eventscript_PsychicGilbert {
+    trainerbattle_single(TRAINER_GILBERT, "Don't say a thing!\nLet me guess what you're thinking.\pMmmmmmm…\pI got it! You're on the {POKEMON}\nLEAGUE challenge!", "You're too much!")
+    msgbox("With your skills, you'll do well at\nthe LEAGUE.\pThat's what my premonition says.", MSGBOX_AUTOCLOSE)
+    end
+}
+
+script Route27_Eventscript_CooltrainerReena {
+    trainerbattle_single(TRAINER_REENA_1, "You shouldn't underestimate the\nwild {POKEMON} in these parts.", Route27_Text_CooltrainerReenaLost)
+    specialvar(VAR_RESULT, ShouldTryRematchBattle)
+    if(var(VAR_RESULT) == TRUE)
+    {
+        trainerbattle_rematch(TRAINER_REENA_1, "What took you?\nStart right away!", Route27_Text_CooltrainerReenaLost)
+        end
+    }	
+    if (!flag(FLAG_PHONE_CARD_COOLTRAINER_REENA))
+    {
+        if (!flag(FLAG_COOLTRAINER_REENA_OFFERED_NUMBER))
+        {
+            msgbox("You're just a kid, but you're not\nto be underestimated either.\pNot bad… It's something to beat\nme, even by an unlikely fluke…\pI like you! Give me your number!\nYou can be my practice partner!", MSGBOX_YESNO)
+            setflag(FLAG_COOLTRAINER_REENA_OFFERED_NUMBER)
+        }
+        else
+        {
+            msgbox("Give me your phone number! You are\ngoing to be my practice partner!", MSGBOX_YESNO)
+        }
+        if (var (VAR_RESULT) == YES)
+        {
+            registerphonecontact(FLAG_PHONE_CARD_COOLTRAINER_REENA)
+            msgbox(Route27_Text_CooltrainerReenaAfterRegistered, MSGBOX_AUTOCLOSE)
+        }
+        else
+        {
+            msgbox("I don't believe it!\nYou're going to regret this!", MSGBOX_AUTOCLOSE)
+        }
+        end
+    }
+    msgbox(Route27_Text_CooltrainerReenaAfterRegistered, MSGBOX_AUTOCLOSE)
+    end
+}text(local) Route27_Text_CooltrainerReenaLost{
+    "Oh!\nYou're much too strong!"
+}text(local) Route27_Text_CooltrainerReenaAfterRegistered{
+    "Don't be too proud about beating\nme! It was a fluke!"
+}

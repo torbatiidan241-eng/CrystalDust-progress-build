@@ -1,0 +1,43 @@
+{
+  "id": "MAP_WHIRL_ISLANDS_CAVE",
+  "name": "WhirlIslands_Cave",
+  "layout": "LAYOUT_WHIRL_ISLANDS_CAVE",
+  "music": "MUS_ILEX_FOREST",
+  "region_map_section": "MAPSEC_WHIRL_ISLANDS",
+  "requires_flash": true,
+  "weather": "WEATHER_NONE",
+  "map_type": "MAP_TYPE_UNDERGROUND",
+  "allow_cycling": true,
+  "allow_escaping": true,
+  "allow_running": true,
+  "show_map_name": true,
+  "floor_number": 0,
+  "phone_service": false,
+  "battle_scene": "MAP_BATTLE_SCENE_NORMAL",
+  "connections": 0,
+  "object_events": [
+
+  ],
+  "warp_events": [
+    {
+      "x": 8,
+      "y": 15,
+      "elevation": 0,
+      "dest_map": "MAP_WHIRL_ISLANDS_1F_NW",
+      "dest_warp_id": 3
+    },
+    {
+      "x": 12,
+      "y": 6,
+      "elevation": 0,
+      "dest_map": "MAP_WHIRL_ISLANDS_B1F",
+      "dest_warp_id": 8
+    }
+  ],
+  "coord_events": [
+
+  ],
+  "bg_events": [
+
+  ]
+}

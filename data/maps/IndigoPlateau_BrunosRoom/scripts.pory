@@ -1,0 +1,52 @@
+mapscripts IndigoPlateau_BrunosRoom_MapScripts {
+    MAP_SCRIPT_ON_RESUME: PokemonLeague_EventScript_DoLightingEffectBruno
+    MAP_SCRIPT_ON_LOAD{
+        if(defeated(TRAINER_BRUNO))
+        {
+            call(PokemonLeague_EventScript_SetDoorOpen)
+        }
+        if(var(VAR_TEMP_0) == 1)
+        {
+            call(PokemonLeague_EventScript_CloseEntry)
+        }
+    }
+    MAP_SCRIPT_ON_WARP_INTO_MAP_TABLE[
+        VAR_TEMP_1, 0: PokemonLeague_EventScript_TurnPlayerNorth
+    ]
+    MAP_SCRIPT_ON_FRAME_TABLE[
+        VAR_TEMP_0, 0: PokemonLeague_EventScript_EnterEliteFourRoom
+    ]
+} //^ All map scripts in Will's Room's poryscript
+
+script PokemonLeague_EventScript_DoLightingEffectBruno{
+    setvar(VAR_0x8004, 2)
+	special(DoPokemonLeagueLightingEffect)
+	return
+}
+
+script IndigoPlateau_BrunosRoom_EventScript_Bruno {
+    lock
+    faceplayer
+    if(defeated(TRAINER_BRUNO))
+    {
+        msgbox(IndigoPlateau_BrunosRoom_Text_BrunoAfterBattle, MSGBOX_NPC)
+        end
+    }
+    msgbox("I am BRUNO of the ELITE FOUR.\pI always train to the extreme\nbecause I believe in our potential.\pThat is how we became strong.\nCan you withstand our power?\pHm? I see no fear in you. You look\ndetermined. Perfect for battle!\pReady, {PLAYER}? You will bow down\nto our overwhelming power!\pHoo hah!", MSGBOX_DEFAULT)
+    closemessage
+    setflag(FLAG_TEMP_8)
+    setflag(FLAG_TEMP_9)
+    trainerbattle_no_intro(TRAINER_BRUNO, "Why?\nHow could we lose?")
+    clearflag(FLAG_TEMP_9)
+    setflag(FLAG_TEMP_4)
+    msgbox(IndigoPlateau_BrunosRoom_Text_BrunoAfterBattle, MSGBOX_DEFAULT)
+    closemessage
+    call(PokemonLeague_EventScript_SetDoorOpen)
+    playse(SE_UNLOCK)
+    special(DrawWholeMapView)
+    waitse
+    release
+    end
+}text(local) IndigoPlateau_BrunosRoom_Text_BrunoAfterBattle{
+    "Having lost, I have no right\nto say anything…\pGo face your next challenge!"
+}

@@ -1,0 +1,17 @@
+mapscripts BlackthornCity_PokemonCenter_1F_MapScripts {
+    MAP_SCRIPT_ON_TRANSITION {
+        setrespawn(HEAL_LOCATION_BLACKTHORN_CITY)
+    }
+}
+
+script BlackthornCity_PokemonCenter_1F_Eventscript_Gentleman{
+    msgbox("Deep inside far-off INDIGO PLATEAU\nis the {POKEMON} LEAGUE.\pI hear the best TRAINERS gather\nthere from around the country.", MSGBOX_NPC)
+    end
+}
+
+script BlackthornCity_PokemonCenter_1F_Eventscript_LittleGirl{
+    msgbox("There was this move I just had to\nteach my {POKEMON}.\pSo I got the MOVE DELETER to\nmake it forget an HM move.", MSGBOX_NPC)
+    end
+}
+
+// The boy should use OlivineCity_PokemonCenter_1F_Eventscript_BugCatcher as his script.

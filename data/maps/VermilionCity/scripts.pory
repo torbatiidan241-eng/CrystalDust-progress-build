@@ -1,0 +1,164 @@
+mapscripts VermilionCity_MapScripts {
+    MAP_SCRIPT_ON_TRANSITION {
+        setflag(FLAG_VISITED_VERMILION_CITY)
+    }
+    MAP_SCRIPT_ON_RESUME {
+        if (flag(FLAG_SYS_CTRL_OBJ_DELETE))
+        {
+            specialvar(VAR_RESULT, GetBattleOutcome)
+            if (var(VAR_RESULT) == B_OUTCOME_CAUGHT)
+            {
+                removeobject(6)
+                removeobject(8)
+                removeobject(9)
+            }
+        }
+    }
+}
+
+script VermilionCity_EventScript_Snorlax{
+    lock
+    callnative(IsPokeFluteChannelPlaying)
+    if(!var(VAR_RESULT))
+    {
+        msgbox("SNORLAX is snoring peacefully…", MSGBOX_DEFAULT)
+        release
+        end
+    }
+    message("The {POKE}GEAR was placed near the\nsleeping SNORLAX…\p…\pSNORLAX woke up!")
+    waitmessage
+    delay(15)
+    playmoncry(SPECIES_SNORLAX, 0)
+    waitmoncry
+    closemessage
+    setwildbattle(SPECIES_SNORLAX, 50, ITEM_LEFTOVERS)
+    setflag(FLAG_SYS_CTRL_OBJ_DELETE)
+    dowildbattle
+    clearflag(FLAG_SYS_CTRL_OBJ_DELETE)
+    specialvar(VAR_RESULT, GetBattleOutcome)
+    switch (var(VAR_RESULT))
+    {
+        case B_OUTCOME_CAUGHT:
+            call(VermilionCity_EventScript_SnorlaxCaught)
+        case B_OUTCOME_WON:
+            call(VermilionCity_EventScript_RemoveSnorlax)
+        case B_OUTCOME_RAN:
+        case B_OUTCOME_PLAYER_TELEPORTED:
+            call(VermilionCity_EventScript_RemoveSnorlax)
+    }
+    setflag(FLAG_FOUGHT_SNORLAX)
+    setflag(FLAG_DEFEATED_SNORLAX)
+    release
+    end
+}script VermilionCity_EventScript_SnorlaxCaught{
+    setflag(FLAG_CAUGHT_SNORLAX)
+}script VermilionCity_EventScript_RemoveSnorlax{
+    fadescreenswapbuffers(FADE_TO_BLACK)
+	removeobject(6)
+    removeobject(8)
+    removeobject(9)
+	fadescreenswapbuffers(FADE_FROM_BLACK)
+}
+
+script VermilionCity_EventScript_TownSign{
+    msgbox("VERMILION CITY\nThe Port of Exquisite Sunsets", MSGBOX_SIGN)
+    end
+}
+
+script VermilionCity_EventScript_GymSign{
+    msgbox("VERMILION CITY {POKEMON} GYM\nLEADER: LT. SURGE\pThe Lightning American", MSGBOX_SIGN)
+    end
+}
+
+script VermilionCity_EventScript_FanClubSign{
+    msgbox("{POKEMON} FAN CLUB\nAll {POKEMON} Fans Welcome!", MSGBOX_SIGN)
+    end
+}
+
+script VermilionCity_EventScript_DiglettsCaveSign{
+    msgbox("DIGLETT'S CAVE", MSGBOX_SIGN)
+    end
+}
+
+script VermilionCity_EventScript_PortSign{
+    msgbox("VERMILION PORT ENTRANCE", MSGBOX_SIGN)
+    end
+}
+
+script VermilionCity_EventScript_Teacher{
+    msgbox("VERMILION PORT is KANTO's seaside\ngateway.\pLuxury liners from around the world\ndock here.", MSGBOX_NPC)
+    end
+}
+
+script VermilionCity_EventScript_MachopOwner{
+    msgbox("My {POKEMON} is preparing the land\nfor construction.\pBut I have no money to start\nthe project…", MSGBOX_NPC)
+    end
+}
+
+script VermilionCity_EventScript_Machop {
+    lock
+    faceplayer
+    waitse
+    playmoncry(SPECIES_MACHOP, 0)
+    msgbox("MACHOP: Guooh gogogoh!", MSGBOX_DEFAULT)
+    waitmoncry
+    closemessage
+    setvar(VAR_0x8004, 1)  # vertical pan
+    setvar(VAR_0x8005, 1)  # horizontal pan
+    setvar(VAR_0x8006, 20) # num shakes
+    setvar(VAR_0x8007, 3)  # shake delay
+    special(ShakeCamera)
+    waitstate
+    msgbox("A MACHOP is growling while stomping\nthe ground flat.", MSGBOX_DEFAULT)
+    release
+    end
+}
+
+script VermilionCity_EventScript_SuperNerd{
+    msgbox("There are eight GYMS in KANTO.\pThat big building is VERMILION's\n{POKEMON} GYM.", MSGBOX_NPC)
+    end
+}
+
+script VermilionCity_EventScript_BadgeGuy{
+    if(flag(FLAG_GOT_HP_UP_FROM_VERMILION_GUY))
+    {
+        msgbox("Having a variety of {POKEMON} types\nshould give you an edge in battle.\pI'm sure the KANTO GYM BADGES will\nhelp you.", MSGBOX_NPC)
+        end
+    }
+    lock
+    faceplayer
+    callnative(CountBadges)
+    if(var(VAR_RESULT) == 16)
+    {
+        msgbox("Congratulations!\pYou got all the KANTO GYM BADGES.\nI've got a reward for your efforts.", MSGBOX_DEFAULT)
+        checkitemspace(ITEM_HP_UP, 1)
+        if(var(VAR_RESULT) == FALSE)
+        {
+            call(Common_EventScript_BagIsFull)
+            release
+            end
+        }
+        giveitem(ITEM_HP_UP, 1)
+        setflag(FLAG_GOT_HP_UP_FROM_VERMILION_GUY)
+        goto(VermilionCity_EventScript_BadgeGuy)
+        end
+    }
+    elif(var(VAR_RESULT) > 13)
+    {
+        msgbox("I guess you'll be finished with your\nconquest of KANTO GYMS soon.\pLet me know if you get all\neight BADGES.", MSGBOX_DEFAULT)
+        release
+        end
+    }
+    elif(var(VAR_RESULT) > 9)
+    {
+        msgbox("You've started to collect KANTO\nGYM BADGES?\pDon't you agree that the trainers\nhere are tough?", MSGBOX_DEFAULT)
+        release
+        end
+    }
+    else
+    {
+        msgbox("Skilled trainers gather in KANTO.\nGYM LEADERS are especially strong.\lThey won't be easy to defeat.", MSGBOX_DEFAULT)
+        release
+        end
+    }
+}

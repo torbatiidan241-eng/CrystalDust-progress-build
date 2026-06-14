@@ -1,0 +1,202 @@
+mapscripts IndigoPlateau_PokemonCenter_1F_MapScripts {
+    MAP_SCRIPT_ON_TRANSITION{
+        setrespawn(HEAL_LOCATION_ROUTE23)
+        setflag(FLAG_TEMP_1)
+        cleartrainerflag(TRAINER_WILL)
+        cleartrainerflag(TRAINER_KOGA)
+        cleartrainerflag(TRAINER_BRUNO)
+        cleartrainerflag(TRAINER_KAREN)
+        cleartrainerflag(TRAINER_LANCE)
+        if(defeated(TRAINER_RIVAL_REMATCH_CHIKORITA) || defeated(TRAINER_RIVAL_REMATCH_CYNDAQUIL) || defeated(TRAINER_RIVAL_REMATCH_TOTODILE))
+        {
+            setvar(VAR_TEMP_1, 1)
+        }
+        if(!(defeated(TRAINER_RIVAL_MT_MOON_CHIKORITA) || defeated(TRAINER_RIVAL_MT_MOON_TOTODILE) || defeated(TRAINER_RIVAL_MT_MOON_CYNDAQUIL)))
+        {
+            setvar(VAR_TEMP_1, 1)
+        }
+        gettime
+        if(!(var(VAR_0x8003) == DAY_MONDAY || var(VAR_0x8003) == DAY_WEDNESDAY))
+        {
+            setvar(VAR_TEMP_1, 1)
+        }
+        // The Bill event that unlocks the Time Capsule
+        // is done here if the player never entered the
+        // Ecruteak Pokemon Center as a safeguard since
+        // this is a mandatory Pokemon Center.
+        if(flag(FLAG_MET_BILL_IN_ECRUTEAK))
+        {
+            setvar(VAR_TEMP_0, 1)
+            setflag(FLAG_TEMP_2)
+        }
+        if(flag(FLAG_SYS_GAME_CLEAR))
+        {
+            setflag(FLAG_TEMP_3) // hide old man and Abra
+            if(!flag(FLAG_FOUGHT_SNORLAX))
+            {
+                callnative(CheckPlayerTrappedAtIndigoPlateau)
+                if(var(VAR_RESULT) == 1) // trapped, show old man and Abra
+                {
+                    clearflag(FLAG_TEMP_3)
+                }
+            }
+        }
+    }
+    MAP_SCRIPT_ON_FRAME_TABLE [
+        VAR_TEMP_0, 0: EcruteakCity_PokemonCenter_1F_Eventscript_Bill
+    ]
+}
+
+script IndigoPlateau_PokemonCenter_1F_Eventscript_RivalRematchTriggers{
+    lockall
+    addobject(6)
+    turnobject(OBJ_EVENT_ID_PLAYER, DIR_SOUTH)
+    applymovement(OBJ_EVENT_ID_PLAYER, Common_Movement_ExclamationMark)
+    playse(SE_PIN)
+    delay(0x40)
+    fadeoutbgm(0)
+    delay(15)
+    getplayerxy(VAR_RESULT, VAR_0x8008)
+    switch(var(VAR_RESULT))
+    {
+        case 23:
+            applymovement(6, IndigoPlateau_PokemonCenter_1F_Movement_RivalToPlayerLeft)
+            waitmovement(0)
+            turnobject(OBJ_EVENT_ID_PLAYER, DIR_EAST)
+        case 24:
+            applymovement(6, IndigoPlateau_PokemonCenter_1F_Movement_RivalToPlayerMid)
+            waitmovement(0)
+            turnobject(OBJ_EVENT_ID_PLAYER, DIR_EAST)
+        case 25:
+            applymovement(6, IndigoPlateau_PokemonCenter_1F_Movement_RivalToPlayerRight)
+            waitmovement(0)
+            turnobject(OBJ_EVENT_ID_PLAYER, DIR_WEST)
+    }
+    playbgm(MUS_ENCOUNTER_RIVAL, 0)
+    savebgm(MUS_RIVAL_EXIT)
+    textcolor(0)
+    msgbox("Hold it.\pYou're going to take the {POKEMON}\nLEAGUE challenge now?\pThat's not going to happen.\pMy super-well-trained {POKEMON}\nare going to pound you.\p{PLAYER}!\nI challenge you!", MSGBOX_DEFAULT)
+    closemessage
+    // only one attempt per day
+    settrainerflag(TRAINER_RIVAL_REMATCH_CHIKORITA)
+    settrainerflag(TRAINER_RIVAL_REMATCH_CYNDAQUIL)
+    settrainerflag(TRAINER_RIVAL_REMATCH_TOTODILE)
+    switch(var(VAR_STARTER_MON))
+    {
+        case STARTER_CHIKORITA:
+            trainerbattle_wintext(TRAINER_RIVAL_REMATCH_CHIKORITA, 0, IndigoPlateau_PokemonCenter_1F_Text_RivalLost, IndigoPlateau_PokemonCenter_1F_Text_RivalWon)
+        case STARTER_CYNDAQUIL:
+            trainerbattle_wintext(TRAINER_RIVAL_REMATCH_CYNDAQUIL, 0, IndigoPlateau_PokemonCenter_1F_Text_RivalLost, IndigoPlateau_PokemonCenter_1F_Text_RivalWon)
+        case STARTER_TOTODILE:
+            trainerbattle_wintext(TRAINER_RIVAL_REMATCH_TOTODILE, 0, IndigoPlateau_PokemonCenter_1F_Text_RivalLost, IndigoPlateau_PokemonCenter_1F_Text_RivalWon)
+    }
+    msgbox("…Darn…\nI still can't win…\pI… I have to think more about\nmy {POKEMON}.\pHumph!\nTry not to lose!", MSGBOX_DEFAULT)
+    closemessage
+    turnobject(OBJ_EVENT_ID_PLAYER, DIR_SOUTH)
+    getplayerxy(VAR_RESULT, VAR_0x8008)
+    switch(var(VAR_RESULT))
+    {
+        case 23:
+            applymovement(6, IndigoPlateau_PokemonCenter_1F_Movement_RivalExitsLeft)
+            waitmovement(0)
+        case 24:
+            applymovement(6, IndigoPlateau_PokemonCenter_1F_Movement_RivalExitsMid)
+            waitmovement(0)
+        case 25:
+            applymovement(6, IndigoPlateau_PokemonCenter_1F_Movement_RivalExitsRight)
+            waitmovement(0)
+    }
+    removeobject(6)
+    savebgm(MUS_RG_VICTORY_ROAD)
+    fadedefaultbgm
+    setvar(VAR_TEMP_1,1)
+    releaseall
+    end
+}movement(local) IndigoPlateau_PokemonCenter_1F_Movement_RivalToPlayerLeft{
+    walk_up * 2
+    walk_right * 2
+    walk_up * 4
+    face_left
+}movement(local) IndigoPlateau_PokemonCenter_1F_Movement_RivalToPlayerMid{
+    walk_up * 2
+    walk_right * 3
+    walk_up * 4
+    face_left
+}movement(local) IndigoPlateau_PokemonCenter_1F_Movement_RivalToPlayerRight{
+    walk_up * 2
+    walk_right * 2
+    walk_up * 4
+    face_right
+}text(local) IndigoPlateau_PokemonCenter_1F_Text_RivalLost{
+    "…\pOK--I lost…"
+}text(local) IndigoPlateau_PokemonCenter_1F_Text_RivalWon{
+    "…\nWhew…\pWith my partners, I'm going to be\nthe CHAMPION!"
+}movement(local) IndigoPlateau_PokemonCenter_1F_Movement_RivalExitsLeft{
+    walk_down * 4
+    walk_left * 2
+    walk_down * 2
+}movement(local) IndigoPlateau_PokemonCenter_1F_Movement_RivalExitsMid{
+    walk_down * 4
+    walk_left * 3
+    walk_down * 2
+}movement(local) IndigoPlateau_PokemonCenter_1F_Movement_RivalExitsRight{
+    walk_down * 4
+    walk_left * 2
+    walk_down * 2
+}
+
+script IndigoPlateau_PokemonCenter_1F_Eventscript_Guy{
+    msgbox("At the {POKEMON} LEAGUE, you'll get\ntested by the ELITE FOUR.\pYou have to beat them all. If you\nlose, you have to start all over!", MSGBOX_NPC)
+    end
+}
+
+script IndigoPlateau_PokemonCenter_1F_Eventscript_OldMan{
+    lock
+    faceplayer
+    msgbox("Ah! You're challenging the ELITE\nFOUR? Are you sure you're ready?\pIf you need to train some more,\nmy ABRA can help you.\pIt can TELEPORT you home.\nWould you like to go home now?", MSGBOX_YESNO)
+    if(var(VAR_RESULT) == NO)
+    {
+        msgbox("Okay, okay.\nThe best of luck to you!", MSGBOX_DEFAULT)
+        release
+        end
+    }
+    msgbox("Okay, okay.\nPicture your house in your mind…", MSGBOX_DEFAULT)
+    delay(16)
+    warpteleport(MAP_NEW_BARK_TOWN, 255, 16, 8)
+    waitstate
+    release
+    end
+}
+
+script IndigoPlateau_PokemonCenter_1F_Eventscript_Abra{
+    lock
+    faceplayer
+    playmoncry(SPECIES_ABRA, 0)
+    msgbox("ABRA: Aabra…", MSGBOX_DEFAULT)
+    waitmoncry
+    release
+    end
+}
+
+script IndigoPlateau_PokemonCenter_1F_EventScript_Clerk {
+    lock
+    faceplayer
+    message(gText_HowMayIHelpYou)
+    waitmessage
+    pokemart(IndigoPlateau_PokemonCenter_1F_Pokemart_Clerk)
+    msgbox(gText_PleaseComeAgain)
+    release
+}
+
+raw `
+.align 2
+IndigoPlateau_PokemonCenter_1F_Pokemart_Clerk:
+	.2byte ITEM_ULTRA_BALL
+	.2byte ITEM_MAX_REPEL
+	.2byte ITEM_HYPER_POTION
+	.2byte ITEM_MAX_POTION
+	.2byte ITEM_FULL_RESTORE
+	.2byte ITEM_REVIVE
+	.2byte ITEM_FULL_HEAL
+	.2byte ITEM_NONE
+`

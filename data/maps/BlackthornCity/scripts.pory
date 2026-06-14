@@ -1,0 +1,126 @@
+mapscripts BlackthornCity_MapScripts {
+	MAP_SCRIPT_ON_TRANSITION {
+		setflag(FLAG_VISITED_BLACKTHORN_CITY)
+		gettime
+		if(var(VAR_0x8003) != DAY_SATURDAY)
+		{
+			setflag(FLAG_TEMP_1)
+		}
+		if(!flag(FLAG_CLEARED_RADIO_TOWER))
+		{
+			setobjectxyperm(6, 21, 19)
+		}
+		if(!defeated(TRAINER_CLAIR))
+		{
+			setobjectmovementtype(7, MOVEMENT_TYPE_FACE_DOWN)
+			setobjectxyperm(7, 24, 6)
+		}
+	}
+}
+
+script BlackthornCity_Eventscript_DragonsDenGuard {
+	if(!defeated(TRAINER_CLAIR))
+	{
+		msgbox("No.\nOnly chosen trainers may train here.\pPlease leave.", MSGBOX_NPC)
+		end
+	}
+	msgbox("If CLAIR allows it, her grandfather--\nour MASTER--will also.\pYou may enter.", MSGBOX_NPC)
+	end
+}
+
+script BlackthornCity_Eventscript_GymGuard {
+	if(defeated(TRAINER_CLAIR))
+	{
+		msgbox("You defeated CLAIR?\nThat's amazing!\pI've never heard of her losing to\nanyone other than LANCE.", MSGBOX_NPC)
+		end
+	}
+	if(flag(FLAG_CLEARED_RADIO_TOWER))
+	{
+		msgbox("CLAIR, our GYM LEADER, is waiting\nfor you.\pHowever, it would be impossible for\na run-of-the-mill trainer to win.", MSGBOX_NPC)
+		end
+	}
+	msgbox("I am sorry.\pCLAIR, our GYM LEADER, entered\nthe DRAGON'S DEN behind the GYM.\pI have no idea when our LEADER\nwill return.", MSGBOX_NPC)
+	end
+}
+
+script BlackthornCity_Eventscript_CitySign {
+    msgbox("BLACKTHORN CITY\nA Quiet Mountain Retreat", MSGBOX_SIGN)
+    end
+}
+
+script BlackthornCity_Eventscript_MoveDeleterSign {
+    msgbox("MOVE DELETER's HOUSE", MSGBOX_SIGN)
+    end
+}
+
+script BlackthornCity_Eventscript_TrainerTipsSign {
+    msgbox("TRAINER TIPS\pA {POKEMON} holding a LUM BERRY will\ncure itself of any status problem.", MSGBOX_SIGN)
+    end
+}
+
+script BlackthornCity_Eventscript_GymSign {
+    msgbox("BLACKTHORN CITY {POKEMON} GYM\nLEADER: CLAIR\pThe Blessed User of Dragon {POKEMON}", MSGBOX_SIGN)
+    end
+}
+
+script BlackthornCity_Eventscript_DragonsDenSign {
+    msgbox("DRAGON'S DEN AHEAD", MSGBOX_SIGN)
+    end
+}
+
+script BlackthornCity_Eventscript_Woman{ // nearest Ice Path
+    msgbox("Wow, you came through the ICE PATH?\nYou must be a real hotshot TRAINER!", MSGBOX_NPC)
+    end
+}
+
+script BlackthornCity_Eventscript_BlackBelt{
+    msgbox("Arooo! Voices in my head!\nHuh? I'm listening to my radio!", MSGBOX_NPC)
+    end
+}
+
+script BlackthornCity_Eventscript_Girl{ // nearest Move Deleter's house
+    msgbox("Are you going to make your {POKEMON}\nforget some moves?", MSGBOX_NPC)
+    end
+}
+
+script BlackthornCity_Eventscript_Boy{
+    msgbox("Dragon masters all come from the\ncity of BLACKTHORN.", MSGBOX_NPC)
+    end
+}
+
+script BlackthornCity_Eventscript_SantosOfSaturday {
+    lock
+	faceplayer
+	if (!flag(FLAG_RECEIVED_SPELL_TAG_FROM_SANTOS))
+	{
+		gettime
+		if (var(VAR_0x8003) == DAY_SATURDAY)
+		{
+			if (!flag(FLAG_MET_SANTOS_OF_SATURDAY))
+			{
+				msgbox("SANTOS: …\nIt's SATURDAY…\pI'm SANTOS of SATURDAY…\pYou can have this…")
+				setflag(FLAG_MET_SANTOS_OF_SATURDAY)
+			}
+			else
+			{
+				msgbox("SANTOS: You can have this…")
+			}
+			giveitem(ITEM_SPELL_TAG)
+			if (!var(VAR_RESULT))
+			{
+				goto(Common_EventScript_ShowBagIsFull)
+			}
+			setflag(FLAG_RECEIVED_SPELL_TAG_FROM_SANTOS)
+			msgbox("SANTOS: …\nSPELL TAG…\pGHOST-type moves get stronger…\pIt will frighten you…")
+		}
+		else
+		{
+			msgbox("SANTOS: Today's not SATURDAY…")
+		}
+	}
+	else
+	{
+		msgbox("SANTOS: …\pSee you again on another SATURDAY…\pI won't have any more gifts…")
+	}
+	release
+}

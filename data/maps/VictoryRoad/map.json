@@ -1,0 +1,229 @@
+{
+  "id": "MAP_VICTORY_ROAD",
+  "name": "VictoryRoad",
+  "layout": "LAYOUT_VICTORY_ROAD",
+  "music": "MUS_RG_VICTORY_ROAD",
+  "region_map_section": "MAPSEC_KANTO_VICTORY_ROAD",
+  "requires_flash": false,
+  "weather": "WEATHER_NONE",
+  "map_type": "MAP_TYPE_UNDERGROUND",
+  "allow_cycling": true,
+  "allow_escaping": true,
+  "allow_running": true,
+  "show_map_name": true,
+  "floor_number": 0,
+  "phone_service": false,
+  "battle_scene": "MAP_BATTLE_SCENE_NORMAL",
+  "connections": 0,
+  "object_events": [
+    {
+      "type": "original",
+      "graphics_id": "OBJ_EVENT_GFX_ITEM_BALL",
+      "in_connection": false,
+      "x": 29,
+      "y": 58,
+      "elevation": 3,
+      "movement_type": "MOVEMENT_TYPE_NONE",
+      "movement_range_x": 0,
+      "movement_range_y": 0,
+      "trainer_type": "TRAINER_TYPE_NONE",
+      "trainer_sight_or_berry_tree_id": "ITEM_FULL_HEAL",
+      "script": "Common_EventScript_FindItem",
+      "flag": "FLAG_ITEM_VICTORY_ROAD_FULL_HEAL"
+    },
+    {
+      "type": "original",
+      "graphics_id": "OBJ_EVENT_GFX_ITEM_BALL",
+      "in_connection": false,
+      "x": 26,
+      "y": 58,
+      "elevation": 3,
+      "movement_type": "MOVEMENT_TYPE_NONE",
+      "movement_range_x": 0,
+      "movement_range_y": 0,
+      "trainer_type": "TRAINER_TYPE_NONE",
+      "trainer_sight_or_berry_tree_id": "ITEM_MAX_REVIVE",
+      "script": "Common_EventScript_FindItem",
+      "flag": "FLAG_ITEM_VICTORY_ROAD_MAX_REVIVE"
+    },
+    {
+      "type": "original",
+      "graphics_id": "OBJ_EVENT_GFX_ITEM_BALL",
+      "in_connection": false,
+      "x": 18,
+      "y": 44,
+      "elevation": 3,
+      "movement_type": "MOVEMENT_TYPE_NONE",
+      "movement_range_x": 0,
+      "movement_range_y": 0,
+      "trainer_type": "TRAINER_TYPE_NONE",
+      "trainer_sight_or_berry_tree_id": "ITEM_HP_UP",
+      "script": "Common_EventScript_FindItem",
+      "flag": "FLAG_ITEM_VICTORY_ROAD_HP_UP"
+    },
+    {
+      "type": "original",
+      "graphics_id": "OBJ_EVENT_GFX_ITEM_BALL",
+      "in_connection": false,
+      "x": 45,
+      "y": 38,
+      "elevation": 3,
+      "movement_type": "MOVEMENT_TYPE_NONE",
+      "movement_range_x": 0,
+      "movement_range_y": 0,
+      "trainer_type": "TRAINER_TYPE_NONE",
+      "trainer_sight_or_berry_tree_id": "ITEM_FULL_RESTORE",
+      "script": "Common_EventScript_FindItem",
+      "flag": "FLAG_ITEM_VICTORY_ROAD_FULL_RESTORE"
+    },
+    {
+      "type": "original",
+      "graphics_id": "OBJ_EVENT_GFX_ITEM_BALL",
+      "in_connection": false,
+      "x": 12,
+      "y": 34,
+      "elevation": 3,
+      "movement_type": "MOVEMENT_TYPE_NONE",
+      "movement_range_x": 0,
+      "movement_range_y": 0,
+      "trainer_type": "TRAINER_TYPE_NONE",
+      "trainer_sight_or_berry_tree_id": "ITEM_TM26",
+      "script": "Common_EventScript_FindItem",
+      "flag": "FLAG_ITEM_VICTORY_ROAD_TM26_EARTHQUAKE"
+    },
+    {
+      "type": "original",
+      "graphics_id": "OBJ_EVENT_GFX_RIVAL",
+      "in_connection": false,
+      "x": 33,
+      "y": 14,
+      "elevation": 3,
+      "movement_type": "MOVEMENT_TYPE_FACE_UP",
+      "movement_range_x": 0,
+      "movement_range_y": 0,
+      "trainer_type": "TRAINER_TYPE_NONE",
+      "trainer_sight_or_berry_tree_id": "0",
+      "script": "NULL",
+      "flag": "FLAG_TEMP_1"
+    }
+  ],
+  "warp_events": [
+    {
+      "x": 15,
+      "y": 59,
+      "elevation": 0,
+      "dest_map": "MAP_VICTORY_ROAD",
+      "dest_warp_id": 1
+    },
+    {
+      "x": 5,
+      "y": 40,
+      "elevation": 0,
+      "dest_map": "MAP_VICTORY_ROAD",
+      "dest_warp_id": 0
+    },
+    {
+      "x": 35,
+      "y": 40,
+      "elevation": 0,
+      "dest_map": "MAP_VICTORY_ROAD",
+      "dest_warp_id": 3
+    },
+    {
+      "x": 24,
+      "y": 18,
+      "elevation": 0,
+      "dest_map": "MAP_VICTORY_ROAD",
+      "dest_warp_id": 2
+    },
+    {
+      "x": 36,
+      "y": 22,
+      "elevation": 0,
+      "dest_map": "MAP_VICTORY_ROAD",
+      "dest_warp_id": 5
+    },
+    {
+      "x": 42,
+      "y": 40,
+      "elevation": 0,
+      "dest_map": "MAP_VICTORY_ROAD",
+      "dest_warp_id": 4
+    },
+    {
+      "x": 9,
+      "y": 12,
+      "elevation": 0,
+      "dest_map": "MAP_VICTORY_ROAD",
+      "dest_warp_id": 7
+    },
+    {
+      "x": 9,
+      "y": 34,
+      "elevation": 0,
+      "dest_map": "MAP_VICTORY_ROAD",
+      "dest_warp_id": 6
+    },
+    {
+      "x": 26,
+      "y": 5,
+      "elevation": 0,
+      "dest_map": "MAP_ROUTE23",
+      "dest_warp_id": 0
+    },
+    {
+      "x": 23,
+      "y": 77,
+      "elevation": 0,
+      "dest_map": "MAP_VICTORY_ROAD_GATEHOUSE",
+      "dest_warp_id": 1
+    }
+  ],
+  "coord_events": [
+    {
+      "type": "trigger",
+      "x": 25,
+      "y": 8,
+      "elevation": 0,
+      "var": "VAR_TEMP_0",
+      "var_value": "0",
+      "script": "VictoryRoad_EventScript_RivalTriggers"
+    },
+    {
+      "type": "trigger",
+      "x": 26,
+      "y": 8,
+      "elevation": 0,
+      "var": "VAR_TEMP_0",
+      "var_value": "0",
+      "script": "VictoryRoad_EventScript_RivalTriggers"
+    },
+    {
+      "type": "trigger",
+      "x": 27,
+      "y": 8,
+      "elevation": 0,
+      "var": "VAR_TEMP_0",
+      "var_value": "0",
+      "script": "VictoryRoad_EventScript_RivalTriggers"
+    }
+  ],
+  "bg_events": [
+    {
+      "type": "hidden_item",
+      "x": 14,
+      "y": 72,
+      "elevation": 3,
+      "item": "ITEM_FULL_HEAL",
+      "flag": "FLAG_HIDDEN_ITEM_VICTORY_ROAD_FULL_HEAL"
+    },
+    {
+      "type": "hidden_item",
+      "x": 12,
+      "y": 35,
+      "elevation": 3,
+      "item": "ITEM_MAX_POTION",
+      "flag": "FLAG_HIDDEN_ITEM_VICTORY_ROAD_MAX_POTION"
+    }
+  ]
+}

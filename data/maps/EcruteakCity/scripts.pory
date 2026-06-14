@@ -1,0 +1,75 @@
+mapscripts EcruteakCity_MapScripts {
+    MAP_SCRIPT_ON_TRANSITION {
+        setflag(FLAG_VISITED_ECRUTEAK_CITY)
+    }
+}
+
+script EcruteakCity_Eventscript_CitySign {
+    msgbox("ECRUTEAK CITY\pA Historical City Where the Past\nMeets the Present", MSGBOX_SIGN)
+    end
+}
+
+script EcruteakCity_Eventscript_DanceTheaterSign {
+    msgbox("ECRUTEAK DANCE THEATER", MSGBOX_SIGN)
+    end
+}
+
+script EcruteakCity_Eventscript_GymSign {
+    msgbox("ECRUTEAK CITY {POKEMON} GYM\nLEADER: MORTY\pThe Mystic Seer of the Future", MSGBOX_SIGN)
+    end
+}
+
+script EcruteakCity_Eventscript_BurnedTowerSign {
+    msgbox("BURNED TOWER\nIt was destroyed by a mysterious\lfire.\pPlease stay away, as it is unsafe.", MSGBOX_SIGN)
+    end
+}
+
+script EcruteakCity_Eventscript_TinTowerSign {
+    msgbox("TIN TOWER\pA legendary {POKEMON} is said to\nroost here.", MSGBOX_SIGN)
+    end
+}
+
+script EcruteakCity_Eventscript_OldMan1{ // Near Burned Tower
+    msgbox("In the distant past…\pThis tower burned in a fire. Three\nnameless {POKEMON} perished in it.\pA rainbow-colored {POKEMON} descended\nfrom the sky and resurrected them…\pIt's a legend that has been passed\ndown by ECRUTEAK GYM LEADERS.\pMe? I was a TRAINER way back when.\nHohoho!", MSGBOX_NPC)
+    end
+}
+
+script EcruteakCity_Eventscript_Boy{ // on left side of town under Burned Tower area
+    msgbox("I hear {POKEMON} are rampaging at the\nLAKE OF RAGE. I'd like to see that!", MSGBOX_NPC)
+    end
+}
+
+script EcruteakCity_Eventscript_OldMan2{ // Under Tin Tower Gate
+    msgbox("ECRUTEAK used to have two towers:\none each in the east and west.", MSGBOX_NPC)
+    end
+}
+
+script EcruteakCity_Eventscript_OldMan3{ // Next to Dance Theater
+    msgbox("Ah, child. Have you learned to\ndance like the KIMONO GIRLS?\pIf you go to their DANCE THEATER, an\nodd old man will give you something\lnice, I hear.", MSGBOX_NPC)
+    end
+}
+
+script EcruteakCity_Eventscript_Girl2{ // Nearest PMC
+    msgbox("I'm going to practice at the DANCE\nTHEATER. Care to join me?", MSGBOX_NPC)
+    end
+}
+
+script EcruteakCity_Eventscript_Girl3{ // Near Burned Tower
+    if(flag(FLAG_AWAKENED_LEGENDARY_BEASTS))
+    {
+        msgbox("Three big {POKEMON} ran off in\ndifferent directions. What were they?", MSGBOX_NPC)
+        end
+    }
+    msgbox("The tower that used to be here…\pMy grandma told me it used to be\nmuch taller.", MSGBOX_NPC)
+    end
+}
+
+script EcruteakCity_Eventscript_FatMan{ // Near Gym
+    if(flag(FLAG_CURED_AMPHY))
+    {
+        msgbox("The {POKEMON} at OLIVINE LIGHTHOUSE\nhas been cured.\pBoats can safely sail out to sea at\nnight again.", MSGBOX_NPC)
+        end
+    }
+    msgbox("I heard a rumor about OLIVINE's\nLIGHTHOUSE.\pThe {POKEMON} that serves as the\nbeacon fell ill.\pSounds like they are in trouble.", MSGBOX_NPC)
+    end
+}

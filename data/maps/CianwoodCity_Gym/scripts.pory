@@ -1,0 +1,101 @@
+mapscripts CianwoodCity_Gym_MapScripts {}
+
+script CianwoodCity_Gym_Eventscript_Chuck{
+    lock
+    faceplayer
+    if(!flag(FLAG_BADGE05_GET))
+    {
+        msgbox("WAHAHAH!\pSo you've come this far!\nLet me tell you, I'm tough!\pMy {POKEMON} will crush stones\nand shatter bones!\pWatch this!", MSGBOX_DEFAULT)
+        release
+        turnobject(5, DIR_EAST)
+        msgbox("CHUCK: Urggh!\n…\pOooarrgh!", MSGBOX_DEFAULT)
+        release
+        applymovement(9, CianwoodCity_Gym_Movement_ChuckChucksBoulder)
+        delay(24)
+        playse(SE_M_ROCK_THROW)
+        setvar(VAR_0x8004, 2)  # vertical pan
+        setvar(VAR_0x8005, 2)  # horizontal pan
+        setvar(VAR_0x8006, 20) # num shakes
+        setvar(VAR_0x8007, 3)  # shake delay
+        special(ShakeCamera)
+        waitstate
+        delay(10)
+        waitmovement(0)
+        removeobject(9)
+        delay(30)
+        faceplayer
+        trainerbattle_single(TRAINER_CHUCK, "There! Scared now, are you?\pWhat?\nIt has nothing to do with {POKEMON}?\pThat's true!\nCome on. We shall do battle!", "Wha? Huh?\nI lost?\pHow about that!\nYou're worthy of the STORMBADGE!", CianwoodCity_Gym_EventScript_ChuckDefeated, NO_MUSIC)
+    }
+    goto(CianwoodCity_Gym_EventScript_GiveTM)
+}script CianwoodCity_Gym_EventScript_ChuckDefeated{
+    textcolor(MSG_COLOR_SYS)
+    message("{PLAYER} received the STORMBADGE.")
+    waitmessage
+    call(Common_EventScript_PlayGymBadgeFanfare)
+	textcolor(MSG_COLOR_PREV)
+    setflag(FLAG_BADGE05_GET)
+    setgymtrainers(5)
+    callnative(CountBadges)
+    if(var(VAR_RESULT) >= 6)
+    {
+        call(Common_EventScript_ActivateSixthBadgeRockets)
+    }
+    goto(CianwoodCity_Gym_EventScript_GiveTM)
+}script CianwoodCity_Gym_EventScript_GiveTM{
+    if(!flag(FLAG_GOT_TM31_FROM_CHUCK))
+    {
+        msgbox("STORMBADGE makes all {POKEMON} up to\nlevel 70 obey, even traded ones.\pIt also lets your {POKEMON} use FLY\nwhen you're not in a battle.\pHere, take this too!", MSGBOX_DEFAULT)
+        release
+        checkitemspace(ITEM_TM31, 1)
+        if (!var(VAR_RESULT))
+        {
+            goto(Common_EventScript_ShowBagIsFull)
+        }
+        givetmhm_msg("{PLAYER} received TM31\nfrom CHUCK.", ITEM_TM31)
+		setflag(FLAG_GOT_TM31_FROM_CHUCK)
+		msgbox("That is BRICK BREAK.\nWhen it hits, it breaks barriers like\lLIGHT SCREEN and REFLECT!", MSGBOX_DEFAULT)
+        release
+        end
+    }
+    msgbox("WAHAHAH! I enjoyed battling you!\nBut a loss is a loss!\pFrom now on, I'm going to train\n24 hours a day!", MSGBOX_NPC)
+    release
+    end
+}movement CianwoodCity_Gym_Movement_ChuckChucksBoulder{
+    walk_fast_left
+    walk_fast_up
+    jump_2_right_fast
+}
+
+script CianwoodCity_Gym_Eventscript_Statues{
+    if(flag(FLAG_BADGE05_GET))
+    {
+        msgbox("CIANWOOD CITY {POKEMON} GYM\nLEADER: CHUCK\pWINNING TRAINERS:\n{PLAYER}", MSGBOX_SIGN)
+        end
+    }
+    msgbox("CIANWOOD CITY {POKEMON} GYM", MSGBOX_SIGN)
+    end
+}
+
+script CianwoodCity_Gym_Eventscript_BlackBeltYoshi{ //bottommost left
+    trainerbattle_single(TRAINER_YOSHI, "My {POKEMON} and I are bound together\nby friendship.\pOur bond will never be broken!", "This isn't real!")
+    msgbox("You seem to have a strong bond with\nyour {POKEMON} too!", MSGBOX_AUTOCLOSE)
+    end
+}
+
+script CianwoodCity_Gym_Eventscript_BlackBeltLao{ //bottommost right
+    trainerbattle_single(TRAINER_LAO, "We martial artists fear nothing!", "That's shocking!")
+    msgbox("FIGHTING-type {POKEMON} are afraid of\nPSYCHIC-types…", MSGBOX_AUTOCLOSE)
+    end
+}
+
+script CianwoodCity_Gym_Eventscript_BlackBeltNob{ //under boulders
+    trainerbattle_single(TRAINER_NOB, "Words are useless.\nLet your fists do the talking!", "…")
+    msgbox("I lost!\nI'm speechless!", MSGBOX_AUTOCLOSE)
+    end
+}
+
+script CianwoodCity_Gym_Eventscript_BlackBeltLung{ //under boulders
+    trainerbattle_single(TRAINER_LUNG, "My raging fists will shatter your\n{POKEMON}!", "I got shattered!")
+    msgbox("My {POKEMON} lost…\nMy… my pride is shattered…", MSGBOX_AUTOCLOSE)
+    end
+}

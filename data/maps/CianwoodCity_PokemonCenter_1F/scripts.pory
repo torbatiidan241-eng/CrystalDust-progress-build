@@ -1,0 +1,73 @@
+mapscripts CianwoodCity_PokemonCenter_1F_MapScripts {
+    MAP_SCRIPT_ON_TRANSITION {
+        setrespawn(HEAL_LOCATION_CIANWOOD_CITY)
+    }
+}
+
+script CianwoodCity_PokemonCenter_1F_Eventscript_Girl{
+    msgbox("Did you meet the {POKE}MANIAC?\nHe's always bragging about his rare\l{POKEMON}.", MSGBOX_NPC)
+    end
+}
+
+script CianwoodCity_PokemonCenter_1F_Eventscript_Boy{
+    callnative(CheckPlayerTrappedOnCianwoodOrCinnabar)
+    if(var(VAR_RESULT) == 0)
+    {
+        msgbox("I love showing off the {POKEMON} that\nI've raised. Don't you?\pI'm going to get into a bunch of\nbattles and show off my {POKEMON}!", MSGBOX_NPC)
+        end
+    }
+    goto(CianwoodCity_PokemonCenter_1F_Eventscript_SoftlockPrevention)
+}script CianwoodCity_PokemonCenter_1F_Eventscript_SoftlockPrevention{
+    lock
+    faceplayer
+    bufferspeciesname(0, SPECIES_TENTACOOL)
+    msgbox("Huh? Do you happen to…\nnot have a {POKEMON} that can SURF?\pThat must be hard on you.\n…\pDon't worry about it!\nI'll give you a {STR_VAR_1}!\pI just caught a little too many.\nI was going to release it,\lso take it. Go ahead!", MSGBOX_DEFAULT)
+    textcolor(MSG_COLOR_SYS)
+    playfanfare(MUS_OBTAIN_ITEM)
+    message("{PLAYER} received\nthe {STR_VAR_1}!")
+    waitmessage
+    waitfanfare
+    copyvar(VAR_0x8005, VAR_RESULT)
+    givemon(SPECIES_TENTACOOL, 15, ITEM_NONE)
+    setvar(VAR_TEMP_1, SPECIES_TENTACOOL)
+    copyvar(VAR_0x8007, VAR_RESULT)
+    switch(var(VAR_0x8007))
+    {
+        case MON_GIVEN_TO_PARTY:
+            msgbox(gText_NicknameThisPokemon, MSGBOX_YESNO)
+            if (var(VAR_RESULT) == YES)
+            {
+                call(Common_EventScript_GetGiftMonPartySlot)
+                call(Common_EventScript_NameReceivedPartyMon)
+            }
+        case MON_GIVEN_TO_PC:
+            msgbox(gText_NicknameThisPokemon, MSGBOX_YESNO)
+            if (var(VAR_RESULT) == YES)
+            {
+                call(Common_EventScript_NameReceivedBoxMon)
+            }
+            call(Common_EventScript_TransferredToPC)
+        case MON_CANT_GIVE:
+            call(Common_EventScript_NoMoreRoomForPokemon)
+            release
+            end
+    }
+    if(var(VAR_0x8005) == 2)
+    {   // Don't have HM03; teach Surf
+        callnative(TeachTrappedTentacoolSurf)
+    }
+    textcolor(0)
+    closemessage
+    release
+    end
+}
+
+script CianwoodCity_PokemonCenter_1F_Eventscript_GymGuy{
+    if(flag(FLAG_BADGE05_GET))
+    {
+        msgbox("{PLAYER}! You won!\nI could tell by looking at you!", MSGBOX_NPC)
+        end
+    }
+    msgbox("The {POKEMON} GYM TRAINERS here are\nmacho bullies.\pIf I stick around, they might come\nafter me.\pHere's some advice: the GYM LEADER\nuses the FIGHTING-type.\pYou should confound him with\nPSYCHIC-type {POKEMON}.\pWipe out his {POKEMON} before they can\nuse their physical strength!\pAnd those boulders in the middle of\nthe GYM?\pIf you don't move them correctly,\nyou won't reach the GYM LEADER.\pIf you get stuck, go outside and\ncome back in.", MSGBOX_NPC)
+    end
+}

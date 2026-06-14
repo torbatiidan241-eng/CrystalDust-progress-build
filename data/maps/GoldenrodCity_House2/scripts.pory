@@ -1,0 +1,15 @@
+mapscripts GoldenrodCity_House2_MapScripts { }
+
+script GoldenrodCity_House2_EventScript_NoPPMan {
+    msgbox("Once while I was battling, my\n"
+           "{POKEMON} couldn't make any moves.\p"
+           "The POWER POINTS, or PP, of its\n"
+           "moves were all gone.", MSGBOX_NPC)
+}
+
+script GoldenrodCity_House2_EventScript_PPTipGirl {
+    msgbox("Sometimes, a healthy {POKEMON}\n"
+           "may be unable to use its moves.\p"
+           "If that happens, heal it at a\n"
+           "{POKEMON} CENTER or use an item.", MSGBOX_NPC)
+}
