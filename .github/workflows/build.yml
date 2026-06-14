@@ -20,13 +20,12 @@ jobs:
 
       - name: Build agbcc
         run: |
-          cd tools/agbcc
-          # Clean any old build artifacts first
-          make clean || true 
-          # Ensure permissions are correct
-          chmod -R +x .
-          ./build.sh
-          cd ../..
+          if [ -d "tools/agbcc" ]; then
+            cd tools/agbcc
+            # Ensure all scripts are executable to prevent 'Permission denied'
+            chmod -R +x .
+            ./build.sh
+            cd ../..
           else
             echo "Error: Directory tools/agbcc not found."
             exit 1
