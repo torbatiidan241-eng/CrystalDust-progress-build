@@ -22,10 +22,13 @@ jobs:
         run: |
           cd tools/agbcc
           chmod -R +x .
-          export CFLAGS="-w -fgnu89-inline"
+          # Force the build and explicitly install the binaries
           ./build.sh
+          # Some versions of agbcc need an install step, or manual move
+          mkdir -p bin
+          cp gcc/agbcc bin/agbcc
+          cp gcc/xgcc bin/xgcc
           cd ../..
-
       - name: Build ROM
         run: |
           # Explicitly set the compilers to the arm-none-eabi versions
