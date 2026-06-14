@@ -1,0 +1,32 @@
+name: CrystalDust Build
+
+on:
+  push:
+    branches:
+      - progress
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y binutils-arm-none-eabi gcc-arm-none-eabi libpng-dev make
+
+      - name: Restore baserom.gba
+        run: |
+          echo "${{ secrets.BASEROM_BASE64 }}" | base64 --decode > baserom.gba
+
+      - name: Build ROM
+        run: make -j$(nproc)
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: CrystalDust-ROM
+          path: *.gba
