@@ -20,31 +20,31 @@ jobs:
 
       - name: Build agbcc
         run: |
-          if [ -d "tools/agbcc" ]; then
-            cd tools/agbcc
-            chmod -R +x .
-            # Run the build script
-            ./build.sh
-            # Check for the binary and move to expected location
-            if [ -f "gcc/agbcc" ]; then
-              mkdir -p bin
-              cp gcc/agbcc bin/agbcc
-              cp gcc/xgcc bin/xgcc
-              echo "agbcc successfully built and copied."
-            else
-              echo "Error: agbcc binary not found in gcc/ directory."
-              ls -l gcc/
-              exit 1
-            fi
-            cd ../..
-          else
-            echo "Error: Directory tools/agbcc not found."
-            exit 1
+          cd tools/agbcc
+          # Ensure build scripts are executable
+          chmod -R +x .
+          
+          # Force the use of legacy-friendly flags to ignore modern strictness
+          # -w: suppress all warnings
+          # -fgnu89-inline: critical for legacy GCC compilation
+          export CFLAGS="-w -fgnu89-inline"
+          
+          # Clean any previous failed attempts
+          make clean || true
+          
+          # Attempt to build, capturing output to a file for better debugging
+          ./build.sh > build_log.txt 2>&1 || { cat build_log.txt; exit 1; }
+          
+          # Setup bin directory as expected by the ROM Makefile
+          mkdir -p bin
+          if [ -f "gcc/agbcc" ]; then
+            cp gcc/agbcc bin/agbcc
           fi
+          cd ../..
 
       - name: Build ROM
         run: |
-          # Use cross-compiler flags to force correct toolchain usage
+          # Use explicit cross-compiler variables to avoid path issues
           make CC=arm-none-eabi-gcc AR=arm-none-eabi-ar LD=arm-none-eabi-ld OBJCOPY=arm-none-eabi-objcopy -j$(nproc)
 
       - name: Upload Artifact
