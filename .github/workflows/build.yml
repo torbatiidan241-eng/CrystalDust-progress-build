@@ -22,35 +22,40 @@ jobs:
         run: |
           cd tools/agbcc
           
-          # 1. Ensure all files and scripts have execute permissions
+          # 1. Apply permissions recursively to prevent 'Permission denied'
           chmod -R +x .
           
           # 2. Build the core compiler
           ./build.sh
           
           # 3. Build libc and libgcc if they exist
-          if [ -d "libc" ]; then cd libc && make && cd ..; fi
-          if [ -d "libgcc" ]; then cd libgcc && make && cd ..; fi
+          [ -d "libc" ] && cd libc && make && cd ..
+          [ -d "libgcc" ] && cd libgcc && make && cd ..
+          cd ../..
           
           # 4. Finalize bin directory
-          mkdir -p bin
-          if [ -f "gcc/agbcc" ]; then
-            cp gcc/agbcc bin/agbcc
-            cp gcc/xgcc bin/xgcc
-            echo "Compiler build complete."
+          mkdir -p tools/agbcc/bin
+          
+          # Use find to locate the 'agbcc' binary wherever it was created
+          BINARY=$(find tools/agbcc -name "agbcc" -type f | head -n 1)
+          
+          if [ -f "$BINARY" ]; then
+            cp "$BINARY" tools/agbcc/bin/agbcc
+            # Also try to copy xgcc if it exists in the same folder
+            XGCC=$(dirname "$BINARY")/xgcc
+            [ -f "$XGCC" ] && cp "$XGCC" tools/agbcc/bin/xgcc
+            echo "Compiler successfully moved to tools/agbcc/bin"
           else
-            echo "::error::agbcc binary not found in gcc/ directory."
+            echo "::error::agbcc binary not found after build."
             exit 1
           fi
-          cd ../..
 
       - name: Build ROM
         run: |
           # Add the newly built compiler to the PATH
           export PATH=$PATH:$(pwd)/tools/agbcc/bin
           
-          # Run the main Makefile
-          # We define the cross-compiler variables to ensure it uses the local setup
+          # Run the main project Makefile
           make CC=arm-none-eabi-gcc AR=arm-none-eabi-ar LD=arm-none-eabi-ld OBJCOPY=arm-none-eabi-objcopy -j$(nproc)
 
       - name: Upload Artifact
