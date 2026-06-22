@@ -13,7 +13,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
-          submodules: recursive # CRITICAL: This pulls in libagbsyscall and other tools
+          submodules: recursive
 
       - name: Install Dependencies
         run: |
@@ -22,37 +22,37 @@ jobs:
 
       - name: Build Toolchain
         run: |
+          # 1. Build agbcc
           cd tools/agbcc
           chmod -R +x .
           ./build.sh
-          # Build libs
           [ -d "libc" ] && cd libc && make && cd ..
           [ -d "libgcc" ] && cd libgcc && make && cd ..
           cd ../..
-          # Move binaries to a location the Makefile expects
-          mkdir -p tools/agbcc/bin
-          cp tools/agbcc/gcc/agbcc tools/agbcc/bin/agbcc 2>/dev/null || true
-          cp tools/agbcc/gcc/xgcc tools/agbcc/bin/xgcc 2>/dev/null || true
-
-      - name: Build Project Tools
-        run: |
-          # Build all tools (ramscrgen, gbagfx, etc.) recursively
-          make -C tools
+          
+          # 2. Build individual tools
+          # This loop finds every subdirectory that contains a Makefile and builds it.
+          # Based on your screenshots, this will correctly build aif2pcm, bin2c, gbafix, gbagfx, etc.
+          for dir in tools/*/; do
+            if [ -f "${dir}Makefile" ]; then
+              echo "Building tool in $dir"
+              make -C "$dir"
+            fi
+          done
 
       - name: Build ROM
         run: |
-          # Ensure workspace structure
+          # Ensure build directory exists
           mkdir -p build/emerald
           
-          # Add the local agbcc to path
+          # Add local agbcc to path
           export PATH=$(pwd)/tools/agbcc/bin:$PATH
           
-          # Fix stddef.h/string.h errors by pointing to the toolchain's system headers
-          # This assumes standard arm-none-eabi-gcc installation
+          # Resolve missing <stddef.h> and <string.h> errors
           TOOLCHAIN_INC=$(arm-none-eabi-gcc -print-file-name=include)
           export CFLAGS="-I$TOOLCHAIN_INC"
           
-          # Run the main build
+          # Build the main project
           make -j$(nproc)
 
       - name: Upload Artifact
