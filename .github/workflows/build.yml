@@ -22,19 +22,19 @@ jobs:
 
       - name: Build Toolchain
         run: |
-          # Build agbcc with permissive flags to ignore strict declaration warnings
           cd tools/agbcc
           chmod -R +x .
           
-          # Use CFLAGS to suppress the strict implicit declaration warnings
-          # This tells the compiler that missing headers are just warnings, not errors
-          export CFLAGS="-w -std=gnu89"
+          # Use -std=gnu89 to ensure legacy C compatibility
+          # -Wno-everything suppresses the warnings that the modern compiler is flagging
+          # -fno-strict-aliasing and -fno-builtin are required for older compiler logic
+          export CFLAGS="-std=gnu89 -w -fno-strict-aliasing -fno-builtin -Wno-format-security"
           
           ./build.sh
           
-          # Build libc/libgcc
-          [ -d "libc" ] && cd libc && make CFLAGS="-w -std=gnu89" && cd ..
-          [ -d "libgcc" ] && cd libgcc && make CFLAGS="-w -std=gnu89" && cd ..
+          # Apply the same flags to sub-component builds
+          [ -d "libc" ] && cd libc && make CFLAGS="$CFLAGS" && cd ..
+          [ -d "libgcc" ] && cd libgcc && make CFLAGS="$CFLAGS" && cd ..
           cd ../..
           
           # Build other project tools
