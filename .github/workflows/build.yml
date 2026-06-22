@@ -22,18 +22,30 @@ jobs:
 
       - name: Build Toolchain
         run: |
-          # 1. Build agbcc with explicit path creation
           cd tools/agbcc
           chmod -R +x .
           ./build.sh
+          
+          # Debug: list what was actually created
+          echo "Listing contents of tools/agbcc/gcc/ to find agbcc binary:"
+          ls -l gcc/
+          
           # Build libs
           [ -d "libc" ] && cd libc && make && cd ..
           [ -d "libgcc" ] && cd libgcc && make && cd ..
           cd ../..
-          # Ensure bin exists and move binary
-          mkdir -p tools/agbcc/bin
-          cp tools/agbcc/gcc/agbcc tools/agbcc/bin/agbcc
-          cp tools/agbcc/gcc/xgcc tools/agbcc/bin/xgcc
+          
+          # Dynamic search: find the agbcc binary anywhere in the toolchain
+          BINARY=$(find tools/agbcc -name "agbcc" -type f | head -n 1)
+          
+          if [ -f "$BINARY" ]; then
+            mkdir -p tools/agbcc/bin
+            cp "$BINARY" tools/agbcc/bin/agbcc
+            echo "Compiler found at $BINARY and moved to tools/agbcc/bin/agbcc"
+          else
+            echo "::error::agbcc binary was not generated."
+            exit 1
+          fi
 
       - name: Build Utilities
         run: |
