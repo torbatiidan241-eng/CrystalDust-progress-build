@@ -12,10 +12,10 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-
+        
       - name: Initialize Submodules
         run: |
-          # Crucial: This pulls the 'libagbsyscall' folder and other dependencies
+          # This pulls in the missing libagbsyscall and other dependencies
           git submodule sync --recursive
           git submodule update --init --recursive
 
@@ -24,18 +24,18 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y binutils-arm-none-eabi gcc-arm-none-eabi libpng-dev make git
 
-      - name: Build Toolchain and Dependencies
+      - name: Build Toolchain and Utilities
         run: |
           # 1. Build the GBA-specific compiler (agbcc)
           cd tools/agbcc
           chmod -R +x .
           ./build.sh
-          # Build necessary libraries
           [ -d "libc" ] && cd libc && make && cd ..
           [ -d "libgcc" ] && cd libgcc && make && cd ..
           cd ../..
           
-          # 2. Build project utilities recursively
+          # 2. Build all individual tools recursively
+          # This iterates through every folder in tools/ that contains a Makefile
           find tools -maxdepth 2 -name "Makefile" -exec dirname {} \; | while read dir; do
             echo "Building tool in $dir..."
             make -C "$dir"
@@ -43,18 +43,17 @@ jobs:
 
       - name: Build ROM
         run: |
-          # Setup workspace
+          # Ensure build directory exists
           mkdir -p build/emerald
           
-          # Add local agbcc to path so the build system finds it
+          # Add local agbcc to PATH
           export PATH=$(pwd)/tools/agbcc/bin:$PATH
           
-          # Tell the compiler exactly where to find the GBA-specific include headers
-          # This fixes the <stddef.h> and <string.h> missing errors
-          export CFLAGS="-I$(pwd)/tools/agbcc/include"
+          # Resolve missing headers like stddef.h and string.h
+          # We dynamically point to the compiler's own include directory
+          export CFLAGS="-I$(arm-none-eabi-gcc -print-file-name=include)"
           
           # Build the main project
-          # Use -j$(nproc) to speed up compilation using all available cores
           make -j$(nproc)
 
       - name: Upload Artifact
