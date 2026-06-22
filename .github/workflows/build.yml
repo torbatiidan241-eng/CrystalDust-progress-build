@@ -12,59 +12,48 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       - name: Install Dependencies
         run: |
           sudo apt-get update
-          # Ensure we have the full toolchain and cross-libc
           sudo apt-get install -y binutils-arm-none-eabi gcc-arm-none-eabi libpng-dev make git
-          
-          # 2. Find the path to the arm-none-eabi compiler headers
-          # This varies on different Ubuntu versions, but this finds it automatically
-          GCC_PATH=$(dirname $(which arm-none-eabi-gcc))/../lib/gcc/arm-none-eabi/*/include
-          
-          # 3. Build using the correct include paths
-          # We pass CFLAGS to tell the compiler where to find stddef.h
-          make CFLAGS="-I$GCC_PATH" CC=arm-none-eabi-gcc AR=arm-none-eabi-ar LD=arm-none-eabi-ld OBJCOPY=arm-none-eabi-objcopy -j$(nproc)
-      - name: Build agbcc
+
+      - name: Build Toolchain
         run: |
+          # 1. Build agbcc
           cd tools/agbcc
-          
-          # 1. Apply permissions recursively to prevent 'Permission denied'
           chmod -R +x .
-          
-          # 2. Build the core compiler
           ./build.sh
-          
-          # 3. Build libc and libgcc if they exist
           [ -d "libc" ] && cd libc && make && cd ..
           [ -d "libgcc" ] && cd libgcc && make && cd ..
           cd ../..
           
-          # 4. Finalize bin directory
-          mkdir -p tools/agbcc/bin
-          
-          # Use find to locate the 'agbcc' binary wherever it was created
-          BINARY=$(find tools/agbcc -name "agbcc" -type f | head -n 1)
-          
-          if [ -f "$BINARY" ]; then
-            cp "$BINARY" tools/agbcc/bin/agbcc
-            # Also try to copy xgcc if it exists in the same folder
-            XGCC=$(dirname "$BINARY")/xgcc
-            [ -f "$XGCC" ] && cp "$XGCC" tools/agbcc/bin/xgcc
-            echo "Compiler successfully moved to tools/agbcc/bin"
-          else
-            echo "::error::agbcc binary not found after build."
-            exit 1
-          fi
+          # 2. Build ramscrgen (Required for .ld files)
+          cd tools/ramscrgen
+          make
+          cd ../..
 
       - name: Build ROM
         run: |
-          # 1. Add agbcc to PATH
+          # Ensure build directory exists
+          mkdir -p build
+          
+          # Set up paths
           export PATH=$PATH:$(pwd)/tools/agbcc/bin
           
-          # Run the main project Makefile
-          make CC=arm-none-eabi-gcc AR=arm-none-eabi-ar LD=arm-none-eabi-ld OBJCOPY=arm-none-eabi-objcopy -j$(nproc)
+          # Find the include path for the cross-compiler
+          # This resolves the 'stddef.h' error by pointing to the toolchain's internal headers
+          ARM_INC=$(arm-none-eabi-gcc -print-file-name=include)
+          
+          # Build with explicit paths
+          make CC=arm-none-eabi-gcc \
+               AR=arm-none-eabi-ar \
+               LD=arm-none-eabi-ld \
+               OBJCOPY=arm-none-eabi-objcopy \
+               CFLAGS="-I$ARM_INC" \
+               -j$(nproc)
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
