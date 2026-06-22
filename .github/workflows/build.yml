@@ -12,15 +12,19 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-        with:
-          submodules: recursive # FIX: Ensure all sub-dependencies are pulled
+
+      - name: Initialize Submodules
+        run: |
+          # This pulls in the missing libagbsyscall and other dependencies
+          git submodule sync --recursive
+          git submodule update --init --recursive
 
       - name: Install Dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y binutils-arm-none-eabi gcc-arm-none-eabi libpng-dev make git
 
-      - name: Build Toolchain and Utilities
+      - name: Build Toolchain
         run: |
           # 1. Build agbcc (The GBA-specific compiler)
           cd tools/agbcc
@@ -30,26 +34,30 @@ jobs:
           [ -d "libgcc" ] && cd libgcc && make && cd ..
           cd ../..
           
-          # 2. Build the rest of the tools
-          # Replace your manual 'cc' calls with a loop to ensure everything is built
-          for dir in tools/*/; do
-            if [ -f "${dir}Makefile" ]; then
-              make -C "$dir"
-            fi
+          # 2. Build project utilities recursively
+          # This iterates through every folder in tools/ that contains a Makefile
+          find tools -maxdepth 2 -name "Makefile" -exec dirname {} \; | while read dir; do
+            echo "Building tool in $dir..."
+            make -C "$dir"
           done
 
       - name: Build ROM
         run: |
-          # Ensure build directory exists BEFORE making anything
+          # Setup workspace
           mkdir -p build/emerald
           
-          # Export path to local agbcc
+          # Add local agbcc to path
           export PATH=$(pwd)/tools/agbcc/bin:$PATH
           
-          # Dynamically locate the system headers for the cross-compiler
-          # This fixes the missing <stddef.h> error
-          SYSROOT=$(arm-none-eabi-gcc -print-sysroot)
-          export CFLAGS="-I$SYSROOT/usr/include"
+          # Resolve missing <stddef.h> error
+          # We use the GCC-provided include path for the cross-compiler
+          export CFLAGS="-I$(arm-none-eabi-gcc -print-file-name=include)"
           
           # Build the main project
           make -j$(nproc)
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: CrystalDust-ROM
+          path: '*.gba'
