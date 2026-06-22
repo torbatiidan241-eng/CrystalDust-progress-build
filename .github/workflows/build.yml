@@ -20,9 +20,9 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y binutils-arm-none-eabi gcc-arm-none-eabi libpng-dev make git
 
-      - name: Build Toolchain
+      - name: Build Toolchain and Tools
         run: |
-          # 1. Build agbcc
+          # Build agbcc
           cd tools/agbcc
           chmod -R +x .
           ./build.sh
@@ -30,30 +30,23 @@ jobs:
           [ -d "libgcc" ] && cd libgcc && make && cd ..
           cd ../..
           
-          # 2. Build ramscrgen (Required for .ld files)
-          cd tools/ramscrgen
-          make
-          cd ../..
+          # Build all tools (including ramscrgen)
+          make -C tools
+          
+          # Create required build directory
+          mkdir -p build/emerald
 
       - name: Build ROM
         run: |
-          # Ensure build directory exists
-          mkdir -p build
-          
-          # Set up paths
           export PATH=$PATH:$(pwd)/tools/agbcc/bin
           
-          # Find the include path for the cross-compiler
-          # This resolves the 'stddef.h' error by pointing to the toolchain's internal headers
-          ARM_INC=$(arm-none-eabi-gcc -print-file-name=include)
+          # Use 'arm-none-eabi-gcc -print-sysroot' to find the correct path for stddef.h
+          SYSROOT=$(arm-none-eabi-gcc -print-sysroot)
+          # Pass the standard include path to the compiler via CFLAGS
+          export CFLAGS="-I$SYSROOT/usr/include"
           
-          # Build with explicit paths
-          make CC=arm-none-eabi-gcc \
-               AR=arm-none-eabi-ar \
-               LD=arm-none-eabi-ld \
-               OBJCOPY=arm-none-eabi-objcopy \
-               CFLAGS="-I$ARM_INC" \
-               -j$(nproc)
+          # Run the main project Makefile
+          make -j$(nproc)
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
