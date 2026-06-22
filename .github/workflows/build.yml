@@ -13,7 +13,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
-          submodules: recursive # CRITICAL: This pulls in libagbsyscall
+          submodules: recursive # Required to populate libagbsyscall
 
       - name: Install Dependencies
         run: |
@@ -26,28 +26,28 @@ jobs:
           cd tools/agbcc
           chmod -R +x .
           ./build.sh
+          # Build libc/libgcc within agbcc
           [ -d "libc" ] && cd libc && make && cd ..
           [ -d "libgcc" ] && cd libgcc && make && cd ..
           cd ../..
           
-          # Build individual utilities
-          find tools -maxdepth 2 -name "Makefile" -exec dirname {} \; | while read dir; do
+          # Build all project utilities in tools/
+          find tools -mindepth 2 -name "Makefile" -exec dirname {} \; | while read dir; do
             make -C "$dir"
           done
 
       - name: Build ROM
         run: |
-          # Ensure build directory structure
           mkdir -p build/emerald
           
           # Add local agbcc to PATH
           export PATH=$(pwd)/tools/agbcc/bin:$PATH
           
-          # Force the compiler to use GBA-compatible system headers
-          # This resolves the missing <stddef.h> and <string.h> errors
+          # FORCE the compiler to use cross-compiler headers
+          # This specifically resolves the stddef.h and string.h errors
+          export CROSS_COMPILE=arm-none-eabi-
           export CFLAGS="-I$(arm-none-eabi-gcc -print-file-name=include)"
           
-          # Run the main build
           make -j$(nproc)
 
       - name: Upload Artifact
