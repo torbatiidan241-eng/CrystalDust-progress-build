@@ -12,21 +12,17 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-
-      - name: Initialize Submodules
-        run: |
-          # This pulls in the missing libagbsyscall and other dependencies
-          git submodule sync --recursive
-          git submodule update --init --recursive
+        with:
+          submodules: recursive # CRITICAL: This pulls in libagbsyscall
 
       - name: Install Dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y binutils-arm-none-eabi gcc-arm-none-eabi libpng-dev make git
 
-      - name: Build Toolchain and Utilities
+      - name: Build Toolchain
         run: |
-          # 1. Build the GBA-specific compiler (agbcc)
+          # Build agbcc
           cd tools/agbcc
           chmod -R +x .
           ./build.sh
@@ -34,26 +30,24 @@ jobs:
           [ -d "libgcc" ] && cd libgcc && make && cd ..
           cd ../..
           
-          # 2. Build all individual tools recursively
-          # This iterates through every folder in tools/ that contains a Makefile
+          # Build individual utilities
           find tools -maxdepth 2 -name "Makefile" -exec dirname {} \; | while read dir; do
-            echo "Building tool in $dir..."
             make -C "$dir"
           done
 
       - name: Build ROM
         run: |
-          # Setup workspace
+          # Ensure build directory structure
           mkdir -p build/emerald
           
-          # Add local agbcc to path
+          # Add local agbcc to PATH
           export PATH=$(pwd)/tools/agbcc/bin:$PATH
           
-          # Resolve missing <stddef.h> error
-          # We use the GCC-provided include path for the cross-compiler
+          # Force the compiler to use GBA-compatible system headers
+          # This resolves the missing <stddef.h> and <string.h> errors
           export CFLAGS="-I$(arm-none-eabi-gcc -print-file-name=include)"
           
-          # Build the main project
+          # Run the main build
           make -j$(nproc)
 
       - name: Upload Artifact
