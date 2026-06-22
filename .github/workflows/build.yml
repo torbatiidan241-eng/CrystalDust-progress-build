@@ -24,9 +24,9 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y binutils-arm-none-eabi gcc-arm-none-eabi libpng-dev make git
 
-      - name: Build Toolchain
+      - name: Build Toolchain and Utilities
         run: |
-          # 1. Build agbcc (The GBA-specific compiler)
+          # 1. Build the GBA-specific compiler (agbcc)
           cd tools/agbcc
           chmod -R +x .
           ./build.sh
@@ -34,7 +34,7 @@ jobs:
           [ -d "libgcc" ] && cd libgcc && make && cd ..
           cd ../..
           
-          # 2. Build project utilities recursively
+          # 2. Build all individual tools recursively
           # This iterates through every folder in tools/ that contains a Makefile
           find tools -maxdepth 2 -name "Makefile" -exec dirname {} \; | while read dir; do
             echo "Building tool in $dir..."
