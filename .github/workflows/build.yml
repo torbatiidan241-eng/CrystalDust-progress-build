@@ -22,16 +22,22 @@ jobs:
 
       - name: Build Toolchain
         run: |
-          # Build agbcc (The GBA-specific compiler)
+          # Build agbcc with permissive flags to ignore strict declaration warnings
           cd tools/agbcc
           chmod -R +x .
+          
+          # Use CFLAGS to suppress the strict implicit declaration warnings
+          # This tells the compiler that missing headers are just warnings, not errors
+          export CFLAGS="-w -std=gnu89"
+          
           ./build.sh
-          # Build supporting libraries
-          [ -d "libc" ] && cd libc && make && cd ..
-          [ -d "libgcc" ] && cd libgcc && make && cd ..
+          
+          # Build libc/libgcc
+          [ -d "libc" ] && cd libc && make CFLAGS="-w -std=gnu89" && cd ..
+          [ -d "libgcc" ] && cd libgcc && make CFLAGS="-w -std=gnu89" && cd ..
           cd ../..
           
-          # Build all project utilities in the tools/ directory
+          # Build other project tools
           find tools -mindepth 2 -name "Makefile" -exec dirname {} \; | while read dir; do
             make -C "$dir"
           done
