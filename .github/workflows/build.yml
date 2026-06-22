@@ -20,9 +20,9 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y binutils-arm-none-eabi gcc-arm-none-eabi libpng-dev make git
 
-      - name: Build Toolchain and Tools
+      - name: Build Toolchain
         run: |
-          # Build agbcc
+          # 1. Build agbcc
           cd tools/agbcc
           chmod -R +x .
           ./build.sh
@@ -30,22 +30,29 @@ jobs:
           [ -d "libgcc" ] && cd libgcc && make && cd ..
           cd ../..
           
-          # Build all tools (including ramscrgen)
-          make -C tools
-          
-          # Create required build directory
-          mkdir -p build/emerald
+          # 2. Build project utilities (ramscrgen, gbagfx, etc.)
+          # Iterate through tools to handle individual Makefiles
+          for dir in tools/*/; do
+            if [ -f "${dir}Makefile" ]; then
+              make -C "$dir"
+            fi
+          done
 
       - name: Build ROM
         run: |
+          # Ensure workspace structure
+          mkdir -p build/emerald
+          
+          # Setup paths for custom agbcc
           export PATH=$PATH:$(pwd)/tools/agbcc/bin
           
-          # Use 'arm-none-eabi-gcc -print-sysroot' to find the correct path for stddef.h
+          # Set cross-compiler and header path
+          # Dynamically locate the system headers for the cross-compiler
           SYSROOT=$(arm-none-eabi-gcc -print-sysroot)
-          # Pass the standard include path to the compiler via CFLAGS
           export CFLAGS="-I$SYSROOT/usr/include"
           
-          # Run the main project Makefile
+          # Execute main build
+          # Use -j to utilize multi-core performance
           make -j$(nproc)
 
       - name: Upload Artifact
