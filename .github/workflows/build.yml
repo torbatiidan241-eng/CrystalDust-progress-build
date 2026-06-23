@@ -3,6 +3,8 @@ name: CrystalDust Build
 on:
   push:
     branches: [ progress ]
+  pull_request:
+    branches: [ progress ]
 
 jobs:
   build:
@@ -21,28 +23,32 @@ jobs:
 
       - name: Build Toolchain
         run: |
+          # Build agbcc
           cd tools/agbcc
           chmod -R +x .
+          export CFLAGS="-std=gnu89 -w -fno-strict-aliasing -fno-builtin -Wno-format-security"
           ./build.sh
-          # Build libs
-          [ -d "libc" ] && cd libc && make && cd ..
-          [ -d "libgcc" ] && cd libgcc && make && cd ..
+          [ -d "libc" ] && cd libc && make CFLAGS="$CFLAGS" && cd ..
+          [ -d "libgcc" ] && cd libgcc && make CFLAGS="$CFLAGS" && cd ..
           cd ../..
-          # Build other tools
-          find tools -mindepth 2 -name "Makefile" -exec make -C {} \;
+          
+          # Build other project tools
+          find tools -mindepth 2 -name "Makefile" -exec dirname {} \; | while read dir; do
+            make -C "$dir"
+          done
 
       - name: Build ROM
         run: |
-          # Define compiler explicitly
-          export PATH=$(pwd)/tools/agbcc:$(pwd)/tools/agbcc/bin:$PATH
-          export AGBCC=$(pwd)/tools/agbcc/bin/agbcc
-          export AGAR=$(pwd)/tools/agbcc/bin/agag
+          mkdir -p build/emerald
           
-          # Force submodules just in case
-          git submodule update --init --recursive
+          # Add local agbcc to PATH
+          export PATH=$(pwd)/tools/agbcc/bin:$PATH
           
-          # Build
-          make
+          # Force the compiler to use GBA-compatible system headers
+          export CFLAGS="-I$(arm-none-eabi-gcc -print-file-name=include)"
+          
+          # Build the main project
+          make -j$(nproc)
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
