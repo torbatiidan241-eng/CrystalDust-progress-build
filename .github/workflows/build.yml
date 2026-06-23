@@ -19,7 +19,6 @@ jobs:
       - name: Install Dependencies
         run: |
           sudo apt-get update
-          # Install gcc-9 specifically to handle the legacy agbcc code
           sudo apt-get install -y gcc-9 g++-9 gcc-arm-none-eabi binutils-arm-none-eabi libpng-dev make git
 
       - name: Build Toolchain
@@ -27,19 +26,23 @@ jobs:
           cd tools/agbcc
           chmod -R +x .
           
-          # Force the use of gcc-9 for building the compiler itself
+          # 1. Build the agbcc compiler itself (Host-machine build)
           export CC=gcc-9
           export CXX=g++-9
-          
           export CFLAGS="-std=gnu89 -w -fno-strict-aliasing -fno-builtin -Wno-format-security -Wno-error=implicit-function-declaration -fcommon"
-          
           ./build.sh
           
-          [ -d "libc" ] && cd libc && make CC=$CC CFLAGS="$CFLAGS" && cd ..
-          [ -d "libgcc" ] && cd libgcc && make CC=$CC CFLAGS="$CFLAGS" && cd ..
+          # 2. Build the runtime libraries (Target-machine build)
+          # We must use arm-none-eabi tools here, NOT host gcc
+          export TARGET_CC=arm-none-eabi-gcc
+          export TARGET_AS=arm-none-eabi-as
+          export TARGET_AR=arm-none-eabi-ar
+          
+          [ -d "libc" ] && cd libc && make CC=$TARGET_CC AS=$TARGET_AS AR=$TARGET_AR CFLAGS="$CFLAGS" && cd ..
+          [ -d "libgcc" ] && cd libgcc && make CC=$TARGET_CC AS=$TARGET_AS AR=$TARGET_AR CFLAGS="$CFLAGS" && cd ..
           cd ../..
           
-          # Build other tools using modern compiler
+          # 3. Build other tools
           find tools -mindepth 2 -name "Makefile" -exec dirname {} \; | while read dir; do
             if [ "$dir" != "tools/agbcc" ]; then
               make -C "$dir" CFLAGS="-std=gnu11 -O2 -Wall"
