@@ -26,26 +26,25 @@ jobs:
           cd tools/agbcc
           chmod -R +x .
           
-          # 1. Build the agbcc compiler itself (Host-machine build)
+          # 1. Build agbcc itself (Host build using gcc-9)
           export CC=gcc-9
           export CXX=g++-9
           export CFLAGS="-std=gnu89 -w -fno-strict-aliasing -fno-builtin -Wno-format-security -Wno-error=implicit-function-declaration -fcommon"
           ./build.sh
           
-          # 2. Build libraries (Target-machine build)
-          # We force the ARM toolchain by overriding CC, AS, and AR directly in the environment
-          export CC=arm-none-eabi-gcc
-          export AS=arm-none-eabi-as
-          export AR=arm-none-eabi-ar
+          # 2. Build libraries (Target build using arm-none-eabi)
+          export CC_ARM=arm-none-eabi-gcc
+          export AS_ARM=arm-none-eabi-as
+          export AR_ARM=arm-none-eabi-ar
           
-          [ -d "libc" ] && cd libc && make CC=$CC AS=$AS AR=$AR CFLAGS="$CFLAGS" && cd ..
-          [ -d "libgcc" ] && cd libgcc && make CC=$CC AS=$AS AR=$AR CFLAGS="$CFLAGS" && cd ..
+          [ -d "libc" ] && cd libc && make CC=$CC_ARM AS=$AS_ARM AR=$AR_ARM CFLAGS="$CFLAGS" && cd ..
+          [ -d "libgcc" ] && cd libgcc && make CC=$CC_ARM AS=$AS_ARM AR=$AR_ARM CFLAGS="$CFLAGS" && cd ..
           cd ../..
           
-          # 3. Build other tools using standard host compiler
+          # 3. Build other tools (Host utilities using native gcc)
           find tools -mindepth 2 -name "Makefile" -exec dirname {} \; | while read dir; do
             if [ "$dir" != "tools/agbcc" ]; then
-              make -C "$dir" CFLAGS="-std=gnu11 -O2 -Wall"
+              make -C "$dir" CC=gcc CXX=g++ CFLAGS="-std=gnu11 -O2 -Wall"
             fi
           done
 
