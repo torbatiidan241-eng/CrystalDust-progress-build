@@ -23,25 +23,24 @@ jobs:
 
       - name: Build Toolchain
         run: |
+          # 0. Capture pristine system PATH
+          export ORIGINAL_PATH=$PATH
           cd tools/agbcc
           chmod -R +x .
           
           # 1. Build agbcc (Native Host Tool)
-          # We use standard system paths; no shim allowed here.
           export CC=/usr/bin/gcc-9
           export CXX=/usr/bin/g++-9
           export CFLAGS="-std=gnu89 -w -fno-strict-aliasing -fno-builtin -Wno-format-security -fcommon"
           ./build.sh
           
-          # 2. Build Libraries (Target ARM)
-          # Create a shim to intercept 'as' and force legacy ARM7TDMI mode.
+          # 2. Build Libraries (Target ARM) - Use Shim
           mkdir -p ../shim
           echo '#!/bin/sh' > ../shim/as
           echo 'exec arm-none-eabi-as -mcpu=arm7tdmi -mthumb-interwork "$@"' >> ../shim/as
           chmod +x ../shim/as
           
-          # Apply the shim only for this block
-          export PATH=$(pwd)/../shim:$PATH
+          export PATH=$(pwd)/../shim:$ORIGINAL_PATH
           export TARGET_CFLAGS="-mcpu=arm7tdmi -mthumb-interwork"
           
           [ -d "libc" ] && cd libc && make -j$(nproc) AS=arm-none-eabi-as CFLAGS="$TARGET_CFLAGS" && cd ..
@@ -49,13 +48,13 @@ jobs:
           cd ../..
           
           # 3. Build Host Utilities (preproc, etc.)
-          # Reset the environment: Remove the shim from PATH and unset ARM variables.
-          export PATH=$(echo $PATH | sed -e 's|'$(pwd)/tools/shim':||')
+          # Restore ORIGINAL_PATH to ensure system tools are used
+          export PATH=$ORIGINAL_PATH
           unset AS CC CXX AR CFLAGS
           
+          # Use absolute paths for tools to force native compilation
           find tools -mindepth 2 -name "Makefile" -exec dirname {} \; | while read dir; do
             if [ "$dir" != "tools/agbcc" ]; then
-              # Explicitly use native tools to prevent Makefile logic from picking up ARM variables
               make -C "$dir" CC=/usr/bin/gcc CXX=/usr/bin/g++ AS=/usr/bin/as AR=/usr/bin/ar CFLAGS="-std=gnu11 -O2 -Wall"
             fi
           done
