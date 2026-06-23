@@ -32,12 +32,10 @@ jobs:
         run: |
           set -e
           cd tools/agbcc
+          # ADD THIS LINE:
+          chmod +x build.sh
           ./build.sh
-          # Build libc/libgcc as required
-          [ -d "libc" ] && cd libc && make && cd ..
-          [ -d "libgcc" ] && cd libgcc && make && cd ..
-          cd ../..
-          
+          ...
           # Build remaining project tools
           find tools -mindepth 2 -name "Makefile" -exec dirname {} \; | while read dir; do
             make -C "$dir"
