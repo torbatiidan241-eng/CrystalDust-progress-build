@@ -23,17 +23,23 @@ jobs:
 
       - name: Build Toolchain
         run: |
-          # 1. Build agbcc (Requires C89/gnu89)
           cd tools/agbcc
           chmod -R +x .
+          
+          # We define AS, CC, and CXX to point specifically to the ARM cross-compiler
+          export CROSS_COMPILE=arm-none-eabi-
+          export AS=${CROSS_COMPILE}as
+          export CC=${CROSS_COMPILE}gcc
+          export CXX=${CROSS_COMPILE}g++
           export CFLAGS="-std=gnu89 -w -fno-strict-aliasing -fno-builtin -Wno-format-security -Wno-error=implicit-function-declaration"
+          
           ./build.sh
-          [ -d "libc" ] && cd libc && make CFLAGS="$CFLAGS" && cd ..
-          [ -d "libgcc" ] && cd libgcc && make CFLAGS="$CFLAGS" && cd ..
+          
+          [ -d "libc" ] && cd libc && make AS=$AS CC=$CC CFLAGS="$CFLAGS" && cd ..
+          [ -d "libgcc" ] && cd libgcc && make AS=$AS CC=$CC CFLAGS="$CFLAGS" && cd ..
           cd ../..
           
-          # 2. Build other tools (Requires C11/gnu11)
-          # We explicitly override CFLAGS for these tools to avoid the C89 conflict
+          # Build other tools using standard GCC (for host machine)
           find tools -mindepth 2 -name "Makefile" -exec dirname {} \; | while read dir; do
             if [ "$dir" != "tools/agbcc" ]; then
               make -C "$dir" CFLAGS="-std=gnu11 -O2 -Wall"
