@@ -1,13 +1,16 @@
 name: CrystalDust Build
+
 on: [push]
 
 jobs:
   build:
-    runs-on: ubuntu-20.04 # Use 20.04 as it is more compatible with legacy tools
+    runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v4
         with:
-          submodules: false 
+          submodules: false
+
       - name: Install Dependencies
         run: |
           sudo apt-get update
@@ -16,16 +19,19 @@ jobs:
       - name: Build Compiler (agbcc)
         run: |
           cd tools/agbcc
+          # Ensure scripts have execute permissions
+          chmod +x build.sh
           ./build.sh
-          # Create a symbolic link so the Makefile finds it
+          # Prepare the binary for the build process
           mkdir -p bin
           cp agbcc bin/agbcc
           cd ../..
 
       - name: Build Game
         run: |
-          # The PATH needs to include the tools/agbcc/bin folder
+          # Add the local toolchain to PATH
           export PATH=$PATH:$(pwd)/tools/agbcc/bin
+          # Run the build
           make -j$(nproc)
 
       - name: Upload Artifact
