@@ -9,6 +9,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      # Inject flags globally to ensure the Makefile picks them up
+      CFLAGS: "-std=gnu89 -w -fno-strict-aliasing -fno-builtin -Wno-format-security -Wno-error=implicit-function-declaration"
     
     steps:
       - name: Checkout Repository
@@ -26,32 +29,22 @@ jobs:
           cd tools/agbcc
           chmod -R +x .
           
-          # Add -Wno-error=implicit-function-declaration to ignore string.h header errors
-          # Add -w to suppress other noise from this legacy project
-          export CFLAGS="-std=gnu89 -w -fno-strict-aliasing -fno-builtin -Wno-format-security -Wno-error=implicit-function-declaration"
-          
+          # Force the use of our environment flags
+          export CFLAGS="$CFLAGS"
           ./build.sh
           
-          # Pass CFLAGS to sub-component builds
           [ -d "libc" ] && cd libc && make CFLAGS="$CFLAGS" && cd ..
           [ -d "libgcc" ] && cd libgcc && make CFLAGS="$CFLAGS" && cd ..
           cd ../..
           
-          # Build other project tools
           find tools -mindepth 2 -name "Makefile" -exec dirname {} \; | while read dir; do
-            make -C "$dir"
+            make -C "$dir" CFLAGS="$CFLAGS"
           done
+
       - name: Build ROM
         run: |
-          # Add local agbcc to PATH
           export PATH=$(pwd)/tools/agbcc/bin:$PATH
-          
-          # Set compiler variables to ensure the Makefile finds our built tools
           export AGBCC=$(pwd)/tools/agbcc/bin/agbcc
-          export AGAS=$(pwd)/tools/agbcc/bin/agag
-          export CFLAGS="-I$(arm-none-eabi-gcc -print-file-name=include)"
-          
-          # Run the main build
           make -j$(nproc)
 
       - name: Upload Artifact
