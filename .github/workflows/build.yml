@@ -25,12 +25,17 @@ jobs:
         run: |
           # Ensure tools directory exists
           mkdir -p tools/agbcc
-          # Download the pre-built agbcc binary directly
-          # Using a reliable mirror for the GBA toolchain
+          
+          # Download the file
           curl -L https://github.com/pret/agbcc/releases/latest/download/agbcc.tar.gz -o agbcc.tar.gz
-          tar -xzf agbcc.tar.gz -C tools/agbcc/
+          
+          # Extract and move the binary to the root of tools/agbcc
+          # We use find to locate the 'agbcc' file regardless of subfolder structure
+          tar -xzf agbcc.tar.gz
+          find . -name "agbcc" -type f -exec mv {} tools/agbcc/ \;
+          
+          # Set permissions
           chmod +x tools/agbcc/agbcc
-
       - name: Build ROM
         run: |
           # Add the toolchain to the PATH
