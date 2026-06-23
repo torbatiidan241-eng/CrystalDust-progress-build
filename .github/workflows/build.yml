@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - progress
+  pull_request:
+    branches:
+      - progress
 
 jobs:
   build:
@@ -32,20 +35,31 @@ jobs:
         run: |
           set -e
           cd tools/agbcc
-          # ADD THIS LINE:
-          chmod +x build.sh
+          # Crucial: Fix permissions for all scripts and source files
+          chmod -R +x .
           ./build.sh
-          ...
-          # Build remaining project tools
+          # Build associated libraries
+          [ -d "libc" ] && cd libc && make && cd ..
+          [ -d "libgcc" ] && cd libgcc && make && cd ..
+          cd ../..
+
+      - name: Build Remaining Tools
+        run: |
+          set -e
+          # Compile all other utility tools in the tools/ directory
           find tools -mindepth 2 -name "Makefile" -exec dirname {} \; | while read dir; do
-            make -C "$dir"
+            # Skip agbcc as it is already built
+            if [[ "$dir" != *"agbcc"* ]]; then
+              make -C "$dir"
+            fi
           done
 
       - name: Build ROM
         run: |
           set -e
-          export PATH=$(pwd)/tools/agbcc/bin:$PATH
-          # Pointing to the correct system headers for the cross-compiler
+          # Add agbcc to the system PATH so the Makefile can find it
+          export PATH=$(pwd)/tools/agbcc:$(pwd)/tools/agbcc/bin:$PATH
+          # Use system headers for cross-compilation
           export CFLAGS="-I$(arm-none-eabi-gcc -print-file-name=include)"
           make -j$(nproc)
 
