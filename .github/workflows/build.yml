@@ -26,22 +26,40 @@ jobs:
           cd tools/agbcc
           chmod -R +x .
           
-          # Use a more explicit environment setup
+          # Setup environment
           export CROSS_COMPILE=arm-none-eabi-
           export AS=${CROSS_COMPILE}as
           export CC_FOR_TARGET=${CROSS_COMPILE}gcc
           
-          # Fix the build script environment
-          # We force the compiler to treat .S files as assembly-with-cpp
-          # and point the assembler to the cross-toolchain version
+          # Patch the Makefile if it exists in the expected location
+          if [ -f "gcc_arm/Makefile" ]; then
+            sed -i 's|$(AS)|arm-none-eabi-as -mcpu=arm7tdmi|g' gcc_arm/Makefile
+          else
+            echo "Warning: gcc_arm/Makefile not found, checking directory structure..."
+            find . -name "Makefile"
+          fi
+          
+          # Build agbcc
+          export CC=/usr/bin/gcc-9
+          export CXX=/usr/bin/g++-9
           export CFLAGS="-std=gnu89 -w -fno-strict-aliasing -fno-builtin -Wno-format-security -fcommon"
-          export ASFLAGS="-mcpu=arm7tdmi -mthumb-interwork"
-          
-          # Patch the specific Makefile that is failing (gcc_arm/Makefile)
-          # We inject the correct assembler explicitly
-          sed -i 's|$(AS)|arm-none-eabi-as -mcpu=arm7tdmi|g' gcc_arm/Makefile
-          
           ./build.sh
+          
+          # Build libraries
+          export PATH=$(pwd)/../shim:$PATH
+          [ -d "libc" ] && cd libc && make -j$(nproc) CFLAGS="$CFLAGS" && cd ..
+          [ -d "libgcc" ] && cd libgcc && make -j$(nproc) CFLAGS="$CFLAGS" && cd ..
+          cd ../..
+          
+          # Build Host Utilities (preproc, etc.)
+          export PATH=$(echo $PATH | sed -e 's|'$(pwd)/shim':||')
+          unset AS CC CXX AR
+          
+          find tools -mindepth 2 -name "Makefile" -exec dirname {} \; | while read dir; do
+            if [ "$dir" != "tools/agbcc" ]; then
+              make -C "$dir" CC=/usr/bin/gcc CXX=/usr/bin/g++ AS=/usr/bin/as AR=/usr/bin/ar CFLAGS="-std=gnu11 -O2 -Wall"
+            fi
+          done
           
           # ... (Continue with your library builds as before)
       - name: Build ROM
