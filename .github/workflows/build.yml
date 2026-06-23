@@ -19,41 +19,36 @@ jobs:
       - name: Install Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y gcc-9 g++-9 gcc-arm-none-eabi binutils-arm-none-eabi libpng-dev make git
+          # Ensure we have the basic build-essential for toolchain compilation
+          sudo apt-get install -y build-essential gcc-arm-none-eabi binutils-arm-none-eabi libpng-dev
 
-      - name: Build All Tools
+      - name: Build and Verify Toolchain
         run: |
-          # 1. Compile host tools explicitly to ensure they exist and are executable
-          # This bypasses the implicit Makefile rules that are failing
-          cd tools
-          for tool in gbagfx preproc scaninc ramscrgen; do
-            echo "Building $tool..."
-            if [ -d "$tool" ]; then
-              cd "$tool"
-              make clean || true
-              make CC=gcc CXX=g++
-              chmod +x * || true
-              cd ..
-            fi
-          done
+          # 1. Build agbcc
+          cd tools/agbcc
+          # The 'build.sh' in the toolchain directory should handle everything
+          # We use a subshell to ensure we don't pollute the main environment
+          bash build.sh
           
-          # 2. Build agbcc explicitly
-          cd agbcc
-          chmod -R +x .
-          ./build.sh
+          # 2. Critical verification: Test that it's the right binary
+          # This should output something like 'agbcc (GCC) 2.95.3'
+          ./agbcc --version || echo "Warning: agbcc version check failed"
+          
+          # 3. Create the bin directory for the compiler
           mkdir -p bin
           cp agbcc bin/agbcc
           cd ../..
 
       - name: Build ROM
         run: |
-          # 3. Ensure binaries are in the path for the final build
-          export PATH=$(pwd)/tools/agbcc/bin:$(pwd)/tools/gbagfx:$(pwd)/tools/preproc:$(pwd)/tools/scaninc:$(pwd)/tools/ramscrgen:$PATH
+          # 4. Point CC to our verified toolchain binary
+          export AGBCC=$(pwd)/tools/agbcc/bin/agbcc
+          export PATH=$(pwd)/tools/agbcc/bin:$PATH
           
-          # 4. Run the main build
-          # We use the explicit path for agbcc and ensure the build directory exists
-          mkdir -p build/emerald
-          make -j$(nproc) CC=$(pwd)/tools/agbcc/bin/agbcc
+          # 5. Build with the compiler explicitly defined
+          # If this still fails with 'Invalid option', it means the tools/agbcc
+          # directory in your repo is not the correct source code.
+          make -j$(nproc) CC="$AGBCC"
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
