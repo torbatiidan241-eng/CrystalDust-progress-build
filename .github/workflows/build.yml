@@ -26,15 +26,13 @@ jobs:
           cd tools/agbcc
           chmod -R +x .
           
-          # Flags to ensure compatibility with legacy code:
-          # -std=gnu89: Use older C standard
-          # -w: Suppress all warnings
-          # -Wno-error=implicit-function-declaration: Allow code that misses header inclusions
+          # We add -Wno-error=implicit-function-declaration to ignore the 'string.h' errors
+          # We also keep -w to suppress other legacy warnings
           export CFLAGS="-std=gnu89 -w -fno-strict-aliasing -fno-builtin -Wno-format-security -Wno-error=implicit-function-declaration"
           
           ./build.sh
           
-          # Build libraries with the same flags
+          # Apply the same flags to sub-component builds
           [ -d "libc" ] && cd libc && make CFLAGS="$CFLAGS" && cd ..
           [ -d "libgcc" ] && cd libgcc && make CFLAGS="$CFLAGS" && cd ..
           cd ../..
@@ -43,7 +41,6 @@ jobs:
           find tools -mindepth 2 -name "Makefile" -exec dirname {} \; | while read dir; do
             make -C "$dir"
           done
-
       - name: Build ROM
         run: |
           # Add local agbcc to PATH
