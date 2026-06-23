@@ -26,32 +26,35 @@ jobs:
           cd tools/agbcc
           chmod -R +x .
           
-          # 1. Patch the Makefile to force ARM tools
-          # This replaces the default 'as' and 'gcc' variables with the cross-compiler
-          find . -name "Makefile" -exec sed -i 's/^AS = as/AS = arm-none-eabi-as/' {} +
-          find . -name "Makefile" -exec sed -i 's/^CC = gcc/CC = arm-none-eabi-gcc/' {} +
-          find . -name "Makefile" -exec sed -i 's/^AR = ar/AR = arm-none-eabi-ar/' {} +
-
-          # 2. Build the agbcc compiler itself (Host build)
-          export CC=gcc-9
-          export CXX=g++-9
+          # Create shim directory
+          mkdir -p ../shim
+          echo '#!/bin/sh' > ../shim/as
+          echo 'exec arm-none-eabi-as "$@"' >> ../shim/as
+          echo '#!/bin/sh' > ../shim/gcc
+          echo 'exec arm-none-eabi-gcc "$@"' >> ../shim/gcc
+          chmod +x ../shim/as ../shim/gcc
+          
+          # 1. Build the agbcc compiler itself (Host build)
+          # Use explicit system paths for the host compiler
+          export CC=/usr/bin/gcc-9
+          export CXX=/usr/bin/g++-9
           export CFLAGS="-std=gnu89 -w -fno-strict-aliasing -fno-builtin -Wno-format-security -Wno-error=implicit-function-declaration -fcommon"
           ./build.sh
           
-          # 3. Build libraries (Target build)
-          # Now the Makefiles are hardcoded to use ARM tools
+          # 2. Build libraries (Target build)
+          # Inject our shim directory into the PATH for this step
+          export PATH=$(pwd)/../shim:$PATH
           [ -d "libc" ] && cd libc && make CFLAGS="$CFLAGS" && cd ..
           [ -d "libgcc" ] && cd libgcc && make CFLAGS="$CFLAGS" && cd ..
           cd ../..
           
-          # 4. Build other tools (Host utilities)
+          # 3. Build other tools (Host utilities)
+          # Remove shim from PATH and use native gcc
           find tools -mindepth 2 -name "Makefile" -exec dirname {} \; | while read dir; do
             if [ "$dir" != "tools/agbcc" ]; then
-              # Revert the patch for host tools to ensure they build with system gcc
               make -C "$dir" CC=gcc CXX=g++ CFLAGS="-std=gnu11 -O2 -Wall"
             fi
           done
-
       - name: Build ROM
         run: |
           export PATH=$(pwd)/tools/agbcc/bin:$PATH
