@@ -23,29 +23,32 @@ jobs:
 
       - name: Build Toolchain
         run: |
+          # Clean environment
+          rm -rf build/
+          
+          # Build agbcc
           cd tools/agbcc
-          # Instead of rebuilding the compiler and its internal libraries from scratch,
-          # we check if a pre-compiled version or a simpler path exists.
-          # If you have the 'agbcc' binary from a known-good source, use it.
-          # Here we proceed with the standard build but bypass the libgcc assembly step 
-          # by using the provided binaries if available.
-          chmod -R +x .
           ./build.sh
-          
-          # Clean up any failed library artifacts
-          find . -name "*.a" -type f -delete
-          
-          # Build host utilities
-          find tools -mindepth 2 -name "Makefile" -exec dirname {} \; | while read dir; do
-            if [ "$dir" != "tools/agbcc" ]; then
-              make -C "$dir" CC=/usr/bin/gcc CXX=/usr/bin/g++ AS=/usr/bin/as AR=/usr/bin/ar CFLAGS="-std=gnu11 -O2 -Wall"
-            fi
-          done
+          # agbcc expects its binaries to be in a bin directory relative to its source
+          mkdir -p bin
+          cp agbcc bin/agbcc
+          cp ../../tools/agbcc/bin/* bin/ 2>/dev/null || true
+          cd ../..
 
       - name: Build ROM
         run: |
-          # Point the project to the built agbcc
+          # Add the toolchain 'bin' directory to the PATH
+          # This allows the Makefile to find the 'agbcc' compiler and its internal headers
           export PATH=$(pwd)/tools/agbcc/bin:$PATH
+          
+          # Set the AGBCC variable explicitly as many GBA Makefiles require it
           export AGBCC=$(pwd)/tools/agbcc/bin/agbcc
-          # Use existing libraries if possible or attempt a clean build
+          
+          # Run the build
           make -j$(nproc)
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: CrystalDust-ROM
+          path: '*.gba'
