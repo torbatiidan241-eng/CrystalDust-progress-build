@@ -26,19 +26,20 @@ jobs:
           cd tools/agbcc
           chmod -R +x .
           
-          # 1. Build agbcc itself (Host build using gcc-9)
+          # 1. Build the agbcc compiler itself (Host-machine build)
           export CC=gcc-9
           export CXX=g++-9
           export CFLAGS="-std=gnu89 -w -fno-strict-aliasing -fno-builtin -Wno-format-security -Wno-error=implicit-function-declaration -fcommon"
           ./build.sh
           
-          # 2. Build libraries (Target build using arm-none-eabi)
-          export CC_ARM=arm-none-eabi-gcc
-          export AS_ARM=arm-none-eabi-as
-          export AR_ARM=arm-none-eabi-ar
+          # 2. Build libraries (Target-machine build)
+          # We force these via make arguments to override the internal Makefile logic
+          export ARM_AS=$(which arm-none-eabi-as)
+          export ARM_CC=$(which arm-none-eabi-gcc)
+          export ARM_AR=$(which arm-none-eabi-ar)
           
-          [ -d "libc" ] && cd libc && make CC=$CC_ARM AS=$AS_ARM AR=$AR_ARM CFLAGS="$CFLAGS" && cd ..
-          [ -d "libgcc" ] && cd libgcc && make CC=$CC_ARM AS=$AS_ARM AR=$AR_ARM CFLAGS="$CFLAGS" && cd ..
+          [ -d "libc" ] && cd libc && make CC=$ARM_CC AS=$ARM_AS AR=$ARM_AR CFLAGS="$CFLAGS" && cd ..
+          [ -d "libgcc" ] && cd libgcc && make CC=$ARM_CC AS=$ARM_AS AR=$ARM_AR CFLAGS="$CFLAGS" && cd ..
           cd ../..
           
           # 3. Build other tools (Host utilities using native gcc)
