@@ -1,9 +1,10 @@
-name: CrystalDust Build
+name: CrystalDust Build (Fresh Toolchain)
 
 on:
   push:
-    branches:
-      - progress
+    branches: [ progress ]
+  pull_request:
+    branches: [ progress ]
 
 jobs:
   build:
@@ -12,48 +13,41 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       - name: Install Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y binutils-arm-none-eabi gcc-arm-none-eabi libpng-dev make git
+          sudo apt-get install -y build-essential gcc-arm-none-eabi binutils-arm-none-eabi libpng-dev
 
-      - name: Build agbcc
+      - name: Fresh Toolchain Re-installation
         run: |
-          # 1. Build the core gcc component
-          cd tools/agbcc/gcc
-          chmod +x build.sh
+          # 1. Delete the problematic folder
+          rm -rf tools/agbcc
+          
+          # 2. Force Git to re-pull the submodule in a clean state
+          git submodule update --init --force tools/agbcc
+          
+          # 3. Apply execute permissions recursively to the new files
+          find tools/agbcc -type f -exec chmod +x {} +
+          
+          # 4. Build from scratch
+          cd tools/agbcc
           ./build.sh
-          cd ..
           
-          # 2. Build libc
-          cd libc
-          make
-          cd ..
-          
-          # 3. Build libgcc
-          cd libgcc
-          make
-          cd ..
-          
-          # 4. Finalize bin directory for the ROM Makefile
+          # 5. Prepare bin directory
           mkdir -p bin
-          if [ -f "gcc/agbcc" ]; then
-            cp gcc/agbcc bin/agbcc
-            cp gcc/xgcc bin/xgcc
-            echo "Compiler successfully built and moved to tools/agbcc/bin"
-          else
-            echo "::error::agbcc binary not found in gcc/ directory."
-            exit 1
-          fi
+          cp agbcc bin/agbcc
           cd ../..
 
       - name: Build ROM
         run: |
-          # Force the use of the newly built toolchain and cross-compiler flags
-          export PATH=$PATH:$(pwd)/tools/agbcc/bin
-          make CC=arm-none-eabi-gcc AR=arm-none-eabi-ar LD=arm-none-eabi-ld OBJCOPY=arm-none-eabi-objcopy -j$(nproc)
-
+          export AGBCC=$(pwd)/tools/agbcc/bin/agbcc
+          export PATH=$(pwd)/tools/agbcc/bin:$PATH
+          
+          # Run make with forced compiler variable
+          make -j$(nproc) CC="$AGBCC"
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
