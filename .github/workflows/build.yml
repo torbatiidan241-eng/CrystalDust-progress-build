@@ -21,44 +21,45 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y gcc-9 g++-9 gcc-arm-none-eabi binutils-arm-none-eabi libpng-dev make git
 
-      - - name: Build Toolchain
+      - name: Build Toolchain
         run: |
           cd tools/agbcc
           chmod -R +x .
           
           # 1. Build agbcc (Native Host Tool)
-          # Build using host compiler, no ARM flags yet.
+          # We use standard system paths; no shim allowed here.
           export CC=/usr/bin/gcc-9
           export CXX=/usr/bin/g++-9
           export CFLAGS="-std=gnu89 -w -fno-strict-aliasing -fno-builtin -Wno-format-security -fcommon"
           ./build.sh
           
           # 2. Build Libraries (Target ARM)
-          # Create a shim to intercept 'as' and force legacy ARM7TDMI mode
+          # Create a shim to intercept 'as' and force legacy ARM7TDMI mode.
           mkdir -p ../shim
           echo '#!/bin/sh' > ../shim/as
           echo 'exec arm-none-eabi-as -mcpu=arm7tdmi -mthumb-interwork "$@"' >> ../shim/as
           chmod +x ../shim/as
           
-          # Point the build to our shim and specify target flags
+          # Apply the shim only for this block
           export PATH=$(pwd)/../shim:$PATH
           export TARGET_CFLAGS="-mcpu=arm7tdmi -mthumb-interwork"
           
-          # Force the Makefiles to use our cross-assembler instead of defaulting to system 'as'
           [ -d "libc" ] && cd libc && make -j$(nproc) AS=arm-none-eabi-as CFLAGS="$TARGET_CFLAGS" && cd ..
           [ -d "libgcc" ] && cd libgcc && make -j$(nproc) AS=arm-none-eabi-as CFLAGS="$TARGET_CFLAGS" && cd ..
           cd ../..
           
           # 3. Build Host Utilities (preproc, etc.)
-          # Clean environment for host utilities to prevent ARM cross-compiler leakage
-          export PATH=$(echo $PATH | sed -e 's|'$(pwd)/../shim':||')
+          # Reset the environment: Remove the shim from PATH and unset ARM variables.
+          export PATH=$(echo $PATH | sed -e 's|'$(pwd)/tools/shim':||')
           unset AS CC CXX AR CFLAGS
           
           find tools -mindepth 2 -name "Makefile" -exec dirname {} \; | while read dir; do
             if [ "$dir" != "tools/agbcc" ]; then
+              # Explicitly use native tools to prevent Makefile logic from picking up ARM variables
               make -C "$dir" CC=/usr/bin/gcc CXX=/usr/bin/g++ AS=/usr/bin/as AR=/usr/bin/ar CFLAGS="-std=gnu11 -O2 -Wall"
             fi
           done
+
       - name: Build ROM
         run: |
           export PATH=$(pwd)/tools/agbcc/bin:$PATH
