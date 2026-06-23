@@ -27,14 +27,13 @@ jobs:
           chmod -R +x .
           
           # 1. Build agbcc (Native Host Tool)
-          # We do NOT include the shim here so host tools use /usr/bin/as
           export CC=/usr/bin/gcc-9
           export CXX=/usr/bin/g++-9
           export CFLAGS="-std=gnu89 -w -fno-strict-aliasing -fno-builtin -Wno-format-security -fcommon"
           ./build.sh
           
           # 2. Build Libraries (Target ARM)
-          # NOW we introduce the shim to force ARM7TDMI assembly
+          # Introduce the shim here, but isolate it to the library build block
           mkdir -p ../shim
           echo '#!/bin/sh' > ../shim/as
           echo 'exec arm-none-eabi-as -mcpu=arm7tdmi -mthumb-interwork "$@"' >> ../shim/as
@@ -48,12 +47,14 @@ jobs:
           cd ../..
           
           # 3. Build Host Utilities (preproc, etc.)
-          # Remove shim and unset variables to prevent ARM-flag leakage
-          export PATH=$(echo $PATH | sed -e 's|'$(pwd)/tools/shim':||')
-          unset AS CC CXX AR CFLAGS
+          # Completely clean the environment for native building
+          # Reset PATH to remove the shim, and explicitly unset ARM variables
+          export PATH=$(echo $PATH | sed -e 's|'$(pwd)/tools/agbcc/../shim':||')
+          unset AS
           
           find tools -mindepth 2 -name "Makefile" -exec dirname {} \; | while read dir; do
             if [ "$dir" != "tools/agbcc" ]; then
+              # Explicitly use native tools to prevent Makefile logic from picking up ARM variables
               make -C "$dir" CC=/usr/bin/gcc CXX=/usr/bin/g++ AS=/usr/bin/as AR=/usr/bin/ar CFLAGS="-std=gnu11 -O2 -Wall"
             fi
           done
