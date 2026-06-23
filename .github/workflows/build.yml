@@ -1,48 +1,26 @@
 name: CrystalDust Build
 
-on:
-  push:
-    branches: [ progress ]
-  pull_request:
-    branches: [ progress ]
+on: [push]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-        # We set 'submodules: false' because you manually included the agbcc files
         with:
-          submodules: false
+          submodules: recursive # CRITICAL: This pulls the missing files
 
       - name: Install Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y gcc-9 g++-9 gcc-arm-none-eabi binutils-arm-none-eabi libpng-dev make git
+          sudo apt-get install -y build-essential libpng-dev gcc-arm-none-eabi
 
-      - name: Build Toolchain
+      - name: Build
         run: |
-          # 1. Fix permissions so the compiler build scripts can run
-          cd tools/agbcc
-          chmod -R +x .
-          
-          # 2. Build the agbcc compiler
-          ./build.sh
-          
-          # 3. Ensure the binary is in a place the Makefile expects
-          mkdir -p bin
-          if [ -f agbcc ]; then cp agbcc bin/agbcc; fi
-          cd ../..
-
-      - name: Build ROM
-        run: |
-          # 4. Point the PATH to the locally built toolchain
-          export PATH=$(pwd)/tools/agbcc/bin:$PATH
-          export AGBCC=$(pwd)/tools/agbcc/bin/agbcc
-          
-          # 5. Build the game
+          # Build tools first
+          make tools
+          # Then build the ROM
           make -j$(nproc)
 
       - name: Upload Artifact
