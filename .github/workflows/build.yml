@@ -23,11 +23,18 @@ jobs:
 
       - name: Build Toolchain
         run: |
-          # Build agbcc
           cd tools/agbcc
           chmod -R +x .
-          export CFLAGS="-std=gnu89 -w -fno-strict-aliasing -fno-builtin -Wno-format-security"
+          
+          # Flags to ensure compatibility with legacy code:
+          # -std=gnu89: Use older C standard
+          # -w: Suppress all warnings
+          # -Wno-error=implicit-function-declaration: Allow code that misses header inclusions
+          export CFLAGS="-std=gnu89 -w -fno-strict-aliasing -fno-builtin -Wno-format-security -Wno-error=implicit-function-declaration"
+          
           ./build.sh
+          
+          # Build libraries with the same flags
           [ -d "libc" ] && cd libc && make CFLAGS="$CFLAGS" && cd ..
           [ -d "libgcc" ] && cd libgcc && make CFLAGS="$CFLAGS" && cd ..
           cd ../..
@@ -39,15 +46,15 @@ jobs:
 
       - name: Build ROM
         run: |
-          mkdir -p build/emerald
-          
           # Add local agbcc to PATH
           export PATH=$(pwd)/tools/agbcc/bin:$PATH
           
-          # Force the compiler to use GBA-compatible system headers
+          # Set compiler variables to ensure the Makefile finds our built tools
+          export AGBCC=$(pwd)/tools/agbcc/bin/agbcc
+          export AGAS=$(pwd)/tools/agbcc/bin/agag
           export CFLAGS="-I$(arm-none-eabi-gcc -print-file-name=include)"
           
-          # Build the main project
+          # Run the main build
           make -j$(nproc)
 
       - name: Upload Artifact
