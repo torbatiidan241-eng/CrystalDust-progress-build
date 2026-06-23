@@ -32,28 +32,26 @@ jobs:
           export CFLAGS="-std=gnu89 -w -fno-strict-aliasing -fno-builtin -Wno-format-security -fcommon"
           ./build.sh
           
-          # 2. Force the correct assembler for the library build
-          # We locate the assembler that the toolchain is using and override it
-          # by placing our own script there.
-          mkdir -p binutils
-          echo '#!/bin/sh' > binutils/as
-          echo 'exec arm-none-eabi-as -mcpu=arm7tdmi -mthumb-interwork "$@"' >> binutils/as
-          chmod +x binutils/as
+          # 2. Build Libraries - The "Hijack" Method
+          # Instead of relying on PATH, we force the compiler to use our wrapper 
+          # by putting it in the local 'bin' directory the compiler searches.
+          mkdir -p bin
+          echo '#!/bin/sh' > bin/as
+          echo 'exec arm-none-eabi-as -mcpu=arm7tdmi -mthumb-interwork "$@"' >> bin/as
+          chmod +x bin/as
           
-          # This ensures that whenever 'as' is called in this directory, 
-          # it points to our custom legacy-aware wrapper.
-          export PATH=$(pwd)/binutils:$PATH
-          
-          # 3. Build Libraries
+          # Force the compiler to use our local bin directory
+          # We add this to the build flags so the compiler finds our 'as' first
+          export PATH=$(pwd)/bin:$PATH
           export TARGET_CFLAGS="-mcpu=arm7tdmi -mthumb-interwork"
+          
           [ -d "libc" ] && cd libc && make -j$(nproc) AS=as CFLAGS="$TARGET_CFLAGS" && cd ..
           [ -d "libgcc" ] && cd libgcc && make -j$(nproc) AS=as CFLAGS="$TARGET_CFLAGS" && cd ..
           cd ../..
           
-          # 4. Build Host Utilities (preproc, etc.)
-          # Reset path to remove our custom assembler wrapper
-          export PATH=$(echo $PATH | sed -e 's|'$(pwd)/tools/agbcc/binutils':||')
-          unset AS
+          # 3. Build Host Utilities
+          # Remove the 'bin' folder from PATH to restore normal operation
+          export PATH=$(echo $PATH | sed -e 's|'$(pwd)/tools/agbcc/bin':||')
           
           find tools -mindepth 2 -name "Makefile" -exec dirname {} \; | while read dir; do
             if [ "$dir" != "tools/agbcc" ]; then
@@ -64,4 +62,11 @@ jobs:
       - name: Build ROM
         run: |
           export PATH=$(pwd)/tools/agbcc/bin:$PATH
+          export AGBCC=$(pwd)/tools/agbcc/bin/agbcc
           make -j$(nproc)
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: CrystalDust-ROM
+          path: '*.gba'
