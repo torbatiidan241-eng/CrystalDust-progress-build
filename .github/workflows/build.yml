@@ -13,30 +13,37 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+        # We set 'submodules: false' because you manually included the agbcc files
         with:
-          submodules: recursive
+          submodules: false
 
       - name: Install Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential gcc-arm-none-eabi binutils-arm-none-eabi libpng-dev
+          sudo apt-get install -y gcc-9 g++-9 gcc-arm-none-eabi binutils-arm-none-eabi libpng-dev make git
 
-      - name: Fresh Toolchain Re-installation
+      - name: Build Toolchain
         run: |
-          rm -rf tools/agbcc
-          git submodule update --init --force tools/agbcc
-          find tools/agbcc -type f -exec chmod +x {} +
+          # 1. Fix permissions so the compiler build scripts can run
           cd tools/agbcc
+          chmod -R +x .
+          
+          # 2. Build the agbcc compiler
           ./build.sh
+          
+          # 3. Ensure the binary is in a place the Makefile expects
           mkdir -p bin
-          cp agbcc bin/agbcc
+          if [ -f agbcc ]; then cp agbcc bin/agbcc; fi
           cd ../..
 
       - name: Build ROM
         run: |
-          export AGBCC=$(pwd)/tools/agbcc/bin/agbcc
+          # 4. Point the PATH to the locally built toolchain
           export PATH=$(pwd)/tools/agbcc/bin:$PATH
-          make -j$(nproc) CC="$AGBCC"
+          export AGBCC=$(pwd)/tools/agbcc/bin/agbcc
+          
+          # 5. Build the game
+          make -j$(nproc)
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
