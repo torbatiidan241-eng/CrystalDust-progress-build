@@ -35,24 +35,26 @@ jobs:
           chmod +x ../shim/as ../shim/gcc
           
           # 1. Build the agbcc compiler itself (Host build)
-          # Use explicit system paths for the host compiler
           export CC=/usr/bin/gcc-9
           export CXX=/usr/bin/g++-9
           export CFLAGS="-std=gnu89 -w -fno-strict-aliasing -fno-builtin -Wno-format-security -Wno-error=implicit-function-declaration -fcommon"
           ./build.sh
           
           # 2. Build libraries (Target build)
-          # Inject our shim directory into the PATH for this step
+          # Inject our shim directory ONLY for this step
           export PATH=$(pwd)/../shim:$PATH
           [ -d "libc" ] && cd libc && make CFLAGS="$CFLAGS" && cd ..
           [ -d "libgcc" ] && cd libgcc && make CFLAGS="$CFLAGS" && cd ..
           cd ../..
           
           # 3. Build other tools (Host utilities)
-          # Remove shim from PATH and use native gcc
+          # CRITICAL: We remove the shim directory from the PATH here
+          export PATH=$(echo $PATH | sed -e 's|'$(pwd)/../shim':||')
+          
           find tools -mindepth 2 -name "Makefile" -exec dirname {} \; | while read dir; do
             if [ "$dir" != "tools/agbcc" ]; then
-              make -C "$dir" CC=gcc CXX=g++ CFLAGS="-std=gnu11 -O2 -Wall"
+              # Use explicit system compilers for host tools
+              make -C "$dir" CC=/usr/bin/gcc CXX=/usr/bin/g++ CFLAGS="-std=gnu11 -O2 -Wall"
             fi
           done
       - name: Build ROM
