@@ -26,23 +26,25 @@ jobs:
           cd tools/agbcc
           chmod -R +x .
           
-          # 1. Build the agbcc compiler itself (Host-machine build)
+          # Define the ARM cross-compilation tools
+          export CROSS=arm-none-eabi-
+          export CC_ARM=${CROSS}gcc
+          export AS_ARM=${CROSS}as
+          export AR_ARM=${CROSS}ar
+          
+          # Build agbcc (Host-machine build)
           export CC=gcc-9
           export CXX=g++-9
           export CFLAGS="-std=gnu89 -w -fno-strict-aliasing -fno-builtin -Wno-format-security -Wno-error=implicit-function-declaration -fcommon"
           ./build.sh
           
-          # 2. Build the runtime libraries (Target-machine build)
-          # We must use arm-none-eabi tools here, NOT host gcc
-          export TARGET_CC=arm-none-eabi-gcc
-          export TARGET_AS=arm-none-eabi-as
-          export TARGET_AR=arm-none-eabi-ar
-          
-          [ -d "libc" ] && cd libc && make CC=$TARGET_CC AS=$TARGET_AS AR=$TARGET_AR CFLAGS="$CFLAGS" && cd ..
-          [ -d "libgcc" ] && cd libgcc && make CC=$TARGET_CC AS=$TARGET_AS AR=$TARGET_AR CFLAGS="$CFLAGS" && cd ..
+          # Build libraries (Target-machine build)
+          # We pass the ARM-specific tools explicitly to the make commands
+          [ -d "libc" ] && cd libc && make CC=$CC_ARM AS=$AS_ARM AR=$AR_ARM CFLAGS="$CFLAGS" && cd ..
+          [ -d "libgcc" ] && cd libgcc && make CC=$CC_ARM AS=$AS_ARM AR=$AR_ARM CFLAGS="$CFLAGS" && cd ..
           cd ../..
           
-          # 3. Build other tools
+          # Build other tools using standard host compiler
           find tools -mindepth 2 -name "Makefile" -exec dirname {} \; | while read dir; do
             if [ "$dir" != "tools/agbcc" ]; then
               make -C "$dir" CFLAGS="-std=gnu11 -O2 -Wall"
