@@ -1,20 +1,27 @@
 name: CrystalDust Build
 
-on: [push]
+on:
+  push:
+    branches: [ progress ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    # This uses a pre-built environment with all tools included
+    container:
+      image: ghcr.io/pret/agbcc-container:latest 
+    
     steps:
-      - uses: actions/checkout@v4
-      
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive # Let's handle submodules correctly this time
+
       - name: Build ROM
         run: |
-          # Just point directly to the binary you committed
-          export PATH=$(pwd)/tools/bin:$PATH
-          make
+          make -j$(nproc)
           
-      - name: Upload ROM
+      - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: CrystalDust-ROM
