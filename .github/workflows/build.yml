@@ -9,16 +9,11 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
-<<<<<<< HEAD
           submodules: recursive # CRITICAL: This pulls the missing files
-=======
-          submodules: true
->>>>>>> e63912b6218e5cc4410a6cdffe8fd55b34e52adc
 
-      - name: Install Build Dependencies
+      - name: Install Dependencies
         run: |
           sudo apt-get update
-<<<<<<< HEAD
           sudo apt-get install -y build-essential libpng-dev gcc-arm-none-eabi
 
       - name: Build
@@ -26,20 +21,6 @@ jobs:
           # Build tools first
           make tools
           # Then build the ROM
-=======
-          # Add 'gcc-arm-none-eabi' to your install list
-          sudo apt-get install -y build-essential libpng-dev gcc-arm-none-eabi
-      - name: Build All Tools
-        run: |
-          # Build tools individually to ensure no 'missing directory' errors
-          make -C tools/gbagfx
-          make -C tools/scaninc
-          make -C tools/ramscrgen
-          # Add any other tools needed by your Makefile here
-
-      - name: Build ROM
-        run: |
->>>>>>> e63912b6218e5cc4410a6cdffe8fd55b34e52adc
           make -j$(nproc)
 
       - name: Upload Artifact
