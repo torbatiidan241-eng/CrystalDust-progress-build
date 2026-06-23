@@ -2,11 +2,7 @@ name: CrystalDust Build
 
 on:
   push:
-    branches:
-      - progress
-  pull_request:
-    branches:
-      - progress
+    branches: [ progress ]
 
 jobs:
   build:
@@ -21,47 +17,32 @@ jobs:
       - name: Install Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y binutils-arm-none-eabi gcc-arm-none-eabi libpng-dev make git
-
-      - name: Cache agbcc
-        id: cache-agbcc
-        uses: actions/cache@v4
-        with:
-          path: tools/agbcc
-          key: ${{ runner.os }}-agbcc
+          sudo apt-get install -y gcc-arm-none-eabi binutils-arm-none-eabi libpng-dev make git
 
       - name: Build Toolchain
-        if: steps.cache-agbcc.outputs.cache-hit != 'true'
         run: |
-          set -e
           cd tools/agbcc
-          # Crucial: Fix permissions for all scripts and source files
           chmod -R +x .
           ./build.sh
-          # Build associated libraries
+          # Build libs
           [ -d "libc" ] && cd libc && make && cd ..
           [ -d "libgcc" ] && cd libgcc && make && cd ..
           cd ../..
-
-      - name: Build Remaining Tools
-        run: |
-          set -e
-          # Compile all other utility tools in the tools/ directory
-          find tools -mindepth 2 -name "Makefile" -exec dirname {} \; | while read dir; do
-            # Skip agbcc as it is already built
-            if [[ "$dir" != *"agbcc"* ]]; then
-              make -C "$dir"
-            fi
-          done
+          # Build other tools
+          find tools -mindepth 2 -name "Makefile" -exec make -C {} \;
 
       - name: Build ROM
         run: |
-          set -e
-          # Add agbcc to the system PATH so the Makefile can find it
+          # Define compiler explicitly
           export PATH=$(pwd)/tools/agbcc:$(pwd)/tools/agbcc/bin:$PATH
-          # Use system headers for cross-compilation
-          export CFLAGS="-I$(arm-none-eabi-gcc -print-file-name=include)"
-          make -j$(nproc)
+          export AGBCC=$(pwd)/tools/agbcc/bin/agbcc
+          export AGAR=$(pwd)/tools/agbcc/bin/agag
+          
+          # Force submodules just in case
+          git submodule update --init --recursive
+          
+          # Build
+          make
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
