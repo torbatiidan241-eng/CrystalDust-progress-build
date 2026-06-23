@@ -26,33 +26,31 @@ jobs:
           cd tools/agbcc
           chmod -R +x .
           
-          # 1. Build agbcc (Host Tool)
-          # We keep flags clean to avoid breaking the ./configure test
+          # 1. Create a wrapper to force the correct assembly syntax
+          mkdir -p ../shim
+          echo '#!/bin/sh' > ../shim/as
+          echo 'exec arm-none-eabi-as -mcpu=arm7tdmi -mthumb-interwork "$@"' >> ../shim/as
+          chmod +x ../shim/as
+          export PATH=$(pwd)/../shim:$PATH
+
+          # 2. Build agbcc
           export CC=/usr/bin/gcc-9
           export CXX=/usr/bin/g++-9
           export CFLAGS="-std=gnu89 -w -fno-strict-aliasing -fno-builtin -Wno-format-security -fcommon"
           ./build.sh
           
-          # 2. Setup Library Build Environment
-          # Patch Makefiles to force ARM7 assembler compatibility for libraries
-          find . -name "Makefile" -exec grep -l "libgcc1" {} + | xargs -r sed -i 's|$(AS)|arm-none-eabi-as -mcpu=arm7tdmi|g'
-          
-          mkdir -p ../shim
-          echo '#!/bin/sh' > ../shim/agbcc
-          echo 'exec '"$(pwd)"'/bin/agbcc "$@"' >> ../shim/agbcc
-          chmod +x ../shim/agbcc
-          
-          export PATH=$(pwd)/../shim:$PATH
-          export TARGET_CFLAGS="-mcpu=arm7tdmi -mthumb-interwork"
-          
           # 3. Build Libraries
-          [ -d "libc" ] && cd libc && make -j$(nproc) CFLAGS="$TARGET_CFLAGS" && cd ..
-          [ -d "libgcc" ] && cd libgcc && make -j$(nproc) CFLAGS="$TARGET_CFLAGS" && cd ..
+          # We force the internal Makefiles to use our custom 'as' shim
+          # and ensure we pass the target architecture flags
+          export TARGET_CFLAGS="-mcpu=arm7tdmi -mthumb-interwork"
+          [ -d "libc" ] && cd libc && make -j$(nproc) AS=arm-none-eabi-as CFLAGS="$TARGET_CFLAGS" && cd ..
+          [ -d "libgcc" ] && cd libgcc && make -j$(nproc) AS=arm-none-eabi-as CFLAGS="$TARGET_CFLAGS" && cd ..
           cd ../..
           
-          # 4. Build Host Utilities (preproc, etc.)
-          # Clean environment to prevent cross-compiler leakage
+          # 4. Build Host Utilities
+          # Clean environment and path to prevent cross-compiler leakage
           unset AS CC CXX AR CFLAGS
+          export PATH=$(echo $PATH | sed -e 's|'$(pwd)/../shim':||')
           
           find tools -mindepth 2 -name "Makefile" -exec dirname {} \; | while read dir; do
             if [ "$dir" != "tools/agbcc" ]; then
