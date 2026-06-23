@@ -26,25 +26,28 @@ jobs:
           cd tools/agbcc
           chmod -R +x .
           
-          # 1. Build the agbcc compiler itself (Host-machine build)
+          # 1. Patch the Makefile to force ARM tools
+          # This replaces the default 'as' and 'gcc' variables with the cross-compiler
+          find . -name "Makefile" -exec sed -i 's/^AS = as/AS = arm-none-eabi-as/' {} +
+          find . -name "Makefile" -exec sed -i 's/^CC = gcc/CC = arm-none-eabi-gcc/' {} +
+          find . -name "Makefile" -exec sed -i 's/^AR = ar/AR = arm-none-eabi-ar/' {} +
+
+          # 2. Build the agbcc compiler itself (Host build)
           export CC=gcc-9
           export CXX=g++-9
           export CFLAGS="-std=gnu89 -w -fno-strict-aliasing -fno-builtin -Wno-format-security -Wno-error=implicit-function-declaration -fcommon"
           ./build.sh
           
-          # 2. Build libraries (Target-machine build)
-          # We force these via make arguments to override the internal Makefile logic
-          export ARM_AS=$(which arm-none-eabi-as)
-          export ARM_CC=$(which arm-none-eabi-gcc)
-          export ARM_AR=$(which arm-none-eabi-ar)
-          
-          [ -d "libc" ] && cd libc && make CC=$ARM_CC AS=$ARM_AS AR=$ARM_AR CFLAGS="$CFLAGS" && cd ..
-          [ -d "libgcc" ] && cd libgcc && make CC=$ARM_CC AS=$ARM_AS AR=$ARM_AR CFLAGS="$CFLAGS" && cd ..
+          # 3. Build libraries (Target build)
+          # Now the Makefiles are hardcoded to use ARM tools
+          [ -d "libc" ] && cd libc && make CFLAGS="$CFLAGS" && cd ..
+          [ -d "libgcc" ] && cd libgcc && make CFLAGS="$CFLAGS" && cd ..
           cd ../..
           
-          # 3. Build other tools (Host utilities using native gcc)
+          # 4. Build other tools (Host utilities)
           find tools -mindepth 2 -name "Makefile" -exec dirname {} \; | while read dir; do
             if [ "$dir" != "tools/agbcc" ]; then
+              # Revert the patch for host tools to ensure they build with system gcc
               make -C "$dir" CC=gcc CXX=g++ CFLAGS="-std=gnu11 -O2 -Wall"
             fi
           done
