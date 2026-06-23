@@ -21,44 +21,45 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y gcc-9 g++-9 gcc-arm-none-eabi binutils-arm-none-eabi libpng-dev make git
 
-            - name: Build Toolchain
+      - name: Build Toolchain
         run: |
           cd tools/agbcc
           chmod -R +x .
           
-          # 1. Standardize Host Compiler (for the tools themselves)
+          # 1. Build agbcc (Host Tool)
+          # We keep flags clean to avoid breaking the ./configure test
           export CC=/usr/bin/gcc-9
           export CXX=/usr/bin/g++-9
-          
-          # 2. Build agbcc with minimal flags initially
-          # We only add the ARM flags to the build command for the library, not the compiler itself
           export CFLAGS="-std=gnu89 -w -fno-strict-aliasing -fno-builtin -Wno-format-security -fcommon"
           ./build.sh
           
-          # 3. Build libraries (HERE is where we add the ARM assembler flags)
+          # 2. Setup Library Build Environment
+          # Patch Makefiles to force ARM7 assembler compatibility for libraries
+          find . -name "Makefile" -exec grep -l "libgcc1" {} + | xargs -r sed -i 's|$(AS)|arm-none-eabi-as -mcpu=arm7tdmi|g'
+          
           mkdir -p ../shim
           echo '#!/bin/sh' > ../shim/agbcc
           echo 'exec '"$(pwd)"'/bin/agbcc "$@"' >> ../shim/agbcc
           chmod +x ../shim/agbcc
           
           export PATH=$(pwd)/../shim:$PATH
-          # We define TARGET_CFLAGS specifically for the ARM assembly files
           export TARGET_CFLAGS="-mcpu=arm7tdmi -mthumb-interwork"
           
-          # Patch the specific Makefile to use our targeted flags
-          find . -name "Makefile" -exec grep -l "libgcc1" {} + | xargs -r sed -i 's|$(AS)|arm-none-eabi-as -mcpu=arm7tdmi|g'
-          
+          # 3. Build Libraries
           [ -d "libc" ] && cd libc && make -j$(nproc) CFLAGS="$TARGET_CFLAGS" && cd ..
           [ -d "libgcc" ] && cd libgcc && make -j$(nproc) CFLAGS="$TARGET_CFLAGS" && cd ..
           cd ../..
           
-          # 4. Clean up and Build Host Utilities
+          # 4. Build Host Utilities (preproc, etc.)
+          # Clean environment to prevent cross-compiler leakage
           unset AS CC CXX AR CFLAGS
+          
           find tools -mindepth 2 -name "Makefile" -exec dirname {} \; | while read dir; do
             if [ "$dir" != "tools/agbcc" ]; then
               make -C "$dir" CC=/usr/bin/gcc CXX=/usr/bin/g++ AS=/usr/bin/as AR=/usr/bin/ar CFLAGS="-std=gnu11 -O2 -Wall"
             fi
           done
+
       - name: Build ROM
         run: |
           export PATH=$(pwd)/tools/agbcc/bin:$PATH
