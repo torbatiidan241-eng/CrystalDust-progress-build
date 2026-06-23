@@ -13,47 +13,42 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
-          submodules: recursive # This forces Git to populate libagbsyscall correctly
+          submodules: recursive
 
       - name: Install Dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y binutils-arm-none-eabi gcc-arm-none-eabi libpng-dev make git
 
+      - name: Cache agbcc
+        id: cache-agbcc
+        uses: actions/cache@v4
+        with:
+          path: tools/agbcc
+          key: ${{ runner.os }}-agbcc
+
       - name: Build Toolchain
+        if: steps.cache-agbcc.outputs.cache-hit != 'true'
         run: |
+          set -e
           cd tools/agbcc
-          chmod -R +x .
-          
-          # Use -std=gnu89 to ensure legacy C compatibility
-          # -Wno-everything suppresses the warnings that the modern compiler is flagging
-          # -fno-strict-aliasing and -fno-builtin are required for older compiler logic
-          export CFLAGS="-std=gnu89 -w -fno-strict-aliasing -fno-builtin -Wno-format-security"
-          
           ./build.sh
-          
-          # Apply the same flags to sub-component builds
-          [ -d "libc" ] && cd libc && make CFLAGS="$CFLAGS" && cd ..
-          [ -d "libgcc" ] && cd libgcc && make CFLAGS="$CFLAGS" && cd ..
+          # Build libc/libgcc as required
+          [ -d "libc" ] && cd libc && make && cd ..
+          [ -d "libgcc" ] && cd libgcc && make && cd ..
           cd ../..
           
-          # Build other project tools
+          # Build remaining project tools
           find tools -mindepth 2 -name "Makefile" -exec dirname {} \; | while read dir; do
             make -C "$dir"
           done
 
       - name: Build ROM
         run: |
-          mkdir -p build/emerald
-          
-          # Add local agbcc to PATH
+          set -e
           export PATH=$(pwd)/tools/agbcc/bin:$PATH
-          
-          # Force the compiler to use GBA-compatible system headers
-          # This resolves the missing <stddef.h> and <string.h> errors
+          # Pointing to the correct system headers for the cross-compiler
           export CFLAGS="-I$(arm-none-eabi-gcc -print-file-name=include)"
-          
-          # Build the main project
           make -j$(nproc)
 
       - name: Upload Artifact
