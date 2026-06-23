@@ -23,40 +23,39 @@ jobs:
 
       - name: Build Toolchain
         run: |
+          # Create Shim Directory for ARM tools
+          mkdir -p shim
+          echo '#!/bin/sh' > shim/as
+          echo 'exec arm-none-eabi-as "$@"' >> shim/as
+          echo '#!/bin/sh' > shim/gcc
+          echo 'exec arm-none-eabi-gcc "$@"' >> shim/gcc
+          chmod +x shim/as shim/gcc
+          
+          # Build agbcc
           cd tools/agbcc
           chmod -R +x .
-          
-          # Create shim directory
-          mkdir -p ../shim
-          echo '#!/bin/sh' > ../shim/as
-          echo 'exec arm-none-eabi-as "$@"' >> ../shim/as
-          echo '#!/bin/sh' > ../shim/gcc
-          echo 'exec arm-none-eabi-gcc "$@"' >> ../shim/gcc
-          chmod +x ../shim/as ../shim/gcc
-          
-          # 1. Build the agbcc compiler itself (Host build)
           export CC=/usr/bin/gcc-9
           export CXX=/usr/bin/g++-9
           export CFLAGS="-std=gnu89 -w -fno-strict-aliasing -fno-builtin -Wno-format-security -Wno-error=implicit-function-declaration -fcommon"
           ./build.sh
           
-          # 2. Build libraries (Target build)
-          # Inject our shim directory ONLY for this step
+          # Build libraries with ARM Shims
           export PATH=$(pwd)/../shim:$PATH
-          [ -d "libc" ] && cd libc && make CFLAGS="$CFLAGS" && cd ..
-          [ -d "libgcc" ] && cd libgcc && make CFLAGS="$CFLAGS" && cd ..
+          [ -d "libc" ] && cd libc && make -j$(nproc) CFLAGS="$CFLAGS" && cd ..
+          [ -d "libgcc" ] && cd libgcc && make -j$(nproc) CFLAGS="$CFLAGS" && cd ..
           cd ../..
           
-          # 3. Build other tools (Host utilities)
-          # CRITICAL: We remove the shim directory from the PATH here
-          export PATH=$(echo $PATH | sed -e 's|'$(pwd)/../shim':||')
+          # Build Host Utilities (preproc, etc.)
+          # Remove shim from path, unset ARM variables, and force native tools
+          export PATH=$(echo $PATH | sed -e 's|'$(pwd)/shim':||')
+          unset AS CC CXX AR
           
           find tools -mindepth 2 -name "Makefile" -exec dirname {} \; | while read dir; do
             if [ "$dir" != "tools/agbcc" ]; then
-              # Use explicit system compilers for host tools
-              make -C "$dir" CC=/usr/bin/gcc CXX=/usr/bin/g++ CFLAGS="-std=gnu11 -O2 -Wall"
+              make -C "$dir" CC=/usr/bin/gcc CXX=/usr/bin/g++ AS=/usr/bin/as AR=/usr/bin/ar CFLAGS="-std=gnu11 -O2 -Wall"
             fi
           done
+
       - name: Build ROM
         run: |
           export PATH=$(pwd)/tools/agbcc/bin:$PATH
