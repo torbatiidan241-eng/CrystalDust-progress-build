@@ -26,13 +26,13 @@ jobs:
           cd tools/agbcc
           chmod -R +x .
           
-          # We add -Wno-error=implicit-function-declaration to ignore the 'string.h' errors
-          # We also keep -w to suppress other legacy warnings
+          # Add -Wno-error=implicit-function-declaration to ignore string.h header errors
+          # Add -w to suppress other noise from this legacy project
           export CFLAGS="-std=gnu89 -w -fno-strict-aliasing -fno-builtin -Wno-format-security -Wno-error=implicit-function-declaration"
           
           ./build.sh
           
-          # Apply the same flags to sub-component builds
+          # Pass CFLAGS to sub-component builds
           [ -d "libc" ] && cd libc && make CFLAGS="$CFLAGS" && cd ..
           [ -d "libgcc" ] && cd libgcc && make CFLAGS="$CFLAGS" && cd ..
           cd ../..
