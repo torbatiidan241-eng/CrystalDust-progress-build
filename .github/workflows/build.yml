@@ -32,27 +32,28 @@ jobs:
           export CFLAGS="-std=gnu89 -w -fno-strict-aliasing -fno-builtin -Wno-format-security -fcommon"
           ./build.sh
           
-          # 2. Build Libraries - The "Hijack" Method
-          # Instead of relying on PATH, we force the compiler to use our wrapper 
-          # by putting it in the local 'bin' directory the compiler searches.
-          mkdir -p bin
-          echo '#!/bin/sh' > bin/as
-          echo 'exec arm-none-eabi-as -mcpu=arm7tdmi -mthumb-interwork "$@"' >> bin/as
-          chmod +x bin/as
+          # 2. Build Libraries (Target ARM)
+          # Patching strategy: Instead of hijacking the assembler, we clean the source code.
+          # This allows us to use standard 'arm-none-eabi-as'.
           
-          # Force the compiler to use our local bin directory
-          # We add this to the build flags so the compiler finds our 'as' first
-          export PATH=$(pwd)/bin:$PATH
-          export TARGET_CFLAGS="-mcpu=arm7tdmi -mthumb-interwork"
+          # We manually intervene in the library build to patch the assembly source
+          cd libgcc
+          # Edit the Makefile to include the patching step for libgcc1.S
+          # This inserts our sed commands into the build process
+          sed -i '/cp \.\/config\/arm\/lib1funcs\.asm libgcc1\.S/a \
+          sed -i "s/@/; /g" libgcc1.S \
+          sed -i "s/\\\.req/ .equ/g" libgcc1.S' Makefile
           
-          [ -d "libc" ] && cd libc && make -j$(nproc) AS=as CFLAGS="$TARGET_CFLAGS" && cd ..
-          [ -d "libgcc" ] && cd libgcc && make -j$(nproc) AS=as CFLAGS="$TARGET_CFLAGS" && cd ..
+          # Now run the build
+          make -j$(nproc) AS=arm-none-eabi-as CFLAGS="-mcpu=arm7tdmi -mthumb-interwork"
+          cd ..
+          
+          # Build libc similarly
+          [ -d "libc" ] && cd libc && make -j$(nproc) AS=arm-none-eabi-as CFLAGS="-mcpu=arm7tdmi -mthumb-interwork" && cd ..
           cd ../..
           
-          # 3. Build Host Utilities
-          # Remove the 'bin' folder from PATH to restore normal operation
-          export PATH=$(echo $PATH | sed -e 's|'$(pwd)/tools/agbcc/bin':||')
-          
+          # 3. Build Host Utilities (preproc, etc.)
+          # Standard native build as these tools are for the host, not the GBA
           find tools -mindepth 2 -name "Makefile" -exec dirname {} \; | while read dir; do
             if [ "$dir" != "tools/agbcc" ]; then
               make -C "$dir" CC=/usr/bin/gcc CXX=/usr/bin/g++ AS=/usr/bin/as AR=/usr/bin/ar CFLAGS="-std=gnu11 -O2 -Wall"
