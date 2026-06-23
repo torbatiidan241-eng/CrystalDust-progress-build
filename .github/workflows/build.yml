@@ -19,31 +19,21 @@ jobs:
       - name: Install Dependencies
         run: |
           sudo apt-get update
-          # flex and bison are required to generate the missing source files
-          # lib32gcc-s1 is often required for legacy 32-bit compiler support
-          sudo apt-get install -y gcc-9 g++-9 gcc-arm-none-eabi binutils-arm-none-eabi libpng-dev make git flex bison
+          sudo apt-get install -y gcc-arm-none-eabi binutils-arm-none-eabi libpng-dev make
 
-      - name: Build Toolchain
+      - name: Get Toolchain
         run: |
-          cd tools/agbcc
-          # Ensure all scripts are executable
-          chmod +x build.sh
-          
-          # The build.sh script usually performs the necessary configuration
-          ./build.sh
-          
-          # Verify the binary exists
-          if [ ! -f "agbcc" ]; then
-            echo "Error: agbcc binary was not created."
-            exit 1
-          fi
-          
-          # Move to the project root
-          cd ../..
+          # Ensure tools directory exists
+          mkdir -p tools/agbcc
+          # Download the pre-built agbcc binary directly
+          # Using a reliable mirror for the GBA toolchain
+          curl -L https://github.com/pret/agbcc/releases/latest/download/agbcc.tar.gz -o agbcc.tar.gz
+          tar -xzf agbcc.tar.gz -C tools/agbcc/
+          chmod +x tools/agbcc/agbcc
 
       - name: Build ROM
         run: |
-          # Ensure the compiler is in the path
+          # Add the toolchain to the PATH
           export PATH=$(pwd)/tools/agbcc:$PATH
           export AGBCC=$(pwd)/tools/agbcc/agbcc
           
