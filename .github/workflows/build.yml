@@ -1,10 +1,13 @@
 name: CrystalDust Build
 
-on: [push]
+on:
+  push:
+    branches:
+      - progress # Target the progress branch as requested
 
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -14,18 +17,14 @@ jobs:
       - name: Install Dependencies
         run: |
           sudo apt-get update
-          # bison and flex are critical for generating those missing .c files
           sudo apt-get install -y build-essential libpng-dev gcc-arm-none-eabi bison flex
 
       - name: Build Compiler (agbcc)
         run: |
           cd tools/agbcc
           chmod +x build.sh
-          # Attempt to build
           ./build.sh
-          # Ensure binary is in the right place
           mkdir -p bin
-          # Check if build output exists in root of agbcc or in gcc subfolder
           if [ -f agbcc ]; then
             cp agbcc bin/agbcc
           elif [ -f gcc/agbcc ]; then
