@@ -1,51 +1,20 @@
 name: CrystalDust Build
 
-on:
-  push:
-    branches: [ progress ]
-  pull_request:
-    branches: [ progress ]
+on: [push]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-        with:
-          submodules: false
-
-      - name: Install Dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y gcc-arm-none-eabi binutils-arm-none-eabi libpng-dev make
-
-      - name: Get Toolchain
-        run: |
-          # Ensure tools directory exists
-          mkdir -p tools/agbcc
-          
-          # Download the file
-          curl -L https://github.com/pret/agbcc/releases/latest/download/agbcc.tar.gz -o agbcc.tar.gz
-          
-          # Extract and move the binary to the root of tools/agbcc
-          # We use find to locate the 'agbcc' file regardless of subfolder structure
-          tar -xzf agbcc.tar.gz
-          find . -name "agbcc" -type f -exec mv {} tools/agbcc/ \;
-          
-          # Set permissions
-          chmod +x tools/agbcc/agbcc
+      - uses: actions/checkout@v4
+      
       - name: Build ROM
         run: |
-          # Add the toolchain to the PATH
-          export PATH=$(pwd)/tools/agbcc:$PATH
-          export AGBCC=$(pwd)/tools/agbcc/agbcc
+          # Just point directly to the binary you committed
+          export PATH=$(pwd)/tools/bin:$PATH
+          make
           
-          # Run the build
-          make -j$(nproc)
-
-      - name: Upload Artifact
+      - name: Upload ROM
         uses: actions/upload-artifact@v4
         with:
           name: CrystalDust-ROM
