@@ -21,28 +21,39 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y gcc-9 g++-9 gcc-arm-none-eabi binutils-arm-none-eabi libpng-dev make git
 
-      - name: Build Toolchain
+      - name: Build All Tools
         run: |
-          cd tools/agbcc
+          # 1. Compile host tools explicitly to ensure they exist and are executable
+          # This bypasses the implicit Makefile rules that are failing
+          cd tools
+          for tool in gbagfx preproc scaninc ramscrgen; do
+            echo "Building $tool..."
+            if [ -d "$tool" ]; then
+              cd "$tool"
+              make clean || true
+              make CC=gcc CXX=g++
+              chmod +x * || true
+              cd ..
+            fi
+          done
+          
+          # 2. Build agbcc explicitly
+          cd agbcc
           chmod -R +x .
           ./build.sh
-          # Build the libagbsyscall.s dependency manually if missing
-          # This often happens when the build system is interrupted
+          mkdir -p bin
+          cp agbcc bin/agbcc
           cd ../..
 
       - name: Build ROM
         run: |
-          # 1. Define the absolute paths
-          export TOOLCHAIN_PATH=$(pwd)/tools/agbcc
-          export PATH=$TOOLCHAIN_PATH:$TOOLCHAIN_PATH/bin:$PATH
-          export AGBCC=$TOOLCHAIN_PATH/bin/agbcc
+          # 3. Ensure binaries are in the path for the final build
+          export PATH=$(pwd)/tools/agbcc/bin:$(pwd)/tools/gbagfx:$(pwd)/tools/preproc:$(pwd)/tools/scaninc:$(pwd)/tools/ramscrgen:$PATH
           
-          # 2. Force the Makefile to use the correct compiler
-          # We pass these variables directly into the make command
-          # We also pre-create the build directory to avoid the 'cd build' error
+          # 4. Run the main build
+          # We use the explicit path for agbcc and ensure the build directory exists
           mkdir -p build/emerald
-          
-          make -j$(nproc) CC=$AGBCC CPP=$AGBCC AS=arm-none-eabi-as AR=arm-none-eabi-ar
+          make -j$(nproc) CC=$(pwd)/tools/agbcc/bin/agbcc
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
