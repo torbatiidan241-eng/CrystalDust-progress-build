@@ -4,7 +4,7 @@ on: [push]
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -14,24 +14,31 @@ jobs:
       - name: Install Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential libpng-dev gcc-arm-none-eabi
+          # bison and flex are critical for generating those missing .c files
+          sudo apt-get install -y build-essential libpng-dev gcc-arm-none-eabi bison flex
 
       - name: Build Compiler (agbcc)
         run: |
           cd tools/agbcc
-          # Ensure scripts have execute permissions
           chmod +x build.sh
+          # Attempt to build
           ./build.sh
-          # Prepare the binary for the build process
+          # Ensure binary is in the right place
           mkdir -p bin
-          cp agbcc bin/agbcc
+          # Check if build output exists in root of agbcc or in gcc subfolder
+          if [ -f agbcc ]; then
+            cp agbcc bin/agbcc
+          elif [ -f gcc/agbcc ]; then
+            cp gcc/agbcc bin/agbcc
+          else
+            echo "Error: agbcc binary not found after build."
+            exit 1
+          fi
           cd ../..
 
       - name: Build Game
         run: |
-          # Add the local toolchain to PATH
           export PATH=$PATH:$(pwd)/tools/agbcc/bin
-          # Run the build
           make -j$(nproc)
 
       - name: Upload Artifact
