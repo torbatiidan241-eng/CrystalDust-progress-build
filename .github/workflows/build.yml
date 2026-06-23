@@ -23,30 +23,26 @@ jobs:
 
       - name: Build Toolchain
         run: |
-          # 1. Clean build directory
-          rm -rf build/
-          
-          # 2. Fix permissions for ALL files in the agbcc tools folder
-          # This is the critical step to fix the 'Permission denied' on ./move-if-change
           cd tools/agbcc
           chmod -R +x .
-          
-          # 3. Build agbcc
           ./build.sh
-          
-          # 4. Create the bin directory for the toolchain
-          mkdir -p bin
-          if [ -f agbcc ]; then cp agbcc bin/agbcc; fi
+          # Build the libagbsyscall.s dependency manually if missing
+          # This often happens when the build system is interrupted
           cd ../..
 
       - name: Build ROM
         run: |
-          # 5. Point the build to the correct binaries
-          export PATH=$(pwd)/tools/agbcc/bin:$PATH
-          export AGBCC=$(pwd)/tools/agbcc/bin/agbcc
+          # 1. Define the absolute paths
+          export TOOLCHAIN_PATH=$(pwd)/tools/agbcc
+          export PATH=$TOOLCHAIN_PATH:$TOOLCHAIN_PATH/bin:$PATH
+          export AGBCC=$TOOLCHAIN_PATH/bin/agbcc
           
-          # 6. Run the build
-          make -j$(nproc)
+          # 2. Force the Makefile to use the correct compiler
+          # We pass these variables directly into the make command
+          # We also pre-create the build directory to avoid the 'cd build' error
+          mkdir -p build/emerald
+          
+          make -j$(nproc) CC=$AGBCC CPP=$AGBCC AS=arm-none-eabi-as AR=arm-none-eabi-ar
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
