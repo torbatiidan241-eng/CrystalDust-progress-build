@@ -26,42 +26,41 @@ jobs:
           cd tools/agbcc
           chmod -R +x .
           
-          # Setup environment
-          export CROSS_COMPILE=arm-none-eabi-
-          export AS=${CROSS_COMPILE}as
-          export CC_FOR_TARGET=${CROSS_COMPILE}gcc
-          
-          # Patch the Makefile if it exists in the expected location
-          if [ -f "gcc_arm/Makefile" ]; then
-            sed -i 's|$(AS)|arm-none-eabi-as -mcpu=arm7tdmi|g' gcc_arm/Makefile
-          else
-            echo "Warning: gcc_arm/Makefile not found, checking directory structure..."
-            find . -name "Makefile"
-          fi
-          
-          # Build agbcc
+          # 1. Setup Environment
           export CC=/usr/bin/gcc-9
           export CXX=/usr/bin/g++-9
-          export CFLAGS="-std=gnu89 -w -fno-strict-aliasing -fno-builtin -Wno-format-security -fcommon"
+          # Inject -Wa,-mcpu=arm7tdmi to force assembler compatibility
+          export CFLAGS="-std=gnu89 -w -fno-strict-aliasing -fno-builtin -Wno-format-security -fcommon -Wa,-mcpu=arm7tdmi"
+          
+          # 2. Patch Makefile dynamically to ensure correct assembler usage
+          # This finds the specific Makefile that builds libgcc and forces the assembler
+          find . -name "Makefile" -exec grep -l "libgcc1" {} + | xargs -r sed -i 's|$(AS)|arm-none-eabi-as -mcpu=arm7tdmi|g'
+          
+          # 3. Build agbcc
           ./build.sh
           
-          # Build libraries
+          # 4. Build libraries
+          # We use a shim to ensure the build process picks up our newly built compiler
+          mkdir -p ../shim
+          echo '#!/bin/sh' > ../shim/agbcc
+          echo 'exec '"$(pwd)"'/bin/agbcc "$@"' >> ../shim/agbcc
+          chmod +x ../shim/agbcc
           export PATH=$(pwd)/../shim:$PATH
+          
           [ -d "libc" ] && cd libc && make -j$(nproc) CFLAGS="$CFLAGS" && cd ..
           [ -d "libgcc" ] && cd libgcc && make -j$(nproc) CFLAGS="$CFLAGS" && cd ..
           cd ../..
           
-          # Build Host Utilities (preproc, etc.)
-          export PATH=$(echo $PATH | sed -e 's|'$(pwd)/shim':||')
-          unset AS CC CXX AR
+          # 5. Build Host Utilities (preproc, etc.)
+          # UNSET environment variables to prevent host tools from inheriting ARM flags
+          unset AS CC CXX AR CFLAGS
           
           find tools -mindepth 2 -name "Makefile" -exec dirname {} \; | while read dir; do
             if [ "$dir" != "tools/agbcc" ]; then
               make -C "$dir" CC=/usr/bin/gcc CXX=/usr/bin/g++ AS=/usr/bin/as AR=/usr/bin/ar CFLAGS="-std=gnu11 -O2 -Wall"
             fi
           done
-          
-          # ... (Continue with your library builds as before)
+
       - name: Build ROM
         run: |
           export PATH=$(pwd)/tools/agbcc/bin:$PATH
