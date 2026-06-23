@@ -9,9 +9,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      # Inject flags globally to ensure the Makefile picks them up
-      CFLAGS: "-std=gnu89 -w -fno-strict-aliasing -fno-builtin -Wno-format-security -Wno-error=implicit-function-declaration"
     
     steps:
       - name: Checkout Repository
@@ -26,19 +23,21 @@ jobs:
 
       - name: Build Toolchain
         run: |
+          # 1. Build agbcc (Requires C89/gnu89)
           cd tools/agbcc
           chmod -R +x .
-          
-          # Force the use of our environment flags
-          export CFLAGS="$CFLAGS"
+          export CFLAGS="-std=gnu89 -w -fno-strict-aliasing -fno-builtin -Wno-format-security -Wno-error=implicit-function-declaration"
           ./build.sh
-          
           [ -d "libc" ] && cd libc && make CFLAGS="$CFLAGS" && cd ..
           [ -d "libgcc" ] && cd libgcc && make CFLAGS="$CFLAGS" && cd ..
           cd ../..
           
+          # 2. Build other tools (Requires C11/gnu11)
+          # We explicitly override CFLAGS for these tools to avoid the C89 conflict
           find tools -mindepth 2 -name "Makefile" -exec dirname {} \; | while read dir; do
-            make -C "$dir" CFLAGS="$CFLAGS"
+            if [ "$dir" != "tools/agbcc" ]; then
+              make -C "$dir" CFLAGS="-std=gnu11 -O2 -Wall"
+            fi
           done
 
       - name: Build ROM
