@@ -13,36 +13,41 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-        # We set 'submodules: false' because you manually included the agbcc files
         with:
           submodules: false
 
       - name: Install Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y gcc-9 g++-9 gcc-arm-none-eabi binutils-arm-none-eabi libpng-dev make git
+          # flex and bison are required to generate the missing source files
+          # lib32gcc-s1 is often required for legacy 32-bit compiler support
+          sudo apt-get install -y gcc-9 g++-9 gcc-arm-none-eabi binutils-arm-none-eabi libpng-dev make git flex bison
 
       - name: Build Toolchain
         run: |
-          # 1. Fix permissions so the compiler build scripts can run
           cd tools/agbcc
-          chmod -R +x .
+          # Ensure all scripts are executable
+          chmod +x build.sh
           
-          # 2. Build the agbcc compiler
+          # The build.sh script usually performs the necessary configuration
           ./build.sh
           
-          # 3. Ensure the binary is in a place the Makefile expects
-          mkdir -p bin
-          if [ -f agbcc ]; then cp agbcc bin/agbcc; fi
+          # Verify the binary exists
+          if [ ! -f "agbcc" ]; then
+            echo "Error: agbcc binary was not created."
+            exit 1
+          fi
+          
+          # Move to the project root
           cd ../..
 
       - name: Build ROM
         run: |
-          # 4. Point the PATH to the locally built toolchain
-          export PATH=$(pwd)/tools/agbcc/bin:$PATH
-          export AGBCC=$(pwd)/tools/agbcc/bin/agbcc
+          # Ensure the compiler is in the path
+          export PATH=$(pwd)/tools/agbcc:$PATH
+          export AGBCC=$(pwd)/tools/agbcc/agbcc
           
-          # 5. Build the game
+          # Run the build
           make -j$(nproc)
 
       - name: Upload Artifact
