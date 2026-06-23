@@ -21,6 +21,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential gcc-arm-none-eabi binutils-arm-none-eabi libpng-dev
 
+<<<<<<< HEAD
       - name: Fresh Toolchain Re-installation
         run: |
           # 1. Delete the problematic folder
@@ -37,20 +38,45 @@ jobs:
           ./build.sh
           
           # 5. Prepare bin directory
+=======
+      - name: Prepare and Build Toolchain
+        run: |
+          # 1. Force recursive permissions for all tools
+          # This specifically fixes 'move-if-change' and other helper scripts
+          find tools -type f -exec chmod +x {} +
+          
+          # 2. Build agbcc
+          cd tools/agbcc
+          ./build.sh
+          
+          # 3. Verify it is a real agbcc binary
+          # This should not return an error if build.sh succeeded
+          ./agbcc --version
+          
+          # 4. Prepare bin directory
+>>>>>>> 1b62c738b7c40b7006fae97d96d9098b76e6b8da
           mkdir -p bin
           cp agbcc bin/agbcc
           cd ../..
 
       - name: Build ROM
         run: |
+<<<<<<< HEAD
           export AGBCC=$(pwd)/tools/agbcc/bin/agbcc
           export PATH=$(pwd)/tools/agbcc/bin:$PATH
           
           # Run make with forced compiler variable
+=======
+          # 5. Set paths
+          export AGBCC=$(pwd)/tools/agbcc/bin/agbcc
+          export PATH=$(pwd)/tools/agbcc/bin:$PATH
+          
+          # 6. Run make
+          # Ensure CC is pointed to our verified binary
+>>>>>>> 1b62c738b7c40b7006fae97d96d9098b76e6b8da
           make -j$(nproc) CC="$AGBCC"
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: CrystalDust-ROM
           path: '*.gba'
-# Triggering a new build
