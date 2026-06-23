@@ -23,8 +23,6 @@ jobs:
 
       - name: Build Toolchain
         run: |
-          # 0. Capture pristine system PATH
-          export ORIGINAL_PATH=$PATH
           cd tools/agbcc
           chmod -R +x .
           
@@ -34,25 +32,29 @@ jobs:
           export CFLAGS="-std=gnu89 -w -fno-strict-aliasing -fno-builtin -Wno-format-security -fcommon"
           ./build.sh
           
-          # 2. Build Libraries (Target ARM) - Use Shim
-          mkdir -p ../shim
-          echo '#!/bin/sh' > ../shim/as
-          echo 'exec arm-none-eabi-as -mcpu=arm7tdmi -mthumb-interwork "$@"' >> ../shim/as
-          chmod +x ../shim/as
+          # 2. Force the correct assembler for the library build
+          # We locate the assembler that the toolchain is using and override it
+          # by placing our own script there.
+          mkdir -p binutils
+          echo '#!/bin/sh' > binutils/as
+          echo 'exec arm-none-eabi-as -mcpu=arm7tdmi -mthumb-interwork "$@"' >> binutils/as
+          chmod +x binutils/as
           
-          export PATH=$(pwd)/../shim:$ORIGINAL_PATH
+          # This ensures that whenever 'as' is called in this directory, 
+          # it points to our custom legacy-aware wrapper.
+          export PATH=$(pwd)/binutils:$PATH
+          
+          # 3. Build Libraries
           export TARGET_CFLAGS="-mcpu=arm7tdmi -mthumb-interwork"
-          
-          [ -d "libc" ] && cd libc && make -j$(nproc) AS=arm-none-eabi-as CFLAGS="$TARGET_CFLAGS" && cd ..
-          [ -d "libgcc" ] && cd libgcc && make -j$(nproc) AS=arm-none-eabi-as CFLAGS="$TARGET_CFLAGS" && cd ..
+          [ -d "libc" ] && cd libc && make -j$(nproc) AS=as CFLAGS="$TARGET_CFLAGS" && cd ..
+          [ -d "libgcc" ] && cd libgcc && make -j$(nproc) AS=as CFLAGS="$TARGET_CFLAGS" && cd ..
           cd ../..
           
-          # 3. Build Host Utilities (preproc, etc.)
-          # Restore ORIGINAL_PATH to ensure system tools are used
-          export PATH=$ORIGINAL_PATH
-          unset AS CC CXX AR CFLAGS
+          # 4. Build Host Utilities (preproc, etc.)
+          # Reset path to remove our custom assembler wrapper
+          export PATH=$(echo $PATH | sed -e 's|'$(pwd)/tools/agbcc/binutils':||')
+          unset AS
           
-          # Use absolute paths for tools to force native compilation
           find tools -mindepth 2 -name "Makefile" -exec dirname {} \; | while read dir; do
             if [ "$dir" != "tools/agbcc" ]; then
               make -C "$dir" CC=/usr/bin/gcc CXX=/usr/bin/g++ AS=/usr/bin/as AR=/usr/bin/ar CFLAGS="-std=gnu11 -O2 -Wall"
@@ -62,11 +64,4 @@ jobs:
       - name: Build ROM
         run: |
           export PATH=$(pwd)/tools/agbcc/bin:$PATH
-          export AGBCC=$(pwd)/tools/agbcc/bin/agbcc
           make -j$(nproc)
-
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: CrystalDust-ROM
-          path: '*.gba'
