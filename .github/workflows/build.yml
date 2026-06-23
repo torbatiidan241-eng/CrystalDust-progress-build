@@ -26,31 +26,31 @@ jobs:
           cd tools/agbcc
           chmod -R +x .
           
-          # 1. Create a wrapper to force the correct assembly syntax
-          mkdir -p ../shim
-          echo '#!/bin/sh' > ../shim/as
-          echo 'exec arm-none-eabi-as -mcpu=arm7tdmi -mthumb-interwork "$@"' >> ../shim/as
-          chmod +x ../shim/as
-          export PATH=$(pwd)/../shim:$PATH
-
-          # 2. Build agbcc
+          # 1. Build agbcc (Native Host Tool)
+          # We do NOT include the shim here so host tools use /usr/bin/as
           export CC=/usr/bin/gcc-9
           export CXX=/usr/bin/g++-9
           export CFLAGS="-std=gnu89 -w -fno-strict-aliasing -fno-builtin -Wno-format-security -fcommon"
           ./build.sh
           
-          # 3. Build Libraries
-          # We force the internal Makefiles to use our custom 'as' shim
-          # and ensure we pass the target architecture flags
+          # 2. Build Libraries (Target ARM)
+          # NOW we introduce the shim to force ARM7TDMI assembly
+          mkdir -p ../shim
+          echo '#!/bin/sh' > ../shim/as
+          echo 'exec arm-none-eabi-as -mcpu=arm7tdmi -mthumb-interwork "$@"' >> ../shim/as
+          chmod +x ../shim/as
+          
+          export PATH=$(pwd)/../shim:$PATH
           export TARGET_CFLAGS="-mcpu=arm7tdmi -mthumb-interwork"
+          
           [ -d "libc" ] && cd libc && make -j$(nproc) AS=arm-none-eabi-as CFLAGS="$TARGET_CFLAGS" && cd ..
           [ -d "libgcc" ] && cd libgcc && make -j$(nproc) AS=arm-none-eabi-as CFLAGS="$TARGET_CFLAGS" && cd ..
           cd ../..
           
-          # 4. Build Host Utilities
-          # Clean environment and path to prevent cross-compiler leakage
+          # 3. Build Host Utilities (preproc, etc.)
+          # Remove shim and unset variables to prevent ARM-flag leakage
+          export PATH=$(echo $PATH | sed -e 's|'$(pwd)/tools/shim':||')
           unset AS CC CXX AR CFLAGS
-          export PATH=$(echo $PATH | sed -e 's|'$(pwd)/../shim':||')
           
           find tools -mindepth 2 -name "Makefile" -exec dirname {} \; | while read dir; do
             if [ "$dir" != "tools/agbcc" ]; then
