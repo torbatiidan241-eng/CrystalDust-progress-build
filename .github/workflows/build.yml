@@ -26,23 +26,26 @@ jobs:
           # 1. Clean build directory
           rm -rf build/
           
-          # 2. Fix permissions and build agbcc
+          # 2. Fix permissions for ALL files in the agbcc tools folder
+          # This is the critical step to fix the 'Permission denied' on ./move-if-change
           cd tools/agbcc
-          chmod +x build.sh
+          chmod -R +x .
+          
+          # 3. Build agbcc
           ./build.sh
           
-          # 3. Ensure the bin directory exists for the compiler headers
+          # 4. Create the bin directory for the toolchain
           mkdir -p bin
           if [ -f agbcc ]; then cp agbcc bin/agbcc; fi
           cd ../..
 
       - name: Build ROM
         run: |
-          # Set the path to include our newly built agbcc
+          # 5. Point the build to the correct binaries
           export PATH=$(pwd)/tools/agbcc/bin:$PATH
           export AGBCC=$(pwd)/tools/agbcc/bin/agbcc
           
-          # Run the build
+          # 6. Run the build
           make -j$(nproc)
 
       - name: Upload Artifact
