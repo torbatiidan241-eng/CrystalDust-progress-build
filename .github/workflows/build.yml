@@ -23,25 +23,23 @@ jobs:
 
       - name: Build Toolchain
         run: |
-          # Clean environment
+          # 1. Clean build directory
           rm -rf build/
           
-          # Build agbcc
+          # 2. Fix permissions and build agbcc
           cd tools/agbcc
+          chmod +x build.sh
           ./build.sh
-          # agbcc expects its binaries to be in a bin directory relative to its source
+          
+          # 3. Ensure the bin directory exists for the compiler headers
           mkdir -p bin
-          cp agbcc bin/agbcc
-          cp ../../tools/agbcc/bin/* bin/ 2>/dev/null || true
+          if [ -f agbcc ]; then cp agbcc bin/agbcc; fi
           cd ../..
 
       - name: Build ROM
         run: |
-          # Add the toolchain 'bin' directory to the PATH
-          # This allows the Makefile to find the 'agbcc' compiler and its internal headers
+          # Set the path to include our newly built agbcc
           export PATH=$(pwd)/tools/agbcc/bin:$PATH
-          
-          # Set the AGBCC variable explicitly as many GBA Makefiles require it
           export AGBCC=$(pwd)/tools/agbcc/bin/agbcc
           
           # Run the build
