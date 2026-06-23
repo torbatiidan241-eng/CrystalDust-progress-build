@@ -26,25 +26,23 @@ jobs:
           cd tools/agbcc
           chmod -R +x .
           
-          # Define the ARM Cross-Compiler Tools
-          export CROSS=arm-none-eabi-
-          export CC_TARGET=${CROSS}gcc
-          export AS_TARGET=${CROSS}as
-          export AR_TARGET=${CROSS}ar
-          
-          # Build agbcc itself (Host build)
+          # 1. Build the agbcc compiler itself (Host-machine build)
           export CC=gcc-9
           export CXX=g++-9
           export CFLAGS="-std=gnu89 -w -fno-strict-aliasing -fno-builtin -Wno-format-security -Wno-error=implicit-function-declaration -fcommon"
           ./build.sh
           
-          # Force the use of Target tools for the libraries
-          # We pass variables directly to make to override any internal defaults
-          [ -d "libc" ] && cd libc && make CC=$CC_TARGET AS=$AS_TARGET AR=$AR_TARGET CFLAGS="$CFLAGS" && cd ..
-          [ -d "libgcc" ] && cd libgcc && make CC=$CC_TARGET AS=$AS_TARGET AR=$AR_TARGET CFLAGS="$CFLAGS" && cd ..
+          # 2. Build libraries (Target-machine build)
+          # We force the ARM toolchain by overriding CC, AS, and AR directly in the environment
+          export CC=arm-none-eabi-gcc
+          export AS=arm-none-eabi-as
+          export AR=arm-none-eabi-ar
+          
+          [ -d "libc" ] && cd libc && make CC=$CC AS=$AS AR=$AR CFLAGS="$CFLAGS" && cd ..
+          [ -d "libgcc" ] && cd libgcc && make CC=$CC AS=$AS AR=$AR CFLAGS="$CFLAGS" && cd ..
           cd ../..
           
-          # Build other tools using standard host compiler
+          # 3. Build other tools using standard host compiler
           find tools -mindepth 2 -name "Makefile" -exec dirname {} \; | while read dir; do
             if [ "$dir" != "tools/agbcc" ]; then
               make -C "$dir" CFLAGS="-std=gnu11 -O2 -Wall"
