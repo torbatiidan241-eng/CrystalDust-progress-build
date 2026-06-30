@@ -15,8 +15,28 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential libpng-dev gcc-arm-none-eabi
+
+      - name: Install devkitARM
+        run: |
+          sudo mkdir -p /etc/apt/keyrings
+          curl -sL https://apt.devkitpro.org/devkitpro-pub.gpg | sudo gpg --dearmor -o /etc/apt/keyrings/devkitpro-pub.gpg
+          echo "deb [signed-by=/etc/apt/keyrings/devkitpro-pub.gpg] https://apt.devkitpro.org stable main" | sudo tee /etc/apt/sources.list.d/devkitpro.list
+          sudo apt-get update
+          sudo apt-get install -y devkitARM-rules
+
+      - name: Build Tools
+        # This compiles your tools from source into Linux-native binaries
+        run: make tools
+
       - name: Build ROM
         run: make -j$(nproc)
+        env:
+          DEVKITARM: /opt/devkitpro/devkitARM
+          PATH: /opt/devkitpro/devkitARM/bin:$PATH
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
