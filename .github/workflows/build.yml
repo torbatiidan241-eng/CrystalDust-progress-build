@@ -22,10 +22,12 @@ jobs:
 
       - name: Install devkitARM
         run: |
-          curl -LO https://github.com/devkitPro/installer/releases/download/v2.0.0/devkitPro-pacman-linux.deb
-          sudo dpkg -i devkitPro-pacman-linux.deb
-          sudo dkp-pacman -S --noconfirm devkitarm-rules
-
+          # Add the devkitPro keys and repository
+          sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 189701DA575BF5C6
+          echo "deb https://apt.devkitpro.org stable main" | sudo tee /etc/apt/sources.list.d/devkitpro.list
+          sudo apt-get update
+          # Install the toolchain
+          sudo apt-get install -y devkitARM-rules
       - name: Build agbcc
         run: |
           cd tools/agbcc
