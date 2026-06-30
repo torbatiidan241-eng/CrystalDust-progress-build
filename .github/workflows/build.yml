@@ -18,25 +18,16 @@ jobs:
       - name: Install Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential libpng-dev gcc-arm-none-eabi
-
-      - name: Install devkitARM
-        run: |
-          sudo mkdir -p /etc/apt/keyrings
-          curl -sL https://apt.devkitpro.org/devkitpro-pub.gpg | sudo gpg --dearmor -o /etc/apt/keyrings/devkitpro-pub.gpg
-          echo "deb [signed-by=/etc/apt/keyrings/devkitpro-pub.gpg] https://apt.devkitpro.org stable main" | sudo tee /etc/apt/sources.list.d/devkitpro.list
-          sudo apt-get update
-          sudo apt-get install -y devkitARM-rules
+          # Install standard tools and the ARM cross-compiler directly from Ubuntu
+          sudo apt-get install -y build-essential libpng-dev gcc-arm-none-eabi binutils-arm-none-eabi
 
       - name: Build Tools
-        # This compiles your tools from source into Linux-native binaries
+        # If your Makefile is set up correctly, this will compile 
+        # the tools using the Linux gcc already installed above.
         run: make tools
 
       - name: Build ROM
         run: make -j$(nproc)
-        env:
-          DEVKITARM: /opt/devkitpro/devkitARM
-          PATH: /opt/devkitpro/devkitARM/bin:$PATH
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
