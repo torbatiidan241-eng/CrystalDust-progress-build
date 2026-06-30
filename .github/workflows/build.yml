@@ -1,14 +1,20 @@
-name: Build
+name: Build CrystalDust
 on: [push, pull_request]
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - name: Configure Git
+        run: |
+          # These lines fix the "File name too long" and symlink errors
+          git config --global core.symlinks false
+          git config --global core.longpaths true
+
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          submodules: recursive # This is CRITICAL for finding missing files
+          submodules: recursive
 
       - name: Install Dependencies
         run: |
@@ -20,3 +26,9 @@ jobs:
 
       - name: Build ROM
         run: make -j$(nproc)
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: crystal-dust-rom
+          path: '*.gba'
