@@ -19,8 +19,7 @@ jobs:
       - name: Install dependencies
         run: |
           apt-get update
-          apt-get install -y build-essential libpng-dev pkg-config
-
+          apt-get install -y build-essential libpng-dev pkg-config bison flex autoconf
       - name: Build agbcc
         run: |
           cd tools/agbcc
