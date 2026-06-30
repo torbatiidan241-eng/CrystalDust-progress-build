@@ -7,7 +7,6 @@ jobs:
     steps:
       - name: Configure Git
         run: |
-          # These two lines prevent the "File name too long" and symlink errors
           git config --global core.symlinks false
           git config --global core.longpaths true
 
@@ -21,25 +20,18 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential libpng-dev gcc-arm-none-eabi
 
-      # Install devkitARM so the compiler can actually build the ROM
       - name: Install devkitARM
         run: |
           curl -LO https://github.com/devkitPro/installer/releases/download/v2.0.0/devkitPro-pacman-linux.deb
           sudo dpkg -i devkitPro-pacman-linux.deb
           sudo dkp-pacman -S --noconfirm devkitarm-rules
 
-      # Compile agbcc from source since the runner doesn't have it
       - name: Build agbcc
         run: |
           cd tools/agbcc
           ./build.sh
           ./install.sh ../
 
-      # Build the rest of the tools
-      - name: Build Tools
-        run: make tools
-
-      # Build the final ROM
       - name: Build ROM
         run: make -j$(nproc)
         env:
