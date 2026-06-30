@@ -16,31 +16,9 @@ jobs:
         with:
           submodules: recursive
 
-<<<<<<< HEAD
       - name: Build ROM
         run: |
           # Since the binary is now in the repo, just run make
-=======
-      - name: Install dependencies
-        run: |
-          apt-get update
-          apt-get install -y build-essential libpng-dev pkg-config bison flex autoconf
-      - name: Build agbcc
-        run: |
-          cd tools/agbcc
-          # Explicitly grant execute permission to the script
-          chmod +x build.sh
-          ./build.sh
-          
-          # Ensure binary is in the location the Makefile expects
-          mkdir -p bin
-          if [ -f "agbcc" ]; then cp agbcc bin/agbcc; fi
-          if [ -f "gcc/agbcc" ]; then cp gcc/agbcc bin/agbcc; fi
-          cd ../..
-      - name: Build ROM
-        run: |
-          # Do NOT force CC=... Let the Makefile handle it.
->>>>>>> 4a2bcb5a06dce8980e85b1837bc8d15315c00514
           make -j$(nproc)
 
       - name: Upload Artifact
