@@ -24,13 +24,15 @@ jobs:
       - name: Build agbcc
         run: |
           cd tools/agbcc
+          # Explicitly grant execute permission to the script
+          chmod +x build.sh
           ./build.sh
+          
           # Ensure binary is in the location the Makefile expects
           mkdir -p bin
           if [ -f "agbcc" ]; then cp agbcc bin/agbcc; fi
           if [ -f "gcc/agbcc" ]; then cp gcc/agbcc bin/agbcc; fi
           cd ../..
-
       - name: Build ROM
         run: |
           # Do NOT force CC=... Let the Makefile handle it.
