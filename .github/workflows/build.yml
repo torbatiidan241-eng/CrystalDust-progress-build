@@ -1,28 +1,35 @@
-name: CrystalDust Build
-
-on:
-  push:
-    branches:
-      - progress
+name: Build CrystalDust
+on: [push, pull_request]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: devkitpro/devkitarm:latest
-
     steps:
-      - name: Checkout repository
+      # Step 1: Configure Git to handle deep paths and avoid symlink issues
+      - name: Configure Git
+        run: |
+          git config --global core.symlinks false
+          git config --global core.longpaths true
+
+      # Step 2: Checkout the repository
+      - name: Checkout
         uses: actions/checkout@v4
         with:
           submodules: recursive
 
-      - name: Build ROM
+      # Step 3: Install dependencies for compiling the ROM
+      - name: Install dependencies
         run: |
-          # Since the binary is now in the repo, just run make
-          make -j$(nproc)
+          sudo apt-get update
+          sudo apt-get install -y build-essential libpng-dev
 
+      # Step 4: Build the ROM directly
+      - name: Build ROM
+        run: make -j$(nproc)
+
+      # Step 5: Upload the resulting .gba file
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: CrystalDust-ROM
-          path: '*.gba'
+          name: crystal-dust-rom
+          path: crystal-dust.gba
