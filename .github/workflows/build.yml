@@ -22,12 +22,12 @@ jobs:
 
       - name: Install devkitARM
         run: |
-          # Add the devkitPro keys and repository
-          sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 189701DA575BF5C6
-          echo "deb https://apt.devkitpro.org stable main" | sudo tee /etc/apt/sources.list.d/devkitpro.list
+          sudo mkdir -p /etc/apt/keyrings
+          curl -sL https://apt.devkitpro.org/devkitpro-pub.gpg | sudo gpg --dearmor -o /etc/apt/keyrings/devkitpro-pub.gpg
+          echo "deb [signed-by=/etc/apt/keyrings/devkitpro-pub.gpg] https://apt.devkitpro.org stable main" | sudo tee /etc/apt/sources.list.d/devkitpro.list
           sudo apt-get update
-          # Install the toolchain
           sudo apt-get install -y devkitARM-rules
+
       - name: Build agbcc
         run: |
           cd tools/agbcc
