@@ -19,9 +19,7 @@ jobs:
       - name: Install System Dependencies
         run: |
           sudo apt-get update
-          # Added bison, flex, and texinfo which are required to build the agbcc compiler
-          sudo apt-get install -y build-essential libpng-dev gcc-arm-none-eabi make bison flex texinfo
-
+          sudo apt-get install -y build-essential libpng-dev gcc-arm-none-eabi make bison flex texinfo g++
       - name: Build Project Tools
         run: |
           chmod -R +x tools/agbcc
