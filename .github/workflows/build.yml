@@ -25,15 +25,31 @@ jobs:
         run: |
           chmod -R +x tools/agbcc
           cd tools/agbcc
-          export CFLAGS="-w -O2 -D_FORTIFY_SOURCE=0"
+          
+          # Use optimized CFLAGS to handle legacy code on modern compilers
+          export CFLAGS="-w -O2 -D_FORTIFY_SOURCE=0 -Wno-builtin-declaration-mismatch -Wno-error"
+          
           cd gcc
           make clean
-          make CFLAGS="$CFLAGS -Wno-builtin-declaration-mismatch -Wno-error"
+          # Explicitly build the object files first
+          make CFLAGS="$CFLAGS"
+          
+          # Force the final link if 'agbcc' didn't appear
+          if [ ! -f "agbcc" ]; then
+            gcc $CFLAGS *.o -o agbcc
+          fi
+          
+          # Verify binary exists before moving
+          ls -l agbcc
           cd ..
+          
+          # Install using the manual path patch
           mkdir -p gcc_arm
           cp gcc/agbcc gcc_arm/cc1
           ./install.sh ../
           cd ../..
+          
+          # Build remaining tools
           make tools
           chmod +x tools/agbcc/bin/agbcc tools/gbagfx/gbagfx tools/scaninc/scaninc tools/ramscrgen/ramscrgen
 
