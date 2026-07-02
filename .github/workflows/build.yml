@@ -10,7 +10,6 @@ jobs:
           git config --global core.symlinks false
           git config --global core.longpaths true
 
-      # THIS STEP IS CRITICAL: 'recursive' ensures submodules are downloaded
       - name: Checkout
         uses: actions/checkout@v4
         with:
@@ -22,10 +21,15 @@ jobs:
           sudo apt-get install -y build-essential libpng-dev gcc-arm-none-eabi
 
       - name: Build Tools
+        # Force a clean build of tools first
         run: make tools
 
       - name: Build ROM
-        run: make -j$(nproc)
+        # Run ROM build only after tools are finished
+        run: make
+        env:
+          # Ensure the Makefile can find the tools in the current directory
+          PATH: .:$PATH
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
