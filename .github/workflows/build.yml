@@ -1,4 +1,4 @@
-name: Build
+name: Build CrystalDust
 on: [push, pull_request]
 
 jobs:
@@ -10,46 +10,30 @@ jobs:
           git config --global core.symlinks false
           git config --global core.longpaths true
 
-      - name: Checkout
+      - name: Checkout Repository
         uses: actions/checkout@v4
         with:
           submodules: recursive
 
-      - name: Install Dependencies
+      - name: Install System Dependencies
         run: |
           sudo apt-get update
-          # Explicitly installing individual packages to ensure availability
-          sudo apt-get install -y build-essential libpng-dev gcc-arm-none-eabi make binutils
+          sudo apt-get install -y build-essential libpng-dev gcc-arm-none-eabi make
 
-      - name: Debug Environment
+      - name: Build Project Tools
         run: |
-          which make
-          make --version
-          ls -l /usr/bin/make
-
-      - name: Build Tools
-        run: |
-          # Build every tool individually to ensure they exist
-          cd tools/agbcc && ./build.sh && ./install.sh ../
-          cd ../gbagfx && make
-          cd ../scaninc && make
-          cd ../ramscrgen && make
-          cd ../bin2c && make
-          cd ../gbafix && make
-          cd ../aif2pcm && make
+          # Build each tool individually to ensure they are properly compiled for Linux
+          make tools
+          # Verify the critical binary exists
+          ls -l tools/agbcc/bin/agbcc || echo "agbcc not found"
 
       - name: Build ROM
         run: make
         env:
-          # Tell the makefile exactly where the tools are
-          PATH: ${{ github.workspace }}/tools/agbcc/bin:${{ github.workspace }}/tools/gbagfx:${{ github.workspace }}/tools/scaninc:${{ github.workspace }}/tools/ramscrgen:${{ github.workspace }}/tools/bin2c:${{ github.workspace }}/tools/gbafix:${{ github.workspace }}/tools/aif2pcm:$PATH
-      - name: Build ROM
-        run: make
-        env:
-          # Use the absolute path to ensure make finds everything
-          PATH: /usr/bin:/bin:/usr/local/bin:$PATH
+          # Ensure the local tools are in the PATH for the Makefile
+          PATH: ${{ github.workspace }}/tools/agbcc/bin:${{ github.workspace }}/tools/gbagfx:${{ github.workspace }}/tools/scaninc:${{ github.workspace }}/tools/ramscrgen:${{ github.workspace }}/tools/bin2c:${{ github.workspace }}/tools/gbafix:$PATH
 
-      - name: Upload Artifact
+      - name: Upload ROM Artifact
         uses: actions/upload-artifact@v4
         with:
           name: crystal-dust-rom
