@@ -1,4 +1,4 @@
-name: Build CrystalDust
+name: Build
 on: [push, pull_request]
 
 jobs:
@@ -7,10 +7,10 @@ jobs:
     steps:
       - name: Configure Git
         run: |
-          # These lines fix the "File name too long" and symlink errors
           git config --global core.symlinks false
           git config --global core.longpaths true
 
+      # THIS STEP IS CRITICAL: 'recursive' ensures submodules are downloaded
       - name: Checkout
         uses: actions/checkout@v4
         with:
