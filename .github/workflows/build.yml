@@ -5,20 +5,18 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - name: Prepare Runner Environment
+        run: |
+          # These configs are required to avoid "File name too long" errors 
+          # with the complex symlink structure in older GBA repos.
+          git config --global core.symlinks false
+          git config --global core.longpaths true
+
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
           submodules: recursive
           fetch-depth: 0
-
-      - name: Verify Files
-        run: |
-          echo "Listing contents of tools/agbcc/gcc:"
-          ls -R tools/agbcc/gcc
-          if [ ! -f tools/agbcc/gcc/gengenrtl.c ]; then
-            echo "ERROR: gengenrtl.c is missing on the runner!"
-            exit 1
-          fi
 
       - name: Install System Dependencies
         run: |
@@ -27,17 +25,32 @@ jobs:
 
       - name: Build Project Tools
         run: |
+          # 1. Ensure build scripts are executable
           chmod +x tools/agbcc/build.sh tools/agbcc/install.sh
+          
+          # 2. Build the special agbcc compiler
           cd tools/agbcc
           ./build.sh
           ./install.sh ../
           cd ../..
+          
+          # 3. Build the remaining tools
           make tools
+          
+          # 4. Set permissions for the resulting binaries
           chmod +x tools/agbcc/bin/agbcc tools/gbagfx/gbagfx tools/scaninc/scaninc tools/ramscrgen/ramscrgen
 
       - name: Build ROM
         run: |
+          # Create build directory and run build
           mkdir -p build/emerald
           make
         env:
+          # Include system paths and local tools in PATH
           PATH: /usr/bin:/bin:/usr/local/bin:${{ github.workspace }}/tools/agbcc/bin:${{ github.workspace }}/tools/gbagfx:${{ github.workspace }}/tools/scaninc:${{ github.workspace }}/tools/ramscrgen:${{ github.workspace }}/tools/bin2c:${{ github.workspace }}/tools/gbafix:$PATH
+
+      - name: Upload ROM Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: crystal-dust-rom
+          path: '*.gba'
