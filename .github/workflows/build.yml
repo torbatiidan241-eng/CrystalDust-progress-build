@@ -22,28 +22,31 @@ jobs:
 
       - name: Build Project Tools
         run: |
-          # 1. Build the special agbcc compiler
+          # 1. Grant execution rights to the build scripts
+          chmod +x tools/agbcc/build.sh
+          chmod +x tools/agbcc/install.sh
+          
+          # 2. Build the special agbcc compiler
           cd tools/agbcc
           ./build.sh
           ./install.sh ../
           cd ../..
           
-          # 2. Build the remaining tools
+          # 3. Build the remaining tools
           make tools
           
-          # 3. Now that they are built, set permissions
+          # 4. Set permissions for the resulting binaries
           chmod +x tools/agbcc/bin/agbcc
           chmod +x tools/gbagfx/gbagfx
           chmod +x tools/scaninc/scaninc
           chmod +x tools/ramscrgen/ramscrgen
+
       - name: Build ROM
         run: |
-          # Manually create the build directory to avoid 'mkdir' errors
           mkdir -p build/emerald
-          # Execute make with explicit tool paths
           make
         env:
-          # Keep system paths first, then append tool paths
+          # Keep system paths first to find 'make', then add tool paths
           PATH: /usr/bin:/bin:/usr/local/bin:${{ github.workspace }}/tools/agbcc/bin:${{ github.workspace }}/tools/gbagfx:${{ github.workspace }}/tools/scaninc:${{ github.workspace }}/tools/ramscrgen:${{ github.workspace }}/tools/bin2c:${{ github.workspace }}/tools/gbafix:$PATH
 
       - name: Upload ROM Artifact
