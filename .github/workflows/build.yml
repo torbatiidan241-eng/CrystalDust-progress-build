@@ -30,9 +30,9 @@ jobs:
       - name: Build ROM
         run: make
         env:
-          # Ensure the local tools are in the PATH for the Makefile
-          PATH: ${{ github.workspace }}/tools/agbcc/bin:${{ github.workspace }}/tools/gbagfx:${{ github.workspace }}/tools/scaninc:${{ github.workspace }}/tools/ramscrgen:${{ github.workspace }}/tools/bin2c:${{ github.workspace }}/tools/gbafix:$PATH
-
+          # Keep /usr/bin and /bin so 'make' can be found, 
+          # then add your tools to the end
+          PATH: /usr/bin:/bin:/usr/local/bin:${{ github.workspace }}/tools/agbcc/bin:${{ github.workspace }}/tools/gbagfx:${{ github.workspace }}/tools/scaninc:${{ github.workspace }}/tools/ramscrgen:${{ github.workspace }}/tools/bin2c:${{ github.workspace }}/tools/gbafix:$PATH
       - name: Upload ROM Artifact
         uses: actions/upload-artifact@v4
         with:
