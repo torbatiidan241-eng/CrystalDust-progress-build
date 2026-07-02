@@ -22,17 +22,20 @@ jobs:
 
       - name: Build Project Tools
         run: |
-          # Build each tool individually to ensure they are properly compiled for Linux
+          # Build tools and ensure they have execution permissions
           make tools
-          # Verify the critical binary exists
-          ls -l tools/agbcc/bin/agbcc || echo "agbcc not found"
+          chmod +x tools/agbcc/bin/agbcc tools/gbagfx/gbagfx tools/scaninc/scaninc tools/ramscrgen/ramscrgen
 
       - name: Build ROM
-        run: make
+        run: |
+          # Manually create the build directory to avoid 'mkdir' errors
+          mkdir -p build/emerald
+          # Execute make with explicit tool paths
+          make
         env:
-          # Keep /usr/bin and /bin so 'make' can be found, 
-          # then add your tools to the end
+          # Keep system paths first, then append tool paths
           PATH: /usr/bin:/bin:/usr/local/bin:${{ github.workspace }}/tools/agbcc/bin:${{ github.workspace }}/tools/gbagfx:${{ github.workspace }}/tools/scaninc:${{ github.workspace }}/tools/ramscrgen:${{ github.workspace }}/tools/bin2c:${{ github.workspace }}/tools/gbafix:$PATH
+
       - name: Upload ROM Artifact
         uses: actions/upload-artifact@v4
         with:
