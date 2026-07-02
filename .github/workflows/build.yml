@@ -19,23 +19,25 @@ jobs:
       - name: Install System Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential libpng-dev gcc-arm-none-eabi make
+          # Added bison, flex, and texinfo which are required to build the agbcc compiler
+          sudo apt-get install -y build-essential libpng-dev gcc-arm-none-eabi make bison flex texinfo
 
       - name: Build Project Tools
         run: |
-          # 1. Recursive chmod to ensure all build scripts (like move-if-change) are executable
           chmod -R +x tools/agbcc
           
-          # 2. Build the special agbcc compiler
+          # Clean and rebuild agbcc
           cd tools/agbcc
+          # Remove previous build attempts
+          rm -rf gcc_arm
+          
+          # Build compiler with aggressive cleaning
           ./build.sh
           ./install.sh ../
           cd ../..
           
-          # 3. Build the remaining repository tools
+          # Build remaining tools
           make tools
-          
-          # 4. Final safety check on permissions
           chmod +x tools/agbcc/bin/agbcc tools/gbagfx/gbagfx tools/scaninc/scaninc tools/ramscrgen/ramscrgen
 
       - name: Build ROM
@@ -43,7 +45,6 @@ jobs:
           mkdir -p build/emerald
           make
         env:
-          # Inject tool paths so the Makefile finds the newly built binaries
           PATH: /usr/bin:/bin:/usr/local/bin:${{ github.workspace }}/tools/agbcc/bin:${{ github.workspace }}/tools/gbagfx:${{ github.workspace }}/tools/scaninc:${{ github.workspace }}/tools/ramscrgen:${{ github.workspace }}/tools/bin2c:${{ github.workspace }}/tools/gbafix:$PATH
 
       - name: Upload ROM Artifact
