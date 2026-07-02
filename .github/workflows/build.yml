@@ -18,17 +18,15 @@ jobs:
       - name: Install Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential libpng-dev gcc-arm-none-eabi
+          # Added 'make' to the list of packages to install
+          sudo apt-get install -y build-essential libpng-dev gcc-arm-none-eabi make
 
       - name: Build Tools
-        # Force a clean build of tools first
         run: make tools
 
       - name: Build ROM
-        # Run ROM build only after tools are finished
         run: make
         env:
-          # Ensure the Makefile can find the tools in the current directory
           PATH: .:$PATH
 
       - name: Upload Artifact
