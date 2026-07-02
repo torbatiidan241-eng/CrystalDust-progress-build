@@ -1,0 +1,1166 @@
+This file contains any messages produced by compilers while
+running configure, to aid debugging if configure makes a mistake.
+
+config.site:13: default build_alias set to x86_64-w64-mingw32
+config.site:20: default prefix set to /mingw64
+configure:587: checking LIBRARY_PATH variable
+configure:612: checking GCC_EXEC_PREFIX variable
+configure:949: checking host system type
+configure:970: checking target system type
+configure:988: checking build system type
+configure:1015: checking for gcc
+configure:1128: checking whether the C compiler (gcc  ) works
+configure:1144: gcc -o conftest    conftest.c  1>&5
+configure:1170: checking whether the C compiler (gcc  ) is a cross-compiler
+configure:1175: checking whether we are using GNU C
+configure:1184: gcc -E conftest.c
+configure:1203: checking whether gcc accepts -g
+configure:1246: checking whether make sets ${MAKE}
+configure:1274: checking whether a default assembler was specified
+configure:1286: checking whether a default linker was specified
+configure:1303: checking for mawk
+configure:1303: checking for gawk
+configure:1335: checking for flex
+configure:1369: checking for yywrap in -lfl
+configure:1388: gcc -o conftest -g -O2   conftest.c -lfl   1>&5
+C:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../x86_64-w64-mingw32/bin/ld.exe: cannot find -lfl: No such file or directory
+collect2.exe: error: ld returned 1 exit status
+configure: failed program was:
+#line 1377 "configure"
+#include "confdefs.h"
+/* Override any gcc2 internal prototype to avoid an error.  */
+/* We use char because int might match the return type of a gcc2
+    builtin and then its argument prototype would still apply.  */
+char yywrap();
+
+int main() {
+yywrap()
+; return 0; }
+configure:1411: checking whether ln works
+configure:1443: checking whether ln -s works
+configure:1475: checking for volatile
+configure:1487: gcc -c -g -O2  conftest.c 1>&5
+configure:1510: checking for ranlib
+configure:1542: checking for bison
+configure:1583: checking for a BSD compatible install
+configure:1634: checking how to run the C preprocessor
+configure:1655: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1714: checking for ANSI C header files
+configure:1727: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1794: gcc -o conftest -g -O2   conftest.c  1>&5
+configure: In function 'main':
+configure:1789:67: error: implicit declaration of function 'exit' [-Wimplicit-function-declaration]
+ 1789 | if (XOR (islower (i), ISLOWER (i)) || toupper (i) != TOUPPER (i)) exit(2);
+      |                                                                   ^~~~
+configure:1785:1: note: include '<stdlib.h>' or provide a declaration of 'exit'
+ 1784 | #include <ctype.h>
+  +++ |+#include <stdlib.h>
+ 1785 | #define ISLOWER(c) ('a' <= (c) && (c) <= 'z')
+configure:1789:67: warning: incompatible implicit declaration of built-in function 'exit' [-Wbuiltin-declaration-mismatch]
+ 1789 | if (XOR (islower (i), ISLOWER (i)) || toupper (i) != TOUPPER (i)) exit(2);
+      |                                                                   ^~~~
+configure:1789:67: note: include '<stdlib.h>' or provide a declaration of 'exit'
+configure:1790:1: warning: incompatible implicit declaration of built-in function 'exit' [-Wbuiltin-declaration-mismatch]
+ 1790 | exit (0); }
+      | ^~~~
+configure:1790:1: note: include '<stdlib.h>' or provide a declaration of 'exit'
+configure: failed program was:
+#line 1783 "configure"
+#include "confdefs.h"
+#include <ctype.h>
+#define ISLOWER(c) ('a' <= (c) && (c) <= 'z')
+#define TOUPPER(c) (ISLOWER(c) ? 'A' + ((c) - 'a') : (c))
+#define XOR(e, f) (((e) && !(f)) || (!(e) && (f)))
+int main () { int i; for (i = 0; i < 256; i++)
+if (XOR (islower (i), ISLOWER (i)) || toupper (i) != TOUPPER (i)) exit(2);
+exit (0); }
+
+configure:1818: checking whether time.h and sys/time.h may both be included
+configure:1832: gcc -c -g -O2  conftest.c 1>&5
+configure:1853: checking whether string.h and strings.h may both be included
+configure:1866: gcc -c -g -O2  conftest.c 1>&5
+configure:1887: checking for sys/wait.h that is POSIX.1 compatible
+configure:1908: gcc -c -g -O2  conftest.c 1>&5
+configure:1894:10: fatal error: sys/wait.h: No such file or directory
+ 1894 | #include <sys/wait.h>
+      |          ^~~~~~~~~~~~
+compilation terminated.
+configure: failed program was:
+#line 1892 "configure"
+#include "confdefs.h"
+#include <sys/types.h>
+#include <sys/wait.h>
+#ifndef WEXITSTATUS
+#define WEXITSTATUS(stat_val) ((unsigned)(stat_val) >> 8)
+#endif
+#ifndef WIFEXITED
+#define WIFEXITED(stat_val) (((stat_val) & 255) == 0)
+#endif
+int main() {
+int s;
+wait (&s);
+s = WIFEXITED (s) ? WEXITSTATUS (s) : 1;
+; return 0; }
+configure:1932: checking for limits.h
+configure:1942: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1932: checking for stddef.h
+configure:1942: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1932: checking for string.h
+configure:1942: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1932: checking for strings.h
+configure:1942: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1932: checking for stdlib.h
+configure:1942: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1932: checking for time.h
+configure:1942: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1932: checking for fcntl.h
+configure:1942: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1932: checking for unistd.h
+configure:1942: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1932: checking for stab.h
+configure:1942: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1938:10: fatal error: stab.h: No such file or directory
+ 1938 | #include <$ac_hdr>
+      |          ^~~~~~~~
+compilation terminated.
+configure: failed program was:
+#line 1937 "configure"
+#include "confdefs.h"
+#include <stab.h>
+configure:1932: checking for sys/file.h
+configure:1942: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1932: checking for sys/time.h
+configure:1942: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1932: checking for sys/resource.h
+configure:1942: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1938:10: fatal error: sys/resource.h: No such file or directory
+ 1938 | #include <$ac_hdr>
+      |          ^~~~~~~~~       
+compilation terminated.
+configure: failed program was:
+#line 1937 "configure"
+#include "confdefs.h"
+#include <sys/resource.h>
+configure:1932: checking for sys/param.h
+configure:1942: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1932: checking for sys/times.h
+configure:1942: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1938:10: fatal error: sys/times.h: No such file or directory
+ 1938 | #include <$ac_hdr>
+      |          ^~~~~~~~~    
+compilation terminated.
+configure: failed program was:
+#line 1937 "configure"
+#include "confdefs.h"
+#include <sys/times.h>
+configure:1932: checking for sys/stat.h
+configure:1942: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1972: checking for thread.h
+configure:1982: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1978:10: fatal error: thread.h: No such file or directory
+ 1978 | #include <thread.h>
+      |          ^~~~~~~~~~
+compilation terminated.
+configure: failed program was:
+#line 1977 "configure"
+#include "confdefs.h"
+#include <thread.h>
+configure:2006: checking for pthread.h
+configure:2016: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:2043: checking for gnatbind
+configure:2074: checking whether cpp understands the stringify operator
+configure:2087: gcc -c -g -O2  conftest.c 1>&5
+configure:2110: checking for inttypes.h
+configure:2123: gcc -c -g -O2  conftest.c 1>&5
+configure:2149: checking for strtoul
+configure:2177: gcc -o conftest -g -O2   conftest.c  1>&5
+configure:2149: checking for bsearch
+configure:2177: gcc -o conftest -g -O2   conftest.c  1>&5
+configure:2149: checking for strerror
+configure:2177: gcc -o conftest -g -O2   conftest.c  1>&5
+configure:2149: checking for putenv
+configure:2177: gcc -o conftest -g -O2   conftest.c  1>&5
+configure:2149: checking for popen
+configure:2177: gcc -o conftest -g -O2   conftest.c  1>&5
+configure:2149: checking for bcopy
+configure:2177: gcc -o conftest -g -O2   conftest.c  1>&5
+configure:2161:6: warning: conflicting types for built-in function 'bcopy'; expected 'void(const void *, void *, long long unsigned int)' [-Wbuiltin-declaration-mismatch]
+ 2161 | char $ac_func();
+      |      ^~~~~
+C:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\msys64\tmp\ccemNNYE.o: in function `main':
+C:/Users/PC/Documents/GitHub/CrystalDust-progress-build/agbcc/gcc_arm/configure:2171:(.text.startup+0xa): undefined reference to `bcopy'
+collect2.exe: error: ld returned 1 exit status
+configure: failed program was:
+#line 2154 "configure"
+#include "confdefs.h"
+/* System header to define __stub macros and hopefully few prototypes,
+    which can conflict with char bcopy(); below.  */
+#include <assert.h>
+/* Override any gcc2 internal prototype to avoid an error.  */
+/* We use char because int might match the return type of a gcc2
+    builtin and then its argument prototype would still apply.  */
+char bcopy();
+
+int main() {
+
+/* The GNU C library defines this for functions which it implements
+    to always fail with ENOSYS.  Some functions are actually named
+    something starting with __ and the normal name is an alias.  */
+#if defined (__stub_bcopy) || defined (__stub___bcopy)
+choke me
+#else
+bcopy();
+#endif
+
+; return 0; }
+configure:2149: checking for bzero
+configure:2177: gcc -o conftest -g -O2   conftest.c  1>&5
+configure:2161:6: warning: conflicting types for built-in function 'bzero'; expected 'void(void *, long long unsigned int)' [-Wbuiltin-declaration-mismatch]
+ 2161 | char $ac_func();
+      |      ^~~~~
+C:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\msys64\tmp\ccADy8PB.o: in function `main':
+C:/Users/PC/Documents/GitHub/CrystalDust-progress-build/agbcc/gcc_arm/configure:2171:(.text.startup+0xa): undefined reference to `bzero'
+collect2.exe: error: ld returned 1 exit status
+configure: failed program was:
+#line 2154 "configure"
+#include "confdefs.h"
+/* System header to define __stub macros and hopefully few prototypes,
+    which can conflict with char bzero(); below.  */
+#include <assert.h>
+/* Override any gcc2 internal prototype to avoid an error.  */
+/* We use char because int might match the return type of a gcc2
+    builtin and then its argument prototype would still apply.  */
+char bzero();
+
+int main() {
+
+/* The GNU C library defines this for functions which it implements
+    to always fail with ENOSYS.  Some functions are actually named
+    something starting with __ and the normal name is an alias.  */
+#if defined (__stub_bzero) || defined (__stub___bzero)
+choke me
+#else
+bzero();
+#endif
+
+; return 0; }
+configure:2149: checking for bcmp
+configure:2177: gcc -o conftest -g -O2   conftest.c  1>&5
+configure:2161:6: warning: conflicting types for built-in function 'bcmp'; expected 'int(const void *, const void *, long long unsigned int)' [-Wbuiltin-declaration-mismatch]
+ 2161 | char $ac_func();
+      |      ^~~~
+C:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\msys64\tmp\ccMjb3sr.o: in function `main':
+C:/Users/PC/Documents/GitHub/CrystalDust-progress-build/agbcc/gcc_arm/configure:2171:(.text.startup+0xa): undefined reference to `bcmp'
+collect2.exe: error: ld returned 1 exit status
+configure: failed program was:
+#line 2154 "configure"
+#include "confdefs.h"
+/* System header to define __stub macros and hopefully few prototypes,
+    which can conflict with char bcmp(); below.  */
+#include <assert.h>
+/* Override any gcc2 internal prototype to avoid an error.  */
+/* We use char because int might match the return type of a gcc2
+    builtin and then its argument prototype would still apply.  */
+char bcmp();
+
+int main() {
+
+/* The GNU C library defines this for functions which it implements
+    to always fail with ENOSYS.  Some functions are actually named
+    something starting with __ and the normal name is an alias.  */
+#if defined (__stub_bcmp) || defined (__stub___bcmp)
+choke me
+#else
+bcmp();
+#endif
+
+; return 0; }
+configure:2149: checking for index
+configure:2177: gcc -o conftest -g -O2   conftest.c  1>&5
+configure:2161:6: warning: conflicting types for built-in function 'index'; expected 'char *(const char *, int)' [-Wbuiltin-declaration-mismatch]
+ 2161 | char $ac_func();
+      |      ^~~~~
+C:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\msys64\tmp\ccyhIwQP.o: in function `main':
+C:/Users/PC/Documents/GitHub/CrystalDust-progress-build/agbcc/gcc_arm/configure:2171:(.text.startup+0xa): undefined reference to `index'
+collect2.exe: error: ld returned 1 exit status
+configure: failed program was:
+#line 2154 "configure"
+#include "confdefs.h"
+/* System header to define __stub macros and hopefully few prototypes,
+    which can conflict with char index(); below.  */
+#include <assert.h>
+/* Override any gcc2 internal prototype to avoid an error.  */
+/* We use char because int might match the return type of a gcc2
+    builtin and then its argument prototype would still apply.  */
+char index();
+
+int main() {
+
+/* The GNU C library defines this for functions which it implements
+    to always fail with ENOSYS.  Some functions are actually named
+    something starting with __ and the normal name is an alias.  */
+#if defined (__stub_index) || defined (__stub___index)
+choke me
+#else
+index();
+#endif
+
+; return 0; }
+configure:2149: checking for rindex
+configure:2177: gcc -o conftest -g -O2   conftest.c  1>&5
+configure:2161:6: warning: conflicting types for built-in function 'rindex'; expected 'char *(const char *, int)' [-Wbuiltin-declaration-mismatch]
+ 2161 | char $ac_func();
+      |      ^~~~~~
+C:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\msys64\tmp\cco8t7qw.o: in function `main':
+C:/Users/PC/Documents/GitHub/CrystalDust-progress-build/agbcc/gcc_arm/configure:2171:(.text.startup+0xa): undefined reference to `rindex'
+collect2.exe: error: ld returned 1 exit status
+configure: failed program was:
+#line 2154 "configure"
+#include "confdefs.h"
+/* System header to define __stub macros and hopefully few prototypes,
+    which can conflict with char rindex(); below.  */
+#include <assert.h>
+/* Override any gcc2 internal prototype to avoid an error.  */
+/* We use char because int might match the return type of a gcc2
+    builtin and then its argument prototype would still apply.  */
+char rindex();
+
+int main() {
+
+/* The GNU C library defines this for functions which it implements
+    to always fail with ENOSYS.  Some functions are actually named
+    something starting with __ and the normal name is an alias.  */
+#if defined (__stub_rindex) || defined (__stub___rindex)
+choke me
+#else
+rindex();
+#endif
+
+; return 0; }
+configure:2149: checking for strchr
+configure:2177: gcc -o conftest -g -O2   conftest.c  1>&5
+configure:2161:6: warning: conflicting types for built-in function 'strchr'; expected 'char *(const char *, int)' [-Wbuiltin-declaration-mismatch]
+ 2161 | char $ac_func();
+      |      ^~~~~~
+configure:2158:1: note: 'strchr' is declared in header '<string.h>'
+ 2157 | #include <assert.h>
+  +++ |+#include <string.h>
+ 2158 | /* Override any gcc2 internal prototype to avoid an error.  */
+configure:2149: checking for strrchr
+configure:2177: gcc -o conftest -g -O2   conftest.c  1>&5
+configure:2161:6: warning: conflicting types for built-in function 'strrchr'; expected 'char *(const char *, int)' [-Wbuiltin-declaration-mismatch]
+ 2161 | char $ac_func();
+      |      ^~~~~~~
+configure:2158:1: note: 'strrchr' is declared in header '<string.h>'
+ 2157 | #include <assert.h>
+  +++ |+#include <string.h>
+ 2158 | /* Override any gcc2 internal prototype to avoid an error.  */
+configure:2149: checking for kill
+configure:2177: gcc -o conftest -g -O2   conftest.c  1>&5
+C:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\msys64\tmp\ccoDGHS0.o: in function `main':
+C:/Users/PC/Documents/GitHub/CrystalDust-progress-build/agbcc/gcc_arm/configure:2171:(.text.startup+0xa): undefined reference to `kill'
+collect2.exe: error: ld returned 1 exit status
+configure: failed program was:
+#line 2154 "configure"
+#include "confdefs.h"
+/* System header to define __stub macros and hopefully few prototypes,
+    which can conflict with char kill(); below.  */
+#include <assert.h>
+/* Override any gcc2 internal prototype to avoid an error.  */
+/* We use char because int might match the return type of a gcc2
+    builtin and then its argument prototype would still apply.  */
+char kill();
+
+int main() {
+
+/* The GNU C library defines this for functions which it implements
+    to always fail with ENOSYS.  Some functions are actually named
+    something starting with __ and the normal name is an alias.  */
+#if defined (__stub_kill) || defined (__stub___kill)
+choke me
+#else
+kill();
+#endif
+
+; return 0; }
+configure:2149: checking for getrlimit
+configure:2177: gcc -o conftest -g -O2   conftest.c  1>&5
+C:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\msys64\tmp\ccWBP8rI.o: in function `main':
+C:/Users/PC/Documents/GitHub/CrystalDust-progress-build/agbcc/gcc_arm/configure:2171:(.text.startup+0xa): undefined reference to `getrlimit'
+collect2.exe: error: ld returned 1 exit status
+configure: failed program was:
+#line 2154 "configure"
+#include "confdefs.h"
+/* System header to define __stub macros and hopefully few prototypes,
+    which can conflict with char getrlimit(); below.  */
+#include <assert.h>
+/* Override any gcc2 internal prototype to avoid an error.  */
+/* We use char because int might match the return type of a gcc2
+    builtin and then its argument prototype would still apply.  */
+char getrlimit();
+
+int main() {
+
+/* The GNU C library defines this for functions which it implements
+    to always fail with ENOSYS.  Some functions are actually named
+    something starting with __ and the normal name is an alias.  */
+#if defined (__stub_getrlimit) || defined (__stub___getrlimit)
+choke me
+#else
+getrlimit();
+#endif
+
+; return 0; }
+configure:2149: checking for setrlimit
+configure:2177: gcc -o conftest -g -O2   conftest.c  1>&5
+C:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\msys64\tmp\cc6YOjoK.o: in function `main':
+C:/Users/PC/Documents/GitHub/CrystalDust-progress-build/agbcc/gcc_arm/configure:2171:(.text.startup+0xa): undefined reference to `setrlimit'
+collect2.exe: error: ld returned 1 exit status
+configure: failed program was:
+#line 2154 "configure"
+#include "confdefs.h"
+/* System header to define __stub macros and hopefully few prototypes,
+    which can conflict with char setrlimit(); below.  */
+#include <assert.h>
+/* Override any gcc2 internal prototype to avoid an error.  */
+/* We use char because int might match the return type of a gcc2
+    builtin and then its argument prototype would still apply.  */
+char setrlimit();
+
+int main() {
+
+/* The GNU C library defines this for functions which it implements
+    to always fail with ENOSYS.  Some functions are actually named
+    something starting with __ and the normal name is an alias.  */
+#if defined (__stub_setrlimit) || defined (__stub___setrlimit)
+choke me
+#else
+setrlimit();
+#endif
+
+; return 0; }
+configure:2149: checking for atoll
+configure:2177: gcc -o conftest -g -O2   conftest.c  1>&5
+configure:2149: checking for atoq
+configure:2177: gcc -o conftest -g -O2   conftest.c  1>&5
+C:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\msys64\tmp\ccSUiH7P.o: in function `main':
+C:/Users/PC/Documents/GitHub/CrystalDust-progress-build/agbcc/gcc_arm/configure:2171:(.text.startup+0xa): undefined reference to `atoq'
+collect2.exe: error: ld returned 1 exit status
+configure: failed program was:
+#line 2154 "configure"
+#include "confdefs.h"
+/* System header to define __stub macros and hopefully few prototypes,
+    which can conflict with char atoq(); below.  */
+#include <assert.h>
+/* Override any gcc2 internal prototype to avoid an error.  */
+/* We use char because int might match the return type of a gcc2
+    builtin and then its argument prototype would still apply.  */
+char atoq();
+
+int main() {
+
+/* The GNU C library defines this for functions which it implements
+    to always fail with ENOSYS.  Some functions are actually named
+    something starting with __ and the normal name is an alias.  */
+#if defined (__stub_atoq) || defined (__stub___atoq)
+choke me
+#else
+atoq();
+#endif
+
+; return 0; }
+configure:2149: checking for sysconf
+configure:2177: gcc -o conftest -g -O2   conftest.c  1>&5
+C:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\msys64\tmp\ccE6Ubry.o: in function `main':
+C:/Users/PC/Documents/GitHub/CrystalDust-progress-build/agbcc/gcc_arm/configure:2171:(.text.startup+0xa): undefined reference to `sysconf'
+collect2.exe: error: ld returned 1 exit status
+configure: failed program was:
+#line 2154 "configure"
+#include "confdefs.h"
+/* System header to define __stub macros and hopefully few prototypes,
+    which can conflict with char sysconf(); below.  */
+#include <assert.h>
+/* Override any gcc2 internal prototype to avoid an error.  */
+/* We use char because int might match the return type of a gcc2
+    builtin and then its argument prototype would still apply.  */
+char sysconf();
+
+int main() {
+
+/* The GNU C library defines this for functions which it implements
+    to always fail with ENOSYS.  Some functions are actually named
+    something starting with __ and the normal name is an alias.  */
+#if defined (__stub_sysconf) || defined (__stub___sysconf)
+choke me
+#else
+sysconf();
+#endif
+
+; return 0; }
+configure:2149: checking for isascii
+configure:2177: gcc -o conftest -g -O2   conftest.c  1>&5
+configure:2161:6: warning: conflicting types for built-in function 'isascii'; expected 'int(int)' [-Wbuiltin-declaration-mismatch]
+ 2161 | char $ac_func();
+      |      ^~~~~~~
+configure:2149: checking for gettimeofday
+configure:2177: gcc -o conftest -g -O2   conftest.c  1>&5
+configure:2149: checking for strsignal
+configure:2177: gcc -o conftest -g -O2   conftest.c  1>&5
+C:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\msys64\tmp\ccg9wNBY.o: in function `main':
+C:/Users/PC/Documents/GitHub/CrystalDust-progress-build/agbcc/gcc_arm/configure:2171:(.text.startup+0xa): undefined reference to `strsignal'
+collect2.exe: error: ld returned 1 exit status
+configure: failed program was:
+#line 2154 "configure"
+#include "confdefs.h"
+/* System header to define __stub macros and hopefully few prototypes,
+    which can conflict with char strsignal(); below.  */
+#include <assert.h>
+/* Override any gcc2 internal prototype to avoid an error.  */
+/* We use char because int might match the return type of a gcc2
+    builtin and then its argument prototype would still apply.  */
+char strsignal();
+
+int main() {
+
+/* The GNU C library defines this for functions which it implements
+    to always fail with ENOSYS.  Some functions are actually named
+    something starting with __ and the normal name is an alias.  */
+#if defined (__stub_strsignal) || defined (__stub___strsignal)
+choke me
+#else
+strsignal();
+#endif
+
+; return 0; }
+configure:2149: checking for putc_unlocked
+configure:2177: gcc -o conftest -g -O2   conftest.c  1>&5
+configure:2161:6: warning: conflicting types for built-in function 'putc_unlocked'; expected 'int(int,  void *)' [-Wbuiltin-declaration-mismatch]
+ 2161 | char $ac_func();
+      |      ^~~~~~~~~~~  
+C:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\msys64\tmp\ccodjich.o: in function `main':
+C:/Users/PC/Documents/GitHub/CrystalDust-progress-build/agbcc/gcc_arm/configure:2171:(.text.startup+0xa): undefined reference to `putc_unlocked'
+collect2.exe: error: ld returned 1 exit status
+configure: failed program was:
+#line 2154 "configure"
+#include "confdefs.h"
+/* System header to define __stub macros and hopefully few prototypes,
+    which can conflict with char putc_unlocked(); below.  */
+#include <assert.h>
+/* Override any gcc2 internal prototype to avoid an error.  */
+/* We use char because int might match the return type of a gcc2
+    builtin and then its argument prototype would still apply.  */
+char putc_unlocked();
+
+int main() {
+
+/* The GNU C library defines this for functions which it implements
+    to always fail with ENOSYS.  Some functions are actually named
+    something starting with __ and the normal name is an alias.  */
+#if defined (__stub_putc_unlocked) || defined (__stub___putc_unlocked)
+choke me
+#else
+putc_unlocked();
+#endif
+
+; return 0; }
+configure:2149: checking for fputc_unlocked
+configure:2177: gcc -o conftest -g -O2   conftest.c  1>&5
+configure:2161:6: warning: conflicting types for built-in function 'fputc_unlocked'; expected 'int(int,  void *)' [-Wbuiltin-declaration-mismatch]
+ 2161 | char $ac_func();
+      |      ^~~~~~~~~~~   
+C:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\msys64\tmp\ccmHltn0.o: in function `main':
+C:/Users/PC/Documents/GitHub/CrystalDust-progress-build/agbcc/gcc_arm/configure:2171:(.text.startup+0xa): undefined reference to `fputc_unlocked'
+collect2.exe: error: ld returned 1 exit status
+configure: failed program was:
+#line 2154 "configure"
+#include "confdefs.h"
+/* System header to define __stub macros and hopefully few prototypes,
+    which can conflict with char fputc_unlocked(); below.  */
+#include <assert.h>
+/* Override any gcc2 internal prototype to avoid an error.  */
+/* We use char because int might match the return type of a gcc2
+    builtin and then its argument prototype would still apply.  */
+char fputc_unlocked();
+
+int main() {
+
+/* The GNU C library defines this for functions which it implements
+    to always fail with ENOSYS.  Some functions are actually named
+    something starting with __ and the normal name is an alias.  */
+#if defined (__stub_fputc_unlocked) || defined (__stub___fputc_unlocked)
+choke me
+#else
+fputc_unlocked();
+#endif
+
+; return 0; }
+configure:2149: checking for fputs_unlocked
+configure:2177: gcc -o conftest -g -O2   conftest.c  1>&5
+configure:2161:6: warning: conflicting types for built-in function 'fputs_unlocked'; expected 'int(const char *, void *)' [-Wbuiltin-declaration-mismatch]
+ 2161 | char $ac_func();
+      |      ^~~~~~~~~~~   
+C:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.2.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\msys64\tmp\ccWvqLWa.o: in function `main':
+C:/Users/PC/Documents/GitHub/CrystalDust-progress-build/agbcc/gcc_arm/configure:2171:(.text.startup+0xa): undefined reference to `fputs_unlocked'
+collect2.exe: error: ld returned 1 exit status
+configure: failed program was:
+#line 2154 "configure"
+#include "confdefs.h"
+/* System header to define __stub macros and hopefully few prototypes,
+    which can conflict with char fputs_unlocked(); below.  */
+#include <assert.h>
+/* Override any gcc2 internal prototype to avoid an error.  */
+/* We use char because int might match the return type of a gcc2
+    builtin and then its argument prototype would still apply.  */
+char fputs_unlocked();
+
+int main() {
+
+/* The GNU C library defines this for functions which it implements
+    to always fail with ENOSYS.  Some functions are actually named
+    something starting with __ and the normal name is an alias.  */
+#if defined (__stub_fputs_unlocked) || defined (__stub___fputs_unlocked)
+choke me
+#else
+fputs_unlocked();
+#endif
+
+; return 0; }
+configure:2206: checking for vprintf
+configure:2234: gcc -o conftest -g -O2   conftest.c  1>&5
+configure:2218:6: warning: conflicting types for built-in function 'vprintf'; expected 'int(const char *, char *)' [-Wbuiltin-declaration-mismatch]
+ 2218 | char vprintf();
+      |      ^~~~~~~
+configure:2215:1: note: 'vprintf' is declared in header '<stdio.h>'
+ 2214 | #include <assert.h>
+  +++ |+#include <stdio.h>
+ 2215 | /* Override any gcc2 internal prototype to avoid an error.  */
+configure:2322: checking whether the printf functions support %p
+configure:2343: gcc -o conftest -g -O2   conftest.c  1>&5
+configure:2333:1: error: return type defaults to 'int' [-Wimplicit-int]
+ 2333 | main()
+      | ^~~~
+configure: In function 'main':
+configure:2339:3: error: implicit declaration of function 'exit' [-Wimplicit-function-declaration]
+ 2339 |   exit (p != q);
+      |   ^~~~
+configure:2332:1: note: include '<stdlib.h>' or provide a declaration of 'exit'
+ 2331 | #include <stdio.h>
+  +++ |+#include <stdlib.h>
+ 2332 | 
+configure:2339:3: warning: incompatible implicit declaration of built-in function 'exit' [-Wbuiltin-declaration-mismatch]
+ 2339 |   exit (p != q);
+      |   ^~~~
+configure:2339:3: note: include '<stdlib.h>' or provide a declaration of 'exit'
+configure: failed program was:
+#line 2330 "configure"
+#include "confdefs.h"
+#include <stdio.h>
+
+main()
+{
+  char buf[64];
+  char *p = buf, *q = NULL;
+  sprintf(buf, "%p", p);
+  sscanf(buf, "%p", &q);
+  exit (p != q);
+}
+configure:2367: checking for pid_t
+configure:2401: checking for vfork.h
+configure:2411: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:2407:10: fatal error: vfork.h: No such file or directory
+ 2407 | #include <vfork.h>
+      |          ^~~~~~~~~
+compilation terminated.
+configure: failed program was:
+#line 2406 "configure"
+#include "confdefs.h"
+#include <vfork.h>
+configure:2436: checking for working vfork
+configure:2587: gcc -o conftest -g -O2   conftest.c  1>&5
+configure:2513:1: error: return type defaults to 'int' [-Wimplicit-int]
+ 2513 | sparc_address_test (arg) int arg;
+      | ^~~~~~~~~~~~~~~~~~
+configure: In function 'sparc_address_test':
+configure:2513:1: warning: old-style function definition [-Wold-style-definition]
+configure:2518:13: error: implicit declaration of function 'vfork' [-Wimplicit-function-declaration]
+ 2518 |     child = vfork ();
+      |             ^~~~~
+configure: At top level:
+configure:2530:1: error: return type defaults to 'int' [-Wimplicit-int]
+ 2530 | main() {
+      | ^~~~
+configure: In function 'main':
+configure:2568:12: error: implicit declaration of function 'wait'; did you mean 'cwait'? [-Wimplicit-function-declaration]
+ 2568 |     while (wait(&status) != child)
+      |            ^~~~
+      |            cwait
+configure: failed program was:
+#line 2492 "configure"
+#include "confdefs.h"
+/* Thanks to Paul Eggert for this test.  */
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+#ifdef HAVE_VFORK_H
+#include <vfork.h>
+#endif
+/* On some sparc systems, changes by the child to local and incoming
+   argument registers are propagated back to the parent.
+   The compiler is told about this with #include <vfork.h>,
+   but some compilers (e.g. gcc -O) don't grok <vfork.h>.
+   Test for this by using a static variable whose address
+   is put into a register that is clobbered by the vfork.  */
+static
+#ifdef __cplusplus
+sparc_address_test (int arg)
+#else
+sparc_address_test (arg) int arg;
+#endif
+{
+  static pid_t child;
+  if (!child) {
+    child = vfork ();
+    if (child < 0) {
+      perror ("vfork");
+      _exit(2);
+    }
+    if (!child) {
+      arg = getpid();
+      write(-1, "", 0);
+      _exit (arg);
+    }
+  }
+}
+main() {
+  pid_t parent = getpid ();
+  pid_t child;
+
+  sparc_address_test ();
+
+  child = vfork ();
+
+  if (child == 0) {
+    /* Here is another test for sparc vfork register problems.
+       This test uses lots of local variables, at least
+       as many local variables as main has allocated so far
+       including compiler temporaries.  4 locals are enough for
+       gcc 1.40.3 on a Solaris 4.1.3 sparc, but we use 8 to be safe.
+       A buggy compiler should reuse the register of parent
+       for one of the local variables, since it will think that
+       parent can't possibly be used any more in this routine.
+       Assigning to the local variable will thus munge parent
+       in the parent process.  */
+    pid_t
+      p = getpid(), p1 = getpid(), p2 = getpid(), p3 = getpid(),
+      p4 = getpid(), p5 = getpid(), p6 = getpid(), p7 = getpid();
+    /* Convince the compiler that p..p7 are live; otherwise, it might
+       use the same hardware register for all 8 local variables.  */
+    if (p != p1 || p != p2 || p != p3 || p != p4
+	|| p != p5 || p != p6 || p != p7)
+      _exit(1);
+
+    /* On some systems (e.g. IRIX 3.3),
+       vfork doesn't separate parent from child file descriptors.
+       If the child closes a descriptor before it execs or exits,
+       this munges the parent's descriptor as well.
+       Test for this by closing stdout in the child.  */
+    _exit(close(fileno(stdout)) != 0);
+  } else {
+    int status;
+    struct stat st;
+
+    while (wait(&status) != child)
+      ;
+    exit(
+	 /* Was there some problem with vforking?  */
+	 child < 0
+
+	 /* Did the child fail?  (This shouldn't happen.)  */
+	 || status
+
+	 /* Did the vfork/compiler bug occur?  */
+	 || parent != getpid()
+
+	 /* Did the file descriptor bug occur?  */
+	 || fstat(fileno(stdout), &st) != 0
+	 );
+  }
+}
+configure:2615: checking whether malloc must be declared
+configure:2653: gcc -c -g -O2  conftest.c 1>&5
+configure:2615: checking whether realloc must be declared
+configure:2653: gcc -c -g -O2  conftest.c 1>&5
+configure:2615: checking whether calloc must be declared
+configure:2653: gcc -c -g -O2  conftest.c 1>&5
+configure:2615: checking whether free must be declared
+configure:2653: gcc -c -g -O2  conftest.c 1>&5
+configure:2615: checking whether bcopy must be declared
+configure:2653: gcc -c -g -O2  conftest.c 1>&5
+configure: In function 'main':
+configure:2649:28: error: 'bcopy' undeclared (first use in this function)
+ 2649 | char *(*pfn) = (char *(*)) $ac_func
+      |                            ^~~~~
+configure:2649:28: note: each undeclared identifier is reported only once for each function it appears in
+configure: failed program was:
+#line 2620 "configure"
+#include "confdefs.h"
+
+#include <stdio.h>
+#ifdef STRING_WITH_STRINGS
+# include <string.h>
+# include <strings.h>
+#else
+# ifdef HAVE_STRING_H
+#  include <string.h>
+# else
+#  ifdef HAVE_STRINGS_H
+#   include <strings.h>
+#  endif
+# endif
+#endif
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+#ifndef HAVE_RINDEX
+#define rindex strrchr
+#endif
+#ifndef HAVE_INDEX
+#define index strchr
+#endif
+
+int main() {
+char *(*pfn) = (char *(*)) bcopy
+; return 0; }
+configure:2615: checking whether bzero must be declared
+configure:2653: gcc -c -g -O2  conftest.c 1>&5
+configure: In function 'main':
+configure:2649:28: error: 'bzero' undeclared (first use in this function)
+ 2649 | char *(*pfn) = (char *(*)) $ac_func
+      |                            ^~~~~
+configure:2649:28: note: each undeclared identifier is reported only once for each function it appears in
+configure: failed program was:
+#line 2620 "configure"
+#include "confdefs.h"
+
+#include <stdio.h>
+#ifdef STRING_WITH_STRINGS
+# include <string.h>
+# include <strings.h>
+#else
+# ifdef HAVE_STRING_H
+#  include <string.h>
+# else
+#  ifdef HAVE_STRINGS_H
+#   include <strings.h>
+#  endif
+# endif
+#endif
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+#ifndef HAVE_RINDEX
+#define rindex strrchr
+#endif
+#ifndef HAVE_INDEX
+#define index strchr
+#endif
+
+int main() {
+char *(*pfn) = (char *(*)) bzero
+; return 0; }
+configure:2615: checking whether bcmp must be declared
+configure:2653: gcc -c -g -O2  conftest.c 1>&5
+configure: In function 'main':
+configure:2649:28: error: 'bcmp' undeclared (first use in this function)
+ 2649 | char *(*pfn) = (char *(*)) $ac_func
+      |                            ^~~~
+configure:2649:28: note: each undeclared identifier is reported only once for each function it appears in
+configure: failed program was:
+#line 2620 "configure"
+#include "confdefs.h"
+
+#include <stdio.h>
+#ifdef STRING_WITH_STRINGS
+# include <string.h>
+# include <strings.h>
+#else
+# ifdef HAVE_STRING_H
+#  include <string.h>
+# else
+#  ifdef HAVE_STRINGS_H
+#   include <strings.h>
+#  endif
+# endif
+#endif
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+#ifndef HAVE_RINDEX
+#define rindex strrchr
+#endif
+#ifndef HAVE_INDEX
+#define index strchr
+#endif
+
+int main() {
+char *(*pfn) = (char *(*)) bcmp
+; return 0; }
+configure:2615: checking whether index must be declared
+configure:2653: gcc -c -g -O2  conftest.c 1>&5
+configure:2615: checking whether rindex must be declared
+configure:2653: gcc -c -g -O2  conftest.c 1>&5
+configure:2615: checking whether getenv must be declared
+configure:2653: gcc -c -g -O2  conftest.c 1>&5
+configure:2615: checking whether atol must be declared
+configure:2653: gcc -c -g -O2  conftest.c 1>&5
+configure:2615: checking whether sbrk must be declared
+configure:2653: gcc -c -g -O2  conftest.c 1>&5
+configure: In function 'main':
+configure:2649:28: error: 'sbrk' undeclared (first use in this function)
+ 2649 | char *(*pfn) = (char *(*)) $ac_func
+      |                            ^~~~
+configure:2649:28: note: each undeclared identifier is reported only once for each function it appears in
+configure: failed program was:
+#line 2620 "configure"
+#include "confdefs.h"
+
+#include <stdio.h>
+#ifdef STRING_WITH_STRINGS
+# include <string.h>
+# include <strings.h>
+#else
+# ifdef HAVE_STRING_H
+#  include <string.h>
+# else
+#  ifdef HAVE_STRINGS_H
+#   include <strings.h>
+#  endif
+# endif
+#endif
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+#ifndef HAVE_RINDEX
+#define rindex strrchr
+#endif
+#ifndef HAVE_INDEX
+#define index strchr
+#endif
+
+int main() {
+char *(*pfn) = (char *(*)) sbrk
+; return 0; }
+configure:2615: checking whether abort must be declared
+configure:2653: gcc -c -g -O2  conftest.c 1>&5
+configure:2615: checking whether atof must be declared
+configure:2653: gcc -c -g -O2  conftest.c 1>&5
+configure:2615: checking whether strerror must be declared
+configure:2653: gcc -c -g -O2  conftest.c 1>&5
+configure:2615: checking whether getcwd must be declared
+configure:2653: gcc -c -g -O2  conftest.c 1>&5
+configure:2615: checking whether getwd must be declared
+configure:2653: gcc -c -g -O2  conftest.c 1>&5
+configure: In function 'main':
+configure:2649:28: error: 'getwd' undeclared (first use in this function); did you mean 'getcwd'?
+ 2649 | char *(*pfn) = (char *(*)) $ac_func
+      |                            ^~~~~
+      |                            getcwd
+configure:2649:28: note: each undeclared identifier is reported only once for each function it appears in
+configure: failed program was:
+#line 2620 "configure"
+#include "confdefs.h"
+
+#include <stdio.h>
+#ifdef STRING_WITH_STRINGS
+# include <string.h>
+# include <strings.h>
+#else
+# ifdef HAVE_STRING_H
+#  include <string.h>
+# else
+#  ifdef HAVE_STRINGS_H
+#   include <strings.h>
+#  endif
+# endif
+#endif
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+#ifndef HAVE_RINDEX
+#define rindex strrchr
+#endif
+#ifndef HAVE_INDEX
+#define index strchr
+#endif
+
+int main() {
+char *(*pfn) = (char *(*)) getwd
+; return 0; }
+configure:2615: checking whether strsignal must be declared
+configure:2653: gcc -c -g -O2  conftest.c 1>&5
+configure: In function 'main':
+configure:2649:28: error: 'strsignal' undeclared (first use in this function)
+ 2649 | char *(*pfn) = (char *(*)) $ac_func
+      |                            ^~~~~~~~ 
+configure:2649:28: note: each undeclared identifier is reported only once for each function it appears in
+configure: failed program was:
+#line 2620 "configure"
+#include "confdefs.h"
+
+#include <stdio.h>
+#ifdef STRING_WITH_STRINGS
+# include <string.h>
+# include <strings.h>
+#else
+# ifdef HAVE_STRING_H
+#  include <string.h>
+# else
+#  ifdef HAVE_STRINGS_H
+#   include <strings.h>
+#  endif
+# endif
+#endif
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+#ifndef HAVE_RINDEX
+#define rindex strrchr
+#endif
+#ifndef HAVE_INDEX
+#define index strchr
+#endif
+
+int main() {
+char *(*pfn) = (char *(*)) strsignal
+; return 0; }
+configure:2682: checking whether getrlimit must be declared
+configure:2724: gcc -c -g -O2  conftest.c 1>&5
+configure: In function 'main':
+configure:2720:28: error: 'getrlimit' undeclared (first use in this function)
+ 2720 | char *(*pfn) = (char *(*)) $ac_func
+      |                            ^~~~~~~~ 
+configure:2720:28: note: each undeclared identifier is reported only once for each function it appears in
+configure: failed program was:
+#line 2687 "configure"
+#include "confdefs.h"
+
+#include <stdio.h>
+#ifdef STRING_WITH_STRINGS
+# include <string.h>
+# include <strings.h>
+#else
+# ifdef HAVE_STRING_H
+#  include <string.h>
+# else
+#  ifdef HAVE_STRINGS_H
+#   include <strings.h>
+#  endif
+# endif
+#endif
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+#ifndef HAVE_RINDEX
+#define rindex strrchr
+#endif
+#ifndef HAVE_INDEX
+#define index strchr
+#endif
+#include <sys/types.h>
+#ifdef HAVE_SYS_RESOURCE_H
+#include <sys/resource.h>
+#endif
+
+int main() {
+char *(*pfn) = (char *(*)) getrlimit
+; return 0; }
+configure:2682: checking whether setrlimit must be declared
+configure:2724: gcc -c -g -O2  conftest.c 1>&5
+configure: In function 'main':
+configure:2720:28: error: 'setrlimit' undeclared (first use in this function)
+ 2720 | char *(*pfn) = (char *(*)) $ac_func
+      |                            ^~~~~~~~ 
+configure:2720:28: note: each undeclared identifier is reported only once for each function it appears in
+configure: failed program was:
+#line 2687 "configure"
+#include "confdefs.h"
+
+#include <stdio.h>
+#ifdef STRING_WITH_STRINGS
+# include <string.h>
+# include <strings.h>
+#else
+# ifdef HAVE_STRING_H
+#  include <string.h>
+# else
+#  ifdef HAVE_STRINGS_H
+#   include <strings.h>
+#  endif
+# endif
+#endif
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+#ifndef HAVE_RINDEX
+#define rindex strrchr
+#endif
+#ifndef HAVE_INDEX
+#define index strchr
+#endif
+#include <sys/types.h>
+#ifdef HAVE_SYS_RESOURCE_H
+#include <sys/resource.h>
+#endif
+
+int main() {
+char *(*pfn) = (char *(*)) setrlimit
+; return 0; }
+configure:2751: checking for sys_siglist declaration in signal.h or unistd.h
+configure:2768: gcc -c -g -O2  conftest.c 1>&5
+configure: In function 'main':
+configure:2764:15: error: 'sys_siglist' undeclared (first use in this function)
+ 2764 | char *msg = *(sys_siglist + 1);
+      |               ^~~~~~~~~~~
+configure:2764:15: note: each undeclared identifier is reported only once for each function it appears in
+configure: failed program was:
+#line 2756 "configure"
+#include "confdefs.h"
+#include <sys/types.h>
+#include <signal.h>
+/* NetBSD declares sys_siglist in unistd.h.  */
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+int main() {
+char *msg = *(sys_siglist + 1);
+; return 0; }
+configure:6324: checking assembler alignment features
+configure:6397: checking assembler subsection support
+configure:6735: checking whether to enable init_priority by default
