@@ -23,25 +23,28 @@ jobs:
 
       - name: Build Project Tools
         run: |
-          # Grant execution rights to all scripts
           chmod -R +x tools/agbcc
-          
-          # Build the agbcc compiler
           cd tools/agbcc
+          
+          # 1. Patch the build to be less strict with legacy code
+          # We define -D_FORTIFY_SOURCE=0 and -Wno-error=builtin-declaration-mismatch
+          # to prevent the modern 'bzero' conflict from stopping the build.
+          export CFLAGS="-w -D_FORTIFY_SOURCE=0 -Wno-builtin-declaration-mismatch -Wno-error"
+          
+          # 2. Build the agbcc compiler
           ./build.sh
           
-          # Patch: Legacy scripts expect the compiler binary to be named 'cc1' inside 'gcc_arm'
+          # 3. Patch: Legacy scripts expect the compiler binary to be named 'cc1'
           mkdir -p gcc_arm
           cp gcc/agbcc gcc_arm/cc1
           
-          # Run the installer and return to root
+          # 4. Run the installer
           ./install.sh ../
           cd ../..
           
-          # Build remaining project tools
+          # 5. Build remaining project tools
           make tools
           chmod +x tools/agbcc/bin/agbcc tools/gbagfx/gbagfx tools/scaninc/scaninc tools/ramscrgen/ramscrgen
-
       - name: Build ROM
         run: |
           mkdir -p build/emerald
