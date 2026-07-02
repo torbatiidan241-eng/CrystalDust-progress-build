@@ -25,26 +25,18 @@ jobs:
         run: |
           chmod -R +x tools/agbcc
           cd tools/agbcc
-          
-          # 1. Patch the build to be less strict with legacy code
-          # We define -D_FORTIFY_SOURCE=0 and -Wno-error=builtin-declaration-mismatch
-          # to prevent the modern 'bzero' conflict from stopping the build.
-          export CFLAGS="-w -D_FORTIFY_SOURCE=0 -Wno-builtin-declaration-mismatch -Wno-error"
-          
-          # 2. Build the agbcc compiler
-          ./build.sh
-          
-          # 3. Patch: Legacy scripts expect the compiler binary to be named 'cc1'
+          export CFLAGS="-w -O2 -D_FORTIFY_SOURCE=0"
+          cd gcc
+          make clean
+          make CFLAGS="$CFLAGS -Wno-builtin-declaration-mismatch -Wno-error"
+          cd ..
           mkdir -p gcc_arm
           cp gcc/agbcc gcc_arm/cc1
-          
-          # 4. Run the installer
           ./install.sh ../
           cd ../..
-          
-          # 5. Build remaining project tools
           make tools
           chmod +x tools/agbcc/bin/agbcc tools/gbagfx/gbagfx tools/scaninc/scaninc tools/ramscrgen/ramscrgen
+
       - name: Build ROM
         run: |
           mkdir -p build/emerald
