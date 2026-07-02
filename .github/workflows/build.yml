@@ -25,21 +25,27 @@ jobs:
       - name: Build Project Tools
         run: |
           chmod -R +x tools/agbcc
-          
-          # Clean and rebuild agbcc
           cd tools/agbcc
-          # Remove previous build attempts
+          
+          # 1. Clean up completely
           rm -rf gcc_arm
           
-          # Build compiler with aggressive cleaning
-          ./build.sh
-          ./install.sh ../
+          # 2. Rebuild with explicit logging
+          echo "Starting build.sh..."
+          if ! ./build.sh; then
+            echo "::error::build.sh failed!"
+            exit 1
+          fi
+          
+          echo "Starting install.sh..."
+          if ! ./install.sh ../; then
+            echo "::error::install.sh failed!"
+            exit 1
+          fi
           cd ../..
           
-          # Build remaining tools
           make tools
           chmod +x tools/agbcc/bin/agbcc tools/gbagfx/gbagfx tools/scaninc/scaninc tools/ramscrgen/ramscrgen
-
       - name: Build ROM
         run: |
           mkdir -p build/emerald
