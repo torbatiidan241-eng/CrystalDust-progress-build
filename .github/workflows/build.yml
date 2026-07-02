@@ -7,8 +7,6 @@ jobs:
     steps:
       - name: Prepare Runner Environment
         run: |
-          # These configs are required to avoid "File name too long" errors 
-          # with the complex symlink structure in older GBA repos.
           git config --global core.symlinks false
           git config --global core.longpaths true
 
@@ -25,8 +23,8 @@ jobs:
 
       - name: Build Project Tools
         run: |
-          # 1. Ensure build scripts are executable
-          chmod +x tools/agbcc/build.sh tools/agbcc/install.sh
+          # 1. Recursive chmod to ensure all build scripts (like move-if-change) are executable
+          chmod -R +x tools/agbcc
           
           # 2. Build the special agbcc compiler
           cd tools/agbcc
@@ -34,19 +32,18 @@ jobs:
           ./install.sh ../
           cd ../..
           
-          # 3. Build the remaining tools
+          # 3. Build the remaining repository tools
           make tools
           
-          # 4. Set permissions for the resulting binaries
+          # 4. Final safety check on permissions
           chmod +x tools/agbcc/bin/agbcc tools/gbagfx/gbagfx tools/scaninc/scaninc tools/ramscrgen/ramscrgen
 
       - name: Build ROM
         run: |
-          # Create build directory and run build
           mkdir -p build/emerald
           make
         env:
-          # Include system paths and local tools in PATH
+          # Inject tool paths so the Makefile finds the newly built binaries
           PATH: /usr/bin:/bin:/usr/local/bin:${{ github.workspace }}/tools/agbcc/bin:${{ github.workspace }}/tools/gbagfx:${{ github.workspace }}/tools/scaninc:${{ github.workspace }}/tools/ramscrgen:${{ github.workspace }}/tools/bin2c:${{ github.workspace }}/tools/gbafix:$PATH
 
       - name: Upload ROM Artifact
