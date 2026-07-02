@@ -28,8 +28,21 @@ jobs:
           ls -l /usr/bin/make
 
       - name: Build Tools
-        run: make tools
+        run: |
+          # Build every tool individually to ensure they exist
+          cd tools/agbcc && ./build.sh && ./install.sh ../
+          cd ../gbagfx && make
+          cd ../scaninc && make
+          cd ../ramscrgen && make
+          cd ../bin2c && make
+          cd ../gbafix && make
+          cd ../aif2pcm && make
 
+      - name: Build ROM
+        run: make
+        env:
+          # Tell the makefile exactly where the tools are
+          PATH: ${{ github.workspace }}/tools/agbcc/bin:${{ github.workspace }}/tools/gbagfx:${{ github.workspace }}/tools/scaninc:${{ github.workspace }}/tools/ramscrgen:${{ github.workspace }}/tools/bin2c:${{ github.workspace }}/tools/gbafix:${{ github.workspace }}/tools/aif2pcm:$PATH
       - name: Build ROM
         run: make
         env:
