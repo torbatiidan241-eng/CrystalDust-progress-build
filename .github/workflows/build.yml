@@ -26,32 +26,20 @@ jobs:
           chmod -R +x tools/agbcc
           cd tools/agbcc
           
-          # Build flags for legacy compatibility
+          # Set flags for legacy build
           export CFLAGS="-w -O2 -D_FORTIFY_SOURCE=0 -Wno-builtin-declaration-mismatch -Wno-error"
           
+          # Build compiler
           cd gcc
           make clean
           make CFLAGS="$CFLAGS"
           
-          # DEBUG: Find the actual binary location
-          echo "Listing all files in $(pwd):"
-          ls -F
-          
-          # Identify the binary: it should be the only executable 'agbcc' file
-          # We search recursively from the tools folder to find it
+          # Move binary to location expected by install.sh
+          mkdir -p ../gcc_arm
+          cp agbcc ../gcc_arm/cc1
           cd ..
-          BINARY=$(find . -name "agbcc" -type f -executable | head -n 1)
           
-          if [ -z "$BINARY" ]; then
-            echo "::error::Binary 'agbcc' not found in build directory."
-            exit 1
-          fi
-          
-          echo "Found binary at: $BINARY"
-          mkdir -p gcc_arm
-          cp "$BINARY" gcc_arm/cc1
-          
-          # Proceed with installation
+          # Run installer
           ./install.sh ../
           cd ../..
           
