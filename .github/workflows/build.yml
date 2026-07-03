@@ -32,20 +32,27 @@ jobs:
           make clean
           make CFLAGS="$CFLAGS"
           
-          # DEBUG: List directory to confirm file presence
+          # DEBUG: List directory details to confirm file name and permissions
           echo "DEBUG: Current directory is $(pwd)"
-          ls -F
+          ls -lAh
           
-          # Use an absolute path test
+          # Find the binary using a wildcard to ignore potential hidden naming issues
           TARGET_DIR="$(dirname "$(pwd)")/gcc_arm"
           mkdir -p "$TARGET_DIR"
           
-          if [ -f "agbcc" ]; then
-            echo "SUCCESS: agbcc found. Moving it to $TARGET_DIR/cc1"
-            cp agbcc "$TARGET_DIR/cc1"
-          else
-            echo "::error::FAILURE: 'agbcc' was not generated in $(pwd)"
-            exit 1
+          found=false
+          for file in agbcc*; do
+              if [ -f "$file" ]; then
+                  echo "SUCCESS: Found binary '$file', copying to $TARGET_DIR/cc1"
+                  cp "$file" "$TARGET_DIR/cc1"
+                  found=true
+                  break
+              fi
+          done
+          
+          if [ "$found" = false ]; then
+              echo "::error::FAILURE: 'agbcc' binary not found."
+              exit 1
           fi
           
           # Continue installation
