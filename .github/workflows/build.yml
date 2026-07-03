@@ -26,24 +26,25 @@ jobs:
           chmod -R +x tools/agbcc
           cd tools/agbcc
           
-          # Set flags for legacy build
+          # Build
           export CFLAGS="-w -O2 -D_FORTIFY_SOURCE=0 -Wno-builtin-declaration-mismatch -Wno-error"
-          
-          # Build compiler
           cd gcc
           make clean
           make CFLAGS="$CFLAGS"
           
-          # Move binary to location expected by install.sh
+          # We are currently in 'tools/agbcc/gcc/'
+          # Move the binary to the parent directory where install.sh expects it
           mkdir -p ../gcc_arm
           cp agbcc ../gcc_arm/cc1
+          
+          # Move back to root of tools/agbcc
           cd ..
           
-          # Run installer
+          # Now run the installer
           ./install.sh ../
           cd ../..
           
-          # Build remaining project tools
+          # Build remaining tools
           make tools
           chmod +x tools/agbcc/bin/agbcc tools/gbagfx/gbagfx tools/scaninc/scaninc tools/ramscrgen/ramscrgen
 
