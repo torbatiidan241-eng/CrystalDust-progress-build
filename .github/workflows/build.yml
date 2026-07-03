@@ -32,7 +32,7 @@ jobs:
           make clean
           make CFLAGS="$CFLAGS"
           
-          # FAILSHELL: List the directory to see if 'agbcc' exists right here
+          # DEBUG: List directory to confirm file presence
           echo "DEBUG: Current directory is $(pwd)"
           ls -F
           
@@ -52,8 +52,12 @@ jobs:
           cd ..
           ./install.sh ../
           cd ../..
+          
+          # Build remaining tools
           make tools
-          chmod +x tools/agbcc/bin/agbcc tools/
+          chmod +x tools/agbcc/bin/agbcc tools/gbagfx/gbagfx tools/scaninc/scaninc tools/ramscrgen/ramscrgen
+
+      - name: Build ROM
         run: |
           mkdir -p build/emerald
           make
