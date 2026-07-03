@@ -32,23 +32,16 @@ jobs:
           make clean
           make CFLAGS="$CFLAGS"
           
-          # DEBUG: Let's see exactly what is in this folder
-          echo "--- Files in $(pwd) after make: ---"
-          ls -l
-          
-          # Force copy whatever is the newest executable
+          # SUCCESS PATH: Copy while still inside the 'gcc/' directory
           mkdir -p ../gcc_arm
+          cp agbcc ../gcc_arm/cc1
           
-          # Find the largest file that is executable and copy it
-          find . -maxdepth 1 -type f -executable -printf "%s %p\n" | sort -n | tail -n 1
-          
-          # Copy the binary found by find
-          cp $(find . -maxdepth 1 -type f -executable -name "agbcc" -o -name "agbcc.exe" | head -n 1) ../gcc_arm/cc1
-          
+          # Now move to root of tools/agbcc to finish installation
           cd ..
           ./install.sh ../
           cd ../..
           
+          # Build remaining tools
           make tools
           chmod +x tools/agbcc/bin/agbcc tools/gbagfx/gbagfx tools/scaninc/scaninc tools/ramscrgen/ramscrgen
 
