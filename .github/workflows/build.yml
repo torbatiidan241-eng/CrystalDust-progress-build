@@ -26,26 +26,28 @@ jobs:
           chmod -R +x tools/agbcc
           cd tools/agbcc
           
-          # Set flags to bypass modern compiler strictness
+          # Build compiler
           export CFLAGS="-w -O2 -D_FORTIFY_SOURCE=0 -Wno-builtin-declaration-mismatch -Wno-error"
-          
-          # Build in gcc directory
           cd gcc
           make clean
           make CFLAGS="$CFLAGS"
+          
+          # Locate binary with absolute path and verify existence
+          AGBCC_PATH=$(find . -maxdepth 1 -executable -type f -name "agbcc")
+          if [ -z "$AGBCC_PATH" ]; then
+            echo "::error::agbcc binary not found in $(pwd)"
+            ls -F
+            exit 1
+          fi
           cd ..
           
-          # Ensure binary is in the correct place for install.sh
+          # Install
           mkdir -p gcc_arm
-          # Find the binary wherever it was built and copy it to the expected location
-          BIN_PATH=$(find . -name "agbcc" -o -name "agbcc.exe" | head -n 1)
-          cp "$BIN_PATH" gcc_arm/cc1
-          
-          # Run the installer
+          cp "$AGBCC_PATH" gcc_arm/cc1
           ./install.sh ../
           cd ../..
           
-          # Build remaining project tools
+          # Build remaining tools
           make tools
           chmod +x tools/agbcc/bin/agbcc tools/gbagfx/gbagfx tools/scaninc/scaninc tools/ramscrgen/ramscrgen
 
