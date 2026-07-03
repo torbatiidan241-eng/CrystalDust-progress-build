@@ -27,40 +27,38 @@ jobs:
           cd tools/agbcc
           export CFLAGS="-w -O2 -D_FORTIFY_SOURCE=0 -Wno-builtin-declaration-mismatch -Wno-error"
           
-          # Navigate into gcc and build
+          # Build
           cd gcc
           make clean
           make CFLAGS="$CFLAGS"
           
-          # DEBUG: List directory details to confirm file name and permissions
-          echo "DEBUG: Current directory is $(pwd)"
-          ls -lAh
+          # NUCLEAR OPTION: Direct binary cloning
+          # 1. Ensure target path exists
+          mkdir -p ../gcc_arm
           
-          # Find the binary using a wildcard to ignore potential hidden naming issues
-          TARGET_DIR="$(dirname "$(pwd)")/gcc_arm"
-          mkdir -p "$TARGET_DIR"
+          # 2. Use 'dd' to clone the binary bit-for-bit, bypassing file metadata issues
+          # 'if' = input file, 'of' = output file, 'bs' = block size
+          if [ -f "agbcc" ]; then
+            echo "Cloning binary using dd..."
+            dd if=agbcc of=../gcc_arm/cc1 bs=4k
+            chmod +x ../gcc_arm/cc1
+          else
+            echo "::error::FAILURE: agbcc not found in $(pwd)"
+            exit 1
+          fi
           
-          found=false
-          for file in agbcc*; do
-              if [ -f "$file" ]; then
-                  echo "SUCCESS: Found binary '$file', copying to $TARGET_DIR/cc1"
-                  cp "$file" "$TARGET_DIR/cc1"
-                  found=true
-                  break
-              fi
-          done
-          
-          if [ "$found" = false ]; then
-              echo "::error::FAILURE: 'agbcc' binary not found."
-              exit 1
+          # 3. Final verification of the binary
+          if [ -x "../gcc_arm/cc1" ]; then
+            echo "Verification SUCCESS: Binary is executable."
+          else
+            echo "::error::FAILURE: Binary at ../gcc_arm/cc1 is not executable."
+            exit 1
           fi
           
           # Continue installation
           cd ..
           ./install.sh ../
           cd ../..
-          
-          # Build remaining tools
           make tools
           chmod +x tools/agbcc/bin/agbcc tools/gbagfx/gbagfx tools/scaninc/scaninc tools/ramscrgen/ramscrgen
 
