@@ -26,28 +26,36 @@ jobs:
           chmod -R +x tools/agbcc
           cd tools/agbcc
           
-          # Build compiler
+          # Build flags for legacy compatibility
           export CFLAGS="-w -O2 -D_FORTIFY_SOURCE=0 -Wno-builtin-declaration-mismatch -Wno-error"
+          
           cd gcc
           make clean
           make CFLAGS="$CFLAGS"
           
-          # Locate binary with absolute path and verify existence
-          AGBCC_PATH=$(find . -maxdepth 1 -executable -type f -name "agbcc")
-          if [ -z "$AGBCC_PATH" ]; then
-            echo "::error::agbcc binary not found in $(pwd)"
-            ls -F
+          # DEBUG: Find the actual binary location
+          echo "Listing all files in $(pwd):"
+          ls -F
+          
+          # Identify the binary: it should be the only executable 'agbcc' file
+          # We search recursively from the tools folder to find it
+          cd ..
+          BINARY=$(find . -name "agbcc" -type f -executable | head -n 1)
+          
+          if [ -z "$BINARY" ]; then
+            echo "::error::Binary 'agbcc' not found in build directory."
             exit 1
           fi
-          cd ..
           
-          # Install
+          echo "Found binary at: $BINARY"
           mkdir -p gcc_arm
-          cp "$AGBCC_PATH" gcc_arm/cc1
+          cp "$BINARY" gcc_arm/cc1
+          
+          # Proceed with installation
           ./install.sh ../
           cd ../..
           
-          # Build remaining tools
+          # Build remaining project tools
           make tools
           chmod +x tools/agbcc/bin/agbcc tools/gbagfx/gbagfx tools/scaninc/scaninc tools/ramscrgen/ramscrgen
 
