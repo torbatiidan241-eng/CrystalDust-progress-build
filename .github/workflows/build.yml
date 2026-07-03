@@ -26,33 +26,29 @@ jobs:
           chmod -R +x tools/agbcc
           cd tools/agbcc
           
-          # Set flags
+          # Set flags to bypass modern compiler strictness
           export CFLAGS="-w -O2 -D_FORTIFY_SOURCE=0 -Wno-builtin-declaration-mismatch -Wno-error"
           
-          # Build
+          # Build in gcc directory
           cd gcc
           make clean
           make CFLAGS="$CFLAGS"
           cd ..
           
-          # Universal Find and Move: Find the file regardless of subfolder
+          # Ensure binary is in the correct place for install.sh
           mkdir -p gcc_arm
+          # Find the binary wherever it was built and copy it to the expected location
           BIN_PATH=$(find . -name "agbcc" -o -name "agbcc.exe" | head -n 1)
-          
-          if [ -z "$BIN_PATH" ]; then
-            echo "::error::Could not find agbcc binary!"
-            exit 1
-          fi
-          
-          echo "Moving $BIN_PATH to gcc_arm/cc1"
           cp "$BIN_PATH" gcc_arm/cc1
           
-          # Install
+          # Run the installer
           ./install.sh ../
           cd ../..
           
+          # Build remaining project tools
           make tools
           chmod +x tools/agbcc/bin/agbcc tools/gbagfx/gbagfx tools/scaninc/scaninc tools/ramscrgen/ramscrgen
+
       - name: Build ROM
         run: |
           mkdir -p build/emerald
