@@ -25,32 +25,35 @@ jobs:
         run: |
           chmod -R +x tools/agbcc
           cd tools/agbcc
-          
-          # Build compiler
           export CFLAGS="-w -O2 -D_FORTIFY_SOURCE=0 -Wno-builtin-declaration-mismatch -Wno-error"
+          
+          # Navigate into gcc and build
           cd gcc
           make clean
           make CFLAGS="$CFLAGS"
           
-          # Force the use of the absolute path to the binary
-          # $(pwd) captures the full path to the tools/agbcc/gcc directory
-          FULL_PATH=$(pwd)/agbcc
+          # FAILSHELL: List the directory to see if 'agbcc' exists right here
+          echo "DEBUG: Current directory is $(pwd)"
+          ls -F
           
-          # Move to the destination using the absolute path
-          mkdir -p ../gcc_arm
-          echo "Copying $FULL_PATH to $(pwd)/../gcc_arm/cc1"
-          cp "$FULL_PATH" ../gcc_arm/cc1
+          # Use an absolute path test
+          TARGET_DIR="$(dirname "$(pwd)")/gcc_arm"
+          mkdir -p "$TARGET_DIR"
           
-          # Return to root of tools/agbcc to continue
+          if [ -f "agbcc" ]; then
+            echo "SUCCESS: agbcc found. Moving it to $TARGET_DIR/cc1"
+            cp agbcc "$TARGET_DIR/cc1"
+          else
+            echo "::error::FAILURE: 'agbcc' was not generated in $(pwd)"
+            exit 1
+          fi
+          
+          # Continue installation
           cd ..
           ./install.sh ../
           cd ../..
-          
-          # Build remaining tools
           make tools
-          chmod +x tools/agbcc/bin/agbcc tools/gbagfx/gbagfx tools/scaninc/scaninc tools/ramscrgen/ramscrgen
-
-      - name: Build ROM
+          chmod +x tools/agbcc/bin/agbcc tools/
         run: |
           mkdir -p build/emerald
           make
