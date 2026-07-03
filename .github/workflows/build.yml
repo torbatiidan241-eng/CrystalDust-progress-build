@@ -26,17 +26,22 @@ jobs:
           chmod -R +x tools/agbcc
           cd tools/agbcc
           
-          # Build
+          # Build compiler
           export CFLAGS="-w -O2 -D_FORTIFY_SOURCE=0 -Wno-builtin-declaration-mismatch -Wno-error"
           cd gcc
           make clean
           make CFLAGS="$CFLAGS"
           
-          # SUCCESS PATH: Copy while still inside the 'gcc/' directory
-          mkdir -p ../gcc_arm
-          cp agbcc ../gcc_arm/cc1
+          # Force the use of the absolute path to the binary
+          # $(pwd) captures the full path to the tools/agbcc/gcc directory
+          FULL_PATH=$(pwd)/agbcc
           
-          # Now move to root of tools/agbcc to finish installation
+          # Move to the destination using the absolute path
+          mkdir -p ../gcc_arm
+          echo "Copying $FULL_PATH to $(pwd)/../gcc_arm/cc1"
+          cp "$FULL_PATH" ../gcc_arm/cc1
+          
+          # Return to root of tools/agbcc to continue
           cd ..
           ./install.sh ../
           cd ../..
