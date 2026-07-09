@@ -27,30 +27,28 @@ jobs:
           cd tools/agbcc
           export CFLAGS="-w -O2 -D_FORTIFY_SOURCE=0 -Wno-builtin-declaration-mismatch -Wno-error"
           
-          # Build
+          # Navigate to gcc
           cd gcc
           make clean
-          make CFLAGS="$CFLAGS"
           
-          # 1. Setup the target directory
+          # BUILD: Rename output immediately to 'agbcc_final' so make can't track it
+          make CFLAGS="$CFLAGS"
+          mv agbcc agbcc_final
+          
+          # Create target folder
           mkdir -p ../gcc_arm
           
-          # 2. Use a hard link to make the file appear in BOTH locations simultaneously
-          # This satisfies any script looking for it in 'gcc/' AND 'gcc_arm/'
-          ln agbcc ../gcc_arm/cc1
+          # Move it to the target location
+          mv agbcc_final ../gcc_arm/cc1
           
-          # 3. If the link fails (e.g., cross-device), fallback to a simple copy
-          if [ $? -ne 0 ]; then
-             cp agbcc ../gcc_arm/cc1
-          fi
-          
-          # 4. Proceed with installation
+          # Return to root and proceed
           cd ..
           ./install.sh ../
           cd ../..
           
           # Build remaining tools
           make tools
+          chmod +x tools/agbcc/bin/agbcc tools/gbagfx/gbagfx tools/scaninc/scaninc tools/ramscrgen/ramscrgen
           chmod +x tools/agbcc/bin/agbcc tools/gbagfx/gbagfx tools/scaninc/scaninc tools/ramscrgen/ramscrgen
       - name: Build ROM
         run: |
