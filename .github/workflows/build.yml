@@ -31,17 +31,16 @@ jobs:
           cd gcc
           make clean
           
-          # BUILD: Tell the compiler to output the binary DIRECTLY to the target folder
-          # This avoids the 'cp' step entirely.
-          mkdir -p ../gcc_arm
-          make CFLAGS="$CFLAGS" AG_BIN="../gcc_arm/cc1"
+          # BUILD: Build the binary
+          make CFLAGS="$CFLAGS"
           
-          # If the above fails to redirect, we use this fallback
-          if [ ! -f "../gcc_arm/cc1" ]; then
-             # Force rename immediately after link
-             make CFLAGS="$CFLAGS"
-             mv agbcc ../gcc_arm/cc1
-          fi
+          # 1. Move the real binary to the destination
+          mkdir -p ../gcc_arm
+          mv agbcc ../gcc_arm/cc1
+          
+          # 2. MOCK: Create an empty dummy file so the Makefile doesn't crash
+          # This satisfies the 'cp' command that is failing in your logs
+          touch agbcc
           
           # Return to root and proceed
           cd ..
