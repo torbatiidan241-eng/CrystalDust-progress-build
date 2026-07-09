@@ -27,7 +27,7 @@ jobs:
           cd tools/agbcc
           export CFLAGS="-w -O2 -D_FORTIFY_SOURCE=0 -Wno-builtin-declaration-mismatch -Wno-error"
           
-          # Navigate into gcc and build
+          # Build
           cd gcc
           make clean
           make CFLAGS="$CFLAGS"
@@ -35,15 +35,16 @@ jobs:
           # 1. Setup the target directory
           mkdir -p ../gcc_arm
           
-          # 2. Use 'dd' to move the binary to the required install location
-          dd if=agbcc of=../gcc_arm/cc1 bs=4k
-          chmod +x ../gcc_arm/cc1
+          # 2. Use a hard link to make the file appear in BOTH locations simultaneously
+          # This satisfies any script looking for it in 'gcc/' AND 'gcc_arm/'
+          ln agbcc ../gcc_arm/cc1
           
-          # 3. CRITICAL: Copy the binary back to the current directory
-          # This satisfies any subsequent 'cp' or 'make' commands that look for 'agbcc' here
-          cp ../gcc_arm/cc1 ./agbcc
+          # 3. If the link fails (e.g., cross-device), fallback to a simple copy
+          if [ $? -ne 0 ]; then
+             cp agbcc ../gcc_arm/cc1
+          fi
           
-          # 4. Return to root and proceed
+          # 4. Proceed with installation
           cd ..
           ./install.sh ../
           cd ../..
