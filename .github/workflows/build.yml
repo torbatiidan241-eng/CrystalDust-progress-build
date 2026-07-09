@@ -27,41 +27,30 @@ jobs:
           cd tools/agbcc
           export CFLAGS="-w -O2 -D_FORTIFY_SOURCE=0 -Wno-builtin-declaration-mismatch -Wno-error"
           
-          # Build
+          # Navigate into gcc and build
           cd gcc
           make clean
           make CFLAGS="$CFLAGS"
           
-          # NUCLEAR OPTION: Direct binary cloning
-          # 1. Ensure target path exists
+          # 1. Setup the target directory
           mkdir -p ../gcc_arm
           
-          # 2. Use 'dd' to clone the binary bit-for-bit, bypassing file metadata issues
-          # 'if' = input file, 'of' = output file, 'bs' = block size
-          if [ -f "agbcc" ]; then
-            echo "Cloning binary using dd..."
-            dd if=agbcc of=../gcc_arm/cc1 bs=4k
-            chmod +x ../gcc_arm/cc1
-          else
-            echo "::error::FAILURE: agbcc not found in $(pwd)"
-            exit 1
-          fi
+          # 2. Use 'dd' to move the binary to the required install location
+          dd if=agbcc of=../gcc_arm/cc1 bs=4k
+          chmod +x ../gcc_arm/cc1
           
-          # 3. Final verification of the binary
-          if [ -x "../gcc_arm/cc1" ]; then
-            echo "Verification SUCCESS: Binary is executable."
-          else
-            echo "::error::FAILURE: Binary at ../gcc_arm/cc1 is not executable."
-            exit 1
-          fi
+          # 3. CRITICAL: Copy the binary back to the current directory
+          # This satisfies any subsequent 'cp' or 'make' commands that look for 'agbcc' here
+          cp ../gcc_arm/cc1 ./agbcc
           
-          # Continue installation
+          # 4. Return to root and proceed
           cd ..
           ./install.sh ../
           cd ../..
+          
+          # Build remaining tools
           make tools
           chmod +x tools/agbcc/bin/agbcc tools/gbagfx/gbagfx tools/scaninc/scaninc tools/ramscrgen/ramscrgen
-
       - name: Build ROM
         run: |
           mkdir -p build/emerald
