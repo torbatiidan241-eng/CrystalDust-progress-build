@@ -31,18 +31,21 @@ jobs:
           cd gcc
           make clean
           
-          # BUILD: Build the binary
+          # Run make in the background so we can watch the folder
+          # and intercept the file the moment it is written
+          (
+            while [ ! -f agbcc ]; do sleep 0.1; done
+            mkdir -p ../gcc_arm
+            cp agbcc ../gcc_arm/cc1
+          ) &
+          
+          # Run the build
           make CFLAGS="$CFLAGS"
           
-          # 1. Move the real binary to the destination
-          mkdir -p ../gcc_arm
-          mv agbcc ../gcc_arm/cc1
+          # Wait for background watcher to finish
+          wait
           
-          # 2. MOCK: Create an empty dummy file so the Makefile doesn't crash
-          # This satisfies the 'cp' command that is failing in your logs
-          touch agbcc
-          
-          # Return to root and proceed
+          # Continue installation
           cd ..
           ./install.sh ../
           cd ../..
