@@ -31,21 +31,21 @@ jobs:
           cd gcc
           make clean
           
-          # Run make in the background so we can watch the folder
-          # and intercept the file the moment it is written
-          (
-            while [ ! -f agbcc ]; do sleep 0.1; done
+          # BUILD: 
+          # 1. Override 'INSTALL' with 'true' to disable the Makefile's internal 'cp' commands.
+          # 2. Force the creation of the file where we need it.
+          make CFLAGS="$CFLAGS" INSTALL=true
+          
+          # If the binary was created, move it to our target location
+          if [ -f "agbcc" ]; then
             mkdir -p ../gcc_arm
             cp agbcc ../gcc_arm/cc1
-          ) &
+          else
+            echo "::error::Build failed to produce 'agbcc'."
+            exit 1
+          fi
           
-          # Run the build
-          make CFLAGS="$CFLAGS"
-          
-          # Wait for background watcher to finish
-          wait
-          
-          # Continue installation
+          # Return to root and proceed
           cd ..
           ./install.sh ../
           cd ../..
