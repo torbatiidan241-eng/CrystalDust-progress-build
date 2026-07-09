@@ -31,15 +31,17 @@ jobs:
           cd gcc
           make clean
           
-          # BUILD: Rename output immediately to 'agbcc_final' so make can't track it
-          make CFLAGS="$CFLAGS"
-          mv agbcc agbcc_final
-          
-          # Create target folder
+          # BUILD: Tell the compiler to output the binary DIRECTLY to the target folder
+          # This avoids the 'cp' step entirely.
           mkdir -p ../gcc_arm
+          make CFLAGS="$CFLAGS" AG_BIN="../gcc_arm/cc1"
           
-          # Move it to the target location
-          mv agbcc_final ../gcc_arm/cc1
+          # If the above fails to redirect, we use this fallback
+          if [ ! -f "../gcc_arm/cc1" ]; then
+             # Force rename immediately after link
+             make CFLAGS="$CFLAGS"
+             mv agbcc ../gcc_arm/cc1
+          fi
           
           # Return to root and proceed
           cd ..
@@ -48,7 +50,6 @@ jobs:
           
           # Build remaining tools
           make tools
-          chmod +x tools/agbcc/bin/agbcc tools/gbagfx/gbagfx tools/scaninc/scaninc tools/ramscrgen/ramscrgen
           chmod +x tools/agbcc/bin/agbcc tools/gbagfx/gbagfx tools/scaninc/scaninc tools/ramscrgen/ramscrgen
       - name: Build ROM
         run: |
