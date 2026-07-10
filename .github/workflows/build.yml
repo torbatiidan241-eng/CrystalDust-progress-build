@@ -4,61 +4,23 @@ on: [push, pull_request]
 jobs:
   build:
     runs-on: ubuntu-latest
+    # This image contains the full devkitARM and agbcc toolchain pre-installed
+    container:
+      image: ghcr.io/pret/agbcc:latest 
     steps:
-      - name: Prepare Runner Environment
-        run: |
-          git config --global core.symlinks false
-          git config --global core.longpaths true
-
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
           submodules: recursive
           fetch-depth: 0
 
-      - name: Install System Dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential libpng-dev gcc-arm-none-eabi make bison flex texinfo g++
-
-      - name: Build Project Tools
-        run: |
-          chmod -R +x tools/agbcc
-          cd tools/agbcc
-          export CFLAGS="-w -O2 -D_FORTIFY_SOURCE=0 -Wno-builtin-declaration-mismatch -Wno-error"
-          
-          # Navigate to gcc
-          cd gcc
-          make clean
-          
-          # BUILD: 
-          # 1. Override 'INSTALL' with 'true' to disable the Makefile's internal 'cp' commands.
-          # 2. Force the creation of the file where we need it.
-          make CFLAGS="$CFLAGS" INSTALL=true
-          
-          # If the binary was created, move it to our target location
-          if [ -f "agbcc" ]; then
-            mkdir -p ../gcc_arm
-            cp agbcc ../gcc_arm/cc1
-          else
-            echo "::error::Build failed to produce 'agbcc'."
-            exit 1
-          fi
-          
-          # Return to root and proceed
-          cd ..
-          ./install.sh ../
-          cd ../..
-          
-          # Build remaining tools
-          make tools
-          chmod +x tools/agbcc/bin/agbcc tools/gbagfx/gbagfx tools/scaninc/scaninc tools/ramscrgen/ramscrgen
       - name: Build ROM
         run: |
-          mkdir -p build/emerald
+          # Since the toolchain is in the container, just run make
           make
         env:
-          PATH: /usr/bin:/bin:/usr/local/bin:${{ github.workspace }}/tools/agbcc/bin:${{ github.workspace }}/tools/gbagfx:${{ github.workspace }}/tools/scaninc:${{ github.workspace }}/tools/ramscrgen:${{ github.workspace }}/tools/bin2c:${{ github.workspace }}/tools/gbafix:$PATH
+          # Point to the container's pre-installed toolchain
+          PATH: /opt/agbcc/bin:/usr/local/bin:/usr/bin:/bin:$PATH
 
       - name: Upload ROM Artifact
         uses: actions/upload-artifact@v4
