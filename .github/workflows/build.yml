@@ -6,40 +6,48 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Pre-configure Git
+      - name: Configure Git
         run: |
-          # These settings must be applied BEFORE checkout
           git config --global core.symlinks false
           git config --global core.longpaths true
-          git config --global advice.detachedHead false
 
       - name: Manual Checkout
         run: |
-          # Manually initialize the repo to avoid the constraints of actions/checkout
           git init
           git remote add origin https://github.com/${{ github.repository }}
           git fetch --depth 1 origin progress
           git checkout progress
-
-      - name: Post-Checkout Cleanup
-        run: |
-          # Force remove the problematic submodule directory
-          rm -rf tools/agbcc
-          mkdir -p tools/agbcc/bin
-          touch tools/agbcc/bin/agbcc
-          chmod +x tools/agbcc/bin/agbcc
+          git submodule update --init --recursive
 
       - name: Install System Dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential binutils-arm-none-eabi libpng-dev
 
+      - name: Prepare Environment
+        run: |
+          # 1. Ensure build tree exists
+          mkdir -p build/src
+          
+          # 2. Dummy agbcc
+          mkdir -p tools/agbcc/bin
+          touch tools/agbcc/bin/agbcc
+          chmod +x tools/agbcc/bin/agbcc
+          
+          # 3. Build tools
+          make tools
+          chmod +x tools/gbagfx/gbagfx tools/scaninc/scaninc tools/ramscrgen/ramscrgen
+
       - name: Build ROM
         run: |
-          # Use system-installed compilers to bypass the submodule issues
-          make COMPARE=0 -j$(nproc)
+          # Locate standard library includes for the cross-compiler
+          SYS_INCLUDE=$(dirname $(find /usr/lib/gcc/arm-none-eabi -name stddef.h | head -n 1))
+          
+          # Build, injecting the header path and forcing the correct compiler
+          # We define AGU_CC to point to the system compiler to override the broken agbcc logic
+          make COMPARE=0 CC=arm-none-eabi-gcc CFLAGS="-I$SYS_INCLUDE -DARM_ASM" -j$(nproc)
         env:
-          PATH: /usr/bin:$PATH
+          PATH: /usr/bin:${{ github.workspace }}/tools/gbagfx:${{ github.workspace }}/tools/scaninc:${{ github.workspace }}/tools/ramscrgen:$PATH
 
       - name: Upload ROM Artifact
         uses: actions/upload-artifact@v4
