@@ -43,7 +43,6 @@ jobs:
 
       - name: Build ROM
         run: |
-          # Use -j1 to ensure sequential builds, avoiding race conditions
           make rom \
                COMPARE=0 \
                berry_fix=true \
