@@ -6,49 +6,30 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Configure Git
-        run: |
-          git config --global core.symlinks false
-          git config --global core.longpaths true
-
-      - name: Manual Checkout
-        run: |
-          git init
-          git remote add origin https://github.com/${{ github.repository }}
-          git fetch --depth 1 origin progress
-          git checkout progress
-          git submodule update --init --recursive --force
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: false # Disable submodule checkout entirely
+          fetch-depth: 1
 
       - name: Install System Dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential gcc-arm-none-eabi libpng-dev
 
-      - name: Prepare Environment
+      - name: Build
         run: |
+          # 1. Create directory structure manually
           mkdir -p build/src
-          # Provide dummy tools to satisfy Makefile requirements
-          mkdir -p tools/agbcc/bin
-          touch tools/agbcc/bin/agbcc
-          chmod +x tools/agbcc/bin/agbcc
-          make tools
-          chmod +x tools/gbagfx/gbagfx tools/scaninc/scaninc tools/ramscrgen/ramscrgen
-
-      - name: Build ROM
-        run: |
-          # Use compiler's internal include path for stddef.h
-          ARM_INC=$(arm-none-eabi-gcc -print-file-name=include)
           
-          # Force Makefile to use system compiler and include headers
-          # We define CC to the system compiler and pass CFLAGS
-          make COMPARE=0 \
-               CC=arm-none-eabi-gcc \
-               CFLAGS="-I$ARM_INC -I/usr/include/newlib -DARM_ASM" \
-               -j$(nproc)
+          # 2. Build ONLY the main ROM target. 
+          # We bypass 'make' (which defaults to all) to avoid berry_fix/payload
+          # Adjust 'CrystalDust.gba' to your actual ROM filename
+          make COMPARE=0 CC=arm-none-eabi-gcc CrystalDust.gba -j$(nproc)
         env:
-          PATH: /usr/bin:${{ github.workspace }}/tools/gbagfx:${{ github.workspace }}/tools/scaninc:${{ github.workspace }}/tools/ramscrgen:$PATH
+          PATH: /usr/bin:$PATH
 
-      - name: Upload ROM Artifact
+      - name: Upload
         uses: actions/upload-artifact@v4
         with:
           name: crystal-dust-rom
