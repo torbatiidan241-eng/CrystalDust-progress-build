@@ -6,6 +6,12 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - name: Configure Git
+        run: |
+          # Prevent symlink errors during checkout
+          git config --global core.symlinks false
+          git config --global core.longpaths true
+
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
@@ -15,28 +21,26 @@ jobs:
       - name: Install System Dependencies
         run: |
           sudo apt-get update
-          # Install ARM cross-compiler and essential build tools
+          # Install ARM cross-compiler and build essentials
           sudo apt-get install -y build-essential binutils-arm-none-eabi libpng-dev
 
-      - name: Configure and Build Tools
+      - name: Setup Tools
         run: |
-          # 1. Trick the build system into thinking agbcc is already built
-          # This prevents the Makefile from attempting to compile it and failing
+          # Bypass problematic agbcc compilation
           mkdir -p tools/agbcc/bin
           touch tools/agbcc/bin/agbcc
           chmod +x tools/agbcc/bin/agbcc
           
-          # 2. Build the remaining necessary tools (gbagfx, etc)
-          # We explicitly ignore agbcc here if the makefile supports it
+          # Build standard tools
           make tools
           chmod +x tools/gbagfx/gbagfx tools/scaninc/scaninc tools/ramscrgen/ramscrgen
 
       - name: Build ROM
         run: |
-          # Execute build with COMPARE=0 as per your previous project requirements
+          # Use COMPARE=0 to bypass base ROM matching requirement
           make COMPARE=0 -j$(nproc)
         env:
-          # Point the compiler path to the system-installed ARM tools
+          # Use system-installed ARM compiler
           PATH: /usr/bin:${{ github.workspace }}/tools/gbagfx:${{ github.workspace }}/tools/scaninc:${{ github.workspace }}/tools/ramscrgen:$PATH
 
       - name: Upload ROM Artifact
