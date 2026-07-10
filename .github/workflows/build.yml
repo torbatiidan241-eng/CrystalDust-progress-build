@@ -6,30 +6,44 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Configure Git
+        run: |
+          git config --global core.longpaths true
+
+      - name: Checkout Repository
         uses: actions/checkout@v4
         with:
-          submodules: false # Disable submodule checkout entirely
+          submodules: false
           fetch-depth: 1
+          ref: progress
+          # This is the key: tell git to only checkout what we need, 
+          # excluding the problematic 'tools' folder entirely.
+          sparse-checkout: |
+            *
+            !tools/agbcc
+
+      - name: Prepare Environment
+        run: |
+          # Now that we've avoided the symlink error, 
+          # create the directory structure manually
+          mkdir -p build/src
+          mkdir -p tools/agbcc/bin
+          touch tools/agbcc/bin/agbcc
+          chmod +x tools/agbcc/bin/agbcc
 
       - name: Install System Dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential gcc-arm-none-eabi libpng-dev
 
-      - name: Build
+      - name: Build ROM
         run: |
-          # 1. Create directory structure manually
-          mkdir -p build/src
-          
-          # 2. Build ONLY the main ROM target. 
-          # We bypass 'make' (which defaults to all) to avoid berry_fix/payload
-          # Adjust 'CrystalDust.gba' to your actual ROM filename
+          # Build only the main ROM target, ignoring 'berry_fix'
           make COMPARE=0 CC=arm-none-eabi-gcc CrystalDust.gba -j$(nproc)
         env:
           PATH: /usr/bin:$PATH
 
-      - name: Upload
+      - name: Upload ROM Artifact
         uses: actions/upload-artifact@v4
         with:
           name: crystal-dust-rom
