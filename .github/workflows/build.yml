@@ -17,7 +17,7 @@ jobs:
           git remote add origin https://github.com/${{ github.repository }}
           git fetch --depth 1 origin progress
           git checkout progress
-          git submodule update --init --recursive
+          git submodule update --init --recursive --force
 
       - name: Install System Dependencies
         run: |
@@ -26,31 +26,24 @@ jobs:
 
       - name: Prepare Environment
         run: |
-          # Create build directory
           mkdir -p build/src
-          
-          # Remove broken submodule and replace with dummy
-          rm -rf tools/agbcc
+          # Provide dummy tools to satisfy Makefile requirements
           mkdir -p tools/agbcc/bin
           touch tools/agbcc/bin/agbcc
           chmod +x tools/agbcc/bin/agbcc
-          
-          # Build tools
           make tools
           chmod +x tools/gbagfx/gbagfx tools/scaninc/scaninc tools/ramscrgen/ramscrgen
 
       - name: Build ROM
         run: |
-          # Locate system header path
-          INCLUDE_PATH=$(arm-none-eabi-gcc -print-file-name=include)
+          # Use compiler's internal include path for stddef.h
+          ARM_INC=$(arm-none-eabi-gcc -print-file-name=include)
           
-          # Force the use of system toolchain via environment variables
-          # This overrides the internal Makefile 'CC' and 'AS' variables
+          # Force Makefile to use system compiler and include headers
+          # We define CC to the system compiler and pass CFLAGS
           make COMPARE=0 \
                CC=arm-none-eabi-gcc \
-               AS=arm-none-eabi-as \
-               LD=arm-none-eabi-ld \
-               CFLAGS="-I$INCLUDE_PATH -DARM_ASM" \
+               CFLAGS="-I$ARM_INC -I/usr/include/newlib -DARM_ASM" \
                -j$(nproc)
         env:
           PATH: /usr/bin:${{ github.workspace }}/tools/gbagfx:${{ github.workspace }}/tools/scaninc:${{ github.workspace }}/tools/ramscrgen:$PATH
