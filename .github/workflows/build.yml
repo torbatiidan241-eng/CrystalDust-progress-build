@@ -16,42 +16,27 @@ jobs:
           git fetch --depth 1 origin progress
           git checkout progress
 
-      - name: Prepare Environment
-        run: |
-          mkdir -p build/src
-          mkdir -p tools/agbcc/bin
-          touch tools/agbcc/bin/agbcc
-          chmod +x tools/agbcc/bin/agbcc
-
-      - name: Install System Dependencies
+      - name: Install Dependencies
         run: |
           sudo apt-get update
+          # Install only the compiler, not the massive library extras if possible
+          # We keep it simple to reduce download time
           sudo apt-get install -y build-essential gcc-arm-none-eabi libpng-dev
 
       - name: Build ROM
         run: |
-          # 1. Prepare directories
-          mkdir -p build/emerald/src
-          mkdir -p build/src
-          
-          # 2. Get system header path
-          ARM_INC=$(arm-none-eabi-gcc -print-file-name=include)
-          
-          # 3. Build by overriding the failing targets to 'true' (do nothing)
-          # We also force the compiler paths via make variables
+          # The compiler now has everything it needs in the default system path
+          # We no longer need to pass -I$ARM_INC or specific header flags
           make rom \
                COMPARE=0 \
                CC=arm-none-eabi-gcc \
-               AS=arm-none-eabi-as \
-               LD=arm-none-eabi-ld \
-               CFLAGS="-I$ARM_INC -DARM_ASM -ffreestanding" \
                berry_fix=true \
                payload=true \
-               libagbsyscall=true \
                -j1
         env:
           PATH: /usr/bin:${{ github.workspace }}/tools/gbagfx:${{ github.workspace }}/tools/scaninc:${{ github.workspace }}/tools/ramscrgen:$PATH
-      - name: Upload ROM Artifact
+
+      - name: Upload
         uses: actions/upload-artifact@v4
         with:
           name: crystal-dust-rom
