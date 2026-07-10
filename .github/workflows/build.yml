@@ -6,48 +6,38 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Configure Git
-        run: |
-          git config --global core.symlinks false
-          git config --global core.longpaths true
-
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
-          submodules: false # Disable default checkout to avoid race conditions
+          submodules: recursive
           fetch-depth: 0
           ref: progress
 
-      - name: Force Submodule Sync
+      - name: Verify Engine Files
         run: |
-          # Manually initialize and update submodules
-          git submodule sync --recursive
-          git submodule update --init --recursive --force
+          echo "--- Checking for libagbsyscall.s ---"
+          find . -name "libagbsyscall.s"
+          echo "--- Checking build directory ---"
+          ls -R build || echo "Build directory does not exist"
+          echo "--- Checking submodule status ---"
+          git submodule status
 
       - name: Install System Dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential binutils-arm-none-eabi libpng-dev
 
-      - name: Build Tools
+      - name: Build ROM
         run: |
-          # Build tools first
-          make tools
-          
-          # Create dummy agbcc to satisfy the build system
+          # 1. Create a dummy agbcc to bypass the compiler check
           mkdir -p tools/agbcc/bin
           touch tools/agbcc/bin/agbcc
           chmod +x tools/agbcc/bin/agbcc
-
-      - name: Build ROM
-        run: |
-          # Build ROM with explicit path to system compilers
-          make COMPARE=0 -j$(nproc)
+          
+          # 2. Build tools
+          make tools
+          
+          # 3. Attempt build
+          make COMPARE=0
         env:
           PATH: /usr/bin:${{ github.workspace }}/tools/gbagfx:${{ github.workspace }}/tools/scaninc:${{ github.workspace }}/tools/ramscrgen:$PATH
-
-      - name: Upload ROM Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: crystal-dust-rom
-          path: '*.gba'
