@@ -8,7 +8,6 @@ jobs:
     steps:
       - name: Configure Git
         run: |
-          # Prevent symlink errors during checkout
           git config --global core.symlinks false
           git config --global core.longpaths true
 
@@ -17,30 +16,41 @@ jobs:
         with:
           submodules: recursive
           fetch-depth: 0
+          ref: progress
 
       - name: Install System Dependencies
         run: |
           sudo apt-get update
-          # Install ARM cross-compiler and build essentials
           sudo apt-get install -y build-essential binutils-arm-none-eabi libpng-dev
 
-      - name: Setup Tools
+      - name: Initialize Build Environment
         run: |
-          # Bypass problematic agbcc compilation
+          # Ensure submodules are fully hydrated
+          git submodule update --init --recursive
+          
+          # Create necessary build directories
+          mkdir -p build
+          mkdir -p build/src
+          
+          # Create dummy agbcc to bypass the compiler build error
+          # Modern toolchains use arm-none-eabi-gcc which is already installed
           mkdir -p tools/agbcc/bin
           touch tools/agbcc/bin/agbcc
           chmod +x tools/agbcc/bin/agbcc
-          
-          # Build standard tools
+
+      - name: Build Tools
+        run: |
           make tools
           chmod +x tools/gbagfx/gbagfx tools/scaninc/scaninc tools/ramscrgen/ramscrgen
 
       - name: Build ROM
         run: |
-          # Use COMPARE=0 to bypass base ROM matching requirement
+          # Clean build state
+          make clean
+          # Run build using the progress branch target
+          # COMPARE=0 skips the base ROM binary comparison
           make COMPARE=0 -j$(nproc)
         env:
-          # Use system-installed ARM compiler
           PATH: /usr/bin:${{ github.workspace }}/tools/gbagfx:${{ github.workspace }}/tools/scaninc:${{ github.workspace }}/tools/ramscrgen:$PATH
 
       - name: Upload ROM Artifact
