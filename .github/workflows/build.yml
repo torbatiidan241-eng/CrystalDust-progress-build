@@ -23,22 +23,17 @@ jobs:
 
       - name: Prepare Environment
         run: |
-          # Create build directories
-          mkdir -p build/emerald/src
-          mkdir -p build/src
+          mkdir -p build/emerald/src build/src tools/agbcc/bin
           
-          # Create the Hijack Script to redirect agbcc -> arm-none-eabi-gcc
-          mkdir -p tools/agbcc/bin
+          # Create the Hijack Script
           cat << 'EOF' > tools/agbcc/bin/agbcc
           #!/bin/bash
-          # Filter incompatible flags
-          filtered_args=()
-          for arg in "$@"; do
-            if [[ "$arg" != "-mthumb-interwork" && "$arg" != "-fno-inline" ]]; then
-              filtered_args+=("$arg")
-            fi
+          params=()
+          for p in "$@"; do
+            [[ "$p" == "-mthumb-interwork" || "$p" == "-fno-inline" ]] && continue
+            params+=("$p")
           done
-          arm-none-eabi-gcc "${filtered_args[@]}"
+          /usr/bin/arm-none-eabi-gcc "${params[@]}"
           EOF
           chmod +x tools/agbcc/bin/agbcc
           
@@ -48,7 +43,7 @@ jobs:
 
       - name: Build ROM
         run: |
-          # Build using the hijack script, skipping broken targets
+          # Use -j1 to ensure sequential builds, avoiding race conditions
           make rom \
                COMPARE=0 \
                berry_fix=true \
@@ -56,9 +51,9 @@ jobs:
                libagbsyscall=true \
                -j1
         env:
-          PATH: /usr/bin:${{ github.workspace }}/tools/agbcc/bin:${{ github.workspace }}/tools/gbagfx:${{ github.workspace }}/tools/scaninc:${{ github.workspace }}/tools/ramscrgen:$PATH
+          PATH: ${{ github.workspace }}/tools/agbcc/bin:/usr/bin:$PATH
 
-      - name: Upload
+      - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: crystal-dust-rom
