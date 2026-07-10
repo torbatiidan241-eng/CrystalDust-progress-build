@@ -19,22 +19,44 @@ jobs:
       - name: Install Dependencies
         run: |
           sudo apt-get update
-          # Install only the compiler, not the massive library extras if possible
-          # We keep it simple to reduce download time
           sudo apt-get install -y build-essential gcc-arm-none-eabi libpng-dev
+
+      - name: Prepare Environment
+        run: |
+          # Create build directories
+          mkdir -p build/emerald/src
+          mkdir -p build/src
+          
+          # Create the Hijack Script to redirect agbcc -> arm-none-eabi-gcc
+          mkdir -p tools/agbcc/bin
+          cat << 'EOF' > tools/agbcc/bin/agbcc
+          #!/bin/bash
+          # Filter incompatible flags
+          filtered_args=()
+          for arg in "$@"; do
+            if [[ "$arg" != "-mthumb-interwork" && "$arg" != "-fno-inline" ]]; then
+              filtered_args+=("$arg")
+            fi
+          done
+          arm-none-eabi-gcc "${filtered_args[@]}"
+          EOF
+          chmod +x tools/agbcc/bin/agbcc
+          
+          # Build local tools
+          make tools
+          chmod +x tools/gbagfx/gbagfx tools/scaninc/scaninc tools/ramscrgen/ramscrgen
 
       - name: Build ROM
         run: |
-          # The compiler now has everything it needs in the default system path
-          # We no longer need to pass -I$ARM_INC or specific header flags
+          # Build using the hijack script, skipping broken targets
           make rom \
                COMPARE=0 \
-               CC=arm-none-eabi-gcc \
                berry_fix=true \
                payload=true \
+               libagbsyscall=true \
                -j1
         env:
-          PATH: /usr/bin:${{ github.workspace }}/tools/gbagfx:${{ github.workspace }}/tools/scaninc:${{ github.workspace }}/tools/ramscrgen:$PATH
+          PATH: /usr/bin:${{ github.workspace }}/tools/agbcc/bin:${{ github.workspace }}/tools/gbagfx:${{ github.workspace }}/tools/scaninc:${{ github.workspace }}/tools/ramscrgen:$PATH
 
       - name: Upload
         uses: actions/upload-artifact@v4
