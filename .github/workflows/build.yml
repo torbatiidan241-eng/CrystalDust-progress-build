@@ -30,17 +30,25 @@ jobs:
 
       - name: Build ROM
         run: |
-          # 1. List all available make targets to find the correct name
-          echo "--- Available targets ---"
-          make -pRrq | grep -o '^[a-zA-Z0-9_-]*:' | sed 's/://' | sort -u | head -n 20
+          # 1. Define paths
+          ARM_INC=$(arm-none-eabi-gcc -print-file-name=include)
           
-          # 2. Once you see the name (e.g., 'emerald.gba' or 'rom'), replace 
-          # CrystalDust.gba with that name below.
-          # For now, let's try 'make' (the default target) 
-          # which usually builds the main ROM.
-          make COMPARE=0 CC=arm-none-eabi-gcc -j$(nproc)
+          # 2. Create the missing build directories to prevent 'mkdir' errors
+          mkdir -p build/emerald/src
+          mkdir -p build/src
+          
+          # 3. Build only the 'rom' target. 
+          # This specifically bypasses 'berry_fix' and 'payload'
+          # We use 'make rom' to trigger only the main compilation
+          make rom \
+               COMPARE=0 \
+               CC=arm-none-eabi-gcc \
+               AS=arm-none-eabi-as \
+               LD=arm-none-eabi-ld \
+               CFLAGS="-I$ARM_INC -DARM_ASM -ffreestanding" \
+               -j$(nproc)
         env:
-          PATH: /usr/bin:$PATH
+          PATH: /usr/bin:${{ github.workspace }}/tools/gbagfx:${{ github.workspace }}/tools/scaninc:${{ github.workspace }}/tools/ramscrgen:$PATH
       - name: Upload ROM Artifact
         uses: actions/upload-artifact@v4
         with:
