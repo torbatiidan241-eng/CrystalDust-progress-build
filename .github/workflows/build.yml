@@ -23,27 +23,28 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential binutils-arm-none-eabi libpng-dev
 
-      - name: Pre-Build Fixes
+      - name: Initialize Environment
         run: |
-          # Create directories the Makefile expects to 'clean'
-          # This prevents the 'mkdir: missing operand' and 'rm' errors
-          mkdir -p build/emerald build/modern
-          
-          # Initialize submodules explicitly
+          # 1. Force submodule update
           git submodule update --init --recursive
           
-          # Bypass agbcc build by providing a dummy
+          # 2. Recreate required build directories manually
+          # The Makefile needs these to exist before it starts
+          mkdir -p build/emerald/src build/modern/src
+          
+          # 3. Dummy agbcc
           mkdir -p tools/agbcc/bin
           touch tools/agbcc/bin/agbcc
           chmod +x tools/agbcc/bin/agbcc
 
+      - name: Build Tools
+        run: |
+          make tools
+
       - name: Build ROM
         run: |
-          # Use a 'safe' clean that doesn't crash on missing files
-          # We manually clean the build dir to avoid the Makefile's buggy 'tidy' target
-          rm -rf build/*
-          
-          # Build with COMPARE=0
+          # Do NOT run 'make clean'. We already ensured the environment is clean.
+          # Building directly.
           make COMPARE=0 -j$(nproc)
         env:
           PATH: /usr/bin:${{ github.workspace }}/tools/gbagfx:${{ github.workspace }}/tools/scaninc:${{ github.workspace }}/tools/ramscrgen:$PATH
