@@ -6,26 +6,18 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Configure Git
+      - name: Manual Checkout
         run: |
-          git config --global core.longpaths true
-
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-        with:
-          submodules: false
-          fetch-depth: 1
-          ref: progress
-          # This is the key: tell git to only checkout what we need, 
-          # excluding the problematic 'tools' folder entirely.
-          sparse-checkout: |
-            *
-            !tools/agbcc
+          git init
+          git config core.sparseCheckout true
+          echo "/*" > .git/info/sparse-checkout
+          echo "!/tools/agbcc" >> .git/info/sparse-checkout
+          git remote add origin https://github.com/${{ github.repository }}
+          git fetch --depth 1 origin progress
+          git checkout progress
 
       - name: Prepare Environment
         run: |
-          # Now that we've avoided the symlink error, 
-          # create the directory structure manually
           mkdir -p build/src
           mkdir -p tools/agbcc/bin
           touch tools/agbcc/bin/agbcc
@@ -38,7 +30,7 @@ jobs:
 
       - name: Build ROM
         run: |
-          # Build only the main ROM target, ignoring 'berry_fix'
+          # Build only the main ROM target to avoid berry_fix/payload
           make COMPARE=0 CC=arm-none-eabi-gcc CrystalDust.gba -j$(nproc)
         env:
           PATH: /usr/bin:$PATH
