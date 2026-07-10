@@ -30,11 +30,17 @@ jobs:
 
       - name: Build ROM
         run: |
-          # Build only the main ROM target to avoid berry_fix/payload
-          make COMPARE=0 CC=arm-none-eabi-gcc CrystalDust.gba -j$(nproc)
+          # 1. List all available make targets to find the correct name
+          echo "--- Available targets ---"
+          make -pRrq | grep -o '^[a-zA-Z0-9_-]*:' | sed 's/://' | sort -u | head -n 20
+          
+          # 2. Once you see the name (e.g., 'emerald.gba' or 'rom'), replace 
+          # CrystalDust.gba with that name below.
+          # For now, let's try 'make' (the default target) 
+          # which usually builds the main ROM.
+          make COMPARE=0 CC=arm-none-eabi-gcc -j$(nproc)
         env:
           PATH: /usr/bin:$PATH
-
       - name: Upload ROM Artifact
         uses: actions/upload-artifact@v4
         with:
