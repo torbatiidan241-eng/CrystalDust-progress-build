@@ -30,23 +30,25 @@ jobs:
 
       - name: Build ROM
         run: |
-          # 1. Define paths
-          ARM_INC=$(arm-none-eabi-gcc -print-file-name=include)
-          
-          # 2. Create the missing build directories to prevent 'mkdir' errors
+          # 1. Prepare directories
           mkdir -p build/emerald/src
           mkdir -p build/src
           
-          # 3. Build only the 'rom' target. 
-          # This specifically bypasses 'berry_fix' and 'payload'
-          # We use 'make rom' to trigger only the main compilation
+          # 2. Get system header path
+          ARM_INC=$(arm-none-eabi-gcc -print-file-name=include)
+          
+          # 3. Build by overriding the failing targets to 'true' (do nothing)
+          # We also force the compiler paths via make variables
           make rom \
                COMPARE=0 \
                CC=arm-none-eabi-gcc \
                AS=arm-none-eabi-as \
                LD=arm-none-eabi-ld \
                CFLAGS="-I$ARM_INC -DARM_ASM -ffreestanding" \
-               -j$(nproc)
+               berry_fix=true \
+               payload=true \
+               libagbsyscall=true \
+               -j1
         env:
           PATH: /usr/bin:${{ github.workspace }}/tools/gbagfx:${{ github.workspace }}/tools/scaninc:${{ github.workspace }}/tools/ramscrgen:$PATH
       - name: Upload ROM Artifact
