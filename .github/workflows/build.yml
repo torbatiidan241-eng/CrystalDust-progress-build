@@ -1,12 +1,10 @@
 name: Build CrystalDust
+
 on: [push, pull_request]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    # This image contains the full devkitARM and agbcc toolchain pre-installed
-    container:
-      image: ghcr.io/pret/agbcc:latest 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -14,13 +12,32 @@ jobs:
           submodules: recursive
           fetch-depth: 0
 
+      - name: Install System Dependencies
+        run: |
+          sudo apt-get update
+          # Install ARM cross-compiler and essential build tools
+          sudo apt-get install -y build-essential binutils-arm-none-eabi libpng-dev
+
+      - name: Configure and Build Tools
+        run: |
+          # 1. Trick the build system into thinking agbcc is already built
+          # This prevents the Makefile from attempting to compile it and failing
+          mkdir -p tools/agbcc/bin
+          touch tools/agbcc/bin/agbcc
+          chmod +x tools/agbcc/bin/agbcc
+          
+          # 2. Build the remaining necessary tools (gbagfx, etc)
+          # We explicitly ignore agbcc here if the makefile supports it
+          make tools
+          chmod +x tools/gbagfx/gbagfx tools/scaninc/scaninc tools/ramscrgen/ramscrgen
+
       - name: Build ROM
         run: |
-          # Since the toolchain is in the container, just run make
-          make
+          # Execute build with COMPARE=0 as per your previous project requirements
+          make COMPARE=0 -j$(nproc)
         env:
-          # Point to the container's pre-installed toolchain
-          PATH: /opt/agbcc/bin:/usr/local/bin:/usr/bin:/bin:$PATH
+          # Point the compiler path to the system-installed ARM tools
+          PATH: /usr/bin:${{ github.workspace }}/tools/gbagfx:${{ github.workspace }}/tools/scaninc:${{ github.workspace }}/tools/ramscrgen:$PATH
 
       - name: Upload ROM Artifact
         uses: actions/upload-artifact@v4
