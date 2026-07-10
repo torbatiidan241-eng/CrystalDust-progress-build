@@ -22,30 +22,36 @@ jobs:
       - name: Install System Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential binutils-arm-none-eabi libpng-dev
+          sudo apt-get install -y build-essential gcc-arm-none-eabi libpng-dev
 
       - name: Prepare Environment
         run: |
-          # 1. Ensure build tree exists
+          # Create build directory
           mkdir -p build/src
           
-          # 2. Dummy agbcc
+          # Remove broken submodule and replace with dummy
+          rm -rf tools/agbcc
           mkdir -p tools/agbcc/bin
           touch tools/agbcc/bin/agbcc
           chmod +x tools/agbcc/bin/agbcc
           
-          # 3. Build tools
+          # Build tools
           make tools
           chmod +x tools/gbagfx/gbagfx tools/scaninc/scaninc tools/ramscrgen/ramscrgen
 
       - name: Build ROM
         run: |
-          # Locate standard library includes for the cross-compiler
-          SYS_INCLUDE=$(dirname $(find /usr/lib/gcc/arm-none-eabi -name stddef.h | head -n 1))
+          # Locate system header path
+          INCLUDE_PATH=$(arm-none-eabi-gcc -print-file-name=include)
           
-          # Build, injecting the header path and forcing the correct compiler
-          # We define AGU_CC to point to the system compiler to override the broken agbcc logic
-          make COMPARE=0 CC=arm-none-eabi-gcc CFLAGS="-I$SYS_INCLUDE -DARM_ASM" -j$(nproc)
+          # Force the use of system toolchain via environment variables
+          # This overrides the internal Makefile 'CC' and 'AS' variables
+          make COMPARE=0 \
+               CC=arm-none-eabi-gcc \
+               AS=arm-none-eabi-as \
+               LD=arm-none-eabi-ld \
+               CFLAGS="-I$INCLUDE_PATH -DARM_ASM" \
+               -j$(nproc)
         env:
           PATH: /usr/bin:${{ github.workspace }}/tools/gbagfx:${{ github.workspace }}/tools/scaninc:${{ github.workspace }}/tools/ramscrgen:$PATH
 
