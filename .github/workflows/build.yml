@@ -6,21 +6,24 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Configure Git
+      - name: Pre-configure Git
         run: |
+          # These settings must be applied BEFORE checkout
+          git config --global core.symlinks false
           git config --global core.longpaths true
+          git config --global advice.detachedHead false
 
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
-          fetch-depth: 1 # Reduce depth to avoid large file metadata issues
-          ref: progress
-
-      # If it still fails, we delete the problematic folder immediately 
-      # so the build can proceed with the remaining files.
-      - name: Remove Problematic Tooling
+      - name: Manual Checkout
         run: |
+          # Manually initialize the repo to avoid the constraints of actions/checkout
+          git init
+          git remote add origin https://github.com/${{ github.repository }}
+          git fetch --depth 1 origin progress
+          git checkout progress
+
+      - name: Post-Checkout Cleanup
+        run: |
+          # Force remove the problematic submodule directory
           rm -rf tools/agbcc
           mkdir -p tools/agbcc/bin
           touch tools/agbcc/bin/agbcc
@@ -33,7 +36,13 @@ jobs:
 
       - name: Build ROM
         run: |
-          # Use system-installed compilers instead of local tools
+          # Use system-installed compilers to bypass the submodule issues
           make COMPARE=0 -j$(nproc)
         env:
           PATH: /usr/bin:$PATH
+
+      - name: Upload ROM Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: crystal-dust-rom
+          path: '*.gba'
