@@ -1,59 +1,29 @@
-name: Build CrystalDust
+name: Build ROM
 
-on: [push, pull_request]
+on: [push, pull_request, workflow_dispatch]
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Manual Checkout
-        run: |
-          git init
-          git config core.sparseCheckout true
-          echo "/*" > .git/info/sparse-checkout
-          echo "!/tools/agbcc" >> .git/info/sparse-checkout
-          git remote add origin https://github.com/${{ github.repository }}
-          git fetch --depth 1 origin progress
-          git checkout progress
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
-      - name: Install Dependencies
+      - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential gcc-arm-none-eabi libpng-dev
+          sudo apt-get install -y build-essential binutils-arm-none-eabi gcc-arm-none-eabi libpng-dev
 
-      - name: Prepare Environment
-        run: |
-          mkdir -p build/emerald/src build/src tools/agbcc/bin
-          
-          # Create the Hijack Script
-          cat << 'EOF' > tools/agbcc/bin/agbcc
-          #!/bin/bash
-          params=()
-          for p in "$@"; do
-            [[ "$p" == "-mthumb-interwork" || "$p" == "-fno-inline" ]] && continue
-            params+=("$p")
-          done
-          /usr/bin/arm-none-eabi-gcc "${params[@]}"
-          EOF
-          chmod +x tools/agbcc/bin/agbcc
-          
-          # Build local tools
-          make tools
-          chmod +x tools/gbagfx/gbagfx tools/scaninc/scaninc tools/ramscrgen/ramscrgen
+      - name: Build tools
+        run: make tools
 
       - name: Build ROM
-        run: |
-          make rom \
-               COMPARE=0 \
-               berry_fix=true \
-               payload=true \
-               libagbsyscall=true \
-               -j1
-        env:
-          PATH: ${{ github.workspace }}/tools/agbcc/bin:/usr/bin:$PATH
+        run: make
 
-      - name: Upload Artifact
+      - name: Upload ROM Artifact
         uses: actions/upload-artifact@v4
         with:
           name: crystal-dust-rom
-          path: '*.gba'
+          path: "*.gba"
