@@ -37,17 +37,15 @@ jobs:
 
       - name: Build ROM
         run: |
-          # Ensure build directories exist
           mkdir -p build/src build/data
           
-          # Set up PATH for build tools
+          # Add tools to PATH so make can find them
           export PATH=$(pwd)/tools/agbcc/bin:$(pwd)/tools/preproc:$(pwd)/tools/scaninc:$PATH
           
-          # Standard build call
-          # We provide the variables the Makefile expects to override
+          # Pass the variables to make without stripping the internal Makefile flags
           make TOOLCHAIN_PREFIX=arm-none-eabi- \
-               CC=agbcc \
-               CPP=arm-none-eabi-cpp \
+               CC="agbcc" \
+               CPP="arm-none-eabi-cpp" \
                AS=arm-none-eabi-as \
                AR=arm-none-eabi-ar \
                LD=arm-none-eabi-ld \
