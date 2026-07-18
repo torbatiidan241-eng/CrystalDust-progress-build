@@ -32,7 +32,7 @@ jobs:
           cd tools/agbcc && ./build.sh && cd ../..
           chmod -R +x tools/agbcc
           
-          # Manually build other required tools to prevent 'No such file' errors
+          # Manually build other required tools
           make -C tools/scaninc
           make -C tools/ramscrgen
           make -C tools/gbagfx
@@ -48,12 +48,15 @@ jobs:
           # Create build directories manually
           mkdir -p build/src build/data
           
-          # Build ROM using the tools we manually compiled
-          # NOTRACE=1 skips the problematic auto-build logic
+          # Define ARM include path dynamically
+          ARM_INC=$(echo /usr/lib/gcc/arm-none-eabi/*/include | cut -d' ' -f1)
+          
+          # Build ROM with forced ARM toolchain and explicit include paths
           make NOTRACE=1 \
+               MKDIR="mkdir -p" \
                TOOLCHAIN_PREFIX=arm-none-eabi- \
-               CC=arm-none-eabi-gcc \
-               CPP=arm-none-eabi-cpp \
+               CC="arm-none-eabi-gcc -I$ARM_INC" \
+               CPP="arm-none-eabi-cpp -I$ARM_INC" \
                AS=arm-none-eabi-as \
                AR=arm-none-eabi-ar \
                LD=arm-none-eabi-ld \
