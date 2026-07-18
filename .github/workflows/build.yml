@@ -32,13 +32,11 @@ jobs:
 
       - name: Build ROM
         run: |
-          # Create build directories explicitly
+          # Create build directories explicitly to prevent mkdir errors
           mkdir -p build/src build/data
-          # Export the AGT_PATH and update system PATH to force usage of cloned tools
-          export AGT_PATH=$(pwd)/tools/agbcc
-          export PATH=$PATH:$AGT_PATH
-          # Build with the explicit path variable
-          make AGT_PATH=$AGT_PATH TOOLCHAIN_PREFIX=arm-none-eabi-
+          
+          # Build using explicit ARM toolchain variables to override default CC
+          make CC=arm-none-eabi-gcc AR=arm-none-eabi-ar AS=arm-none-eabi-as OBJCOPY=arm-none-eabi-objcopy AGT_PATH=$(pwd)/tools/agbcc
 
       - name: Upload ROM Artifact
         uses: actions/upload-artifact@v4
