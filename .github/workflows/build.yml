@@ -34,8 +34,9 @@ jobs:
         run: mkdir -p build
 
       - name: Build ROM
-        run: make
-
+        run: |
+          mkdir -p build/src build/data
+          make TOOLCHAIN_PREFIX=arm-none-eabi- CFLAGS="-I/usr/lib/gcc/arm-none-eabi/YOUR_VERSION/include"
       - name: Upload ROM Artifact
         uses: actions/upload-artifact@v4
         with:
