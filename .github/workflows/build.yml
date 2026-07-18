@@ -32,11 +32,21 @@ jobs:
 
       - name: Build ROM
         run: |
-          # Create build directories explicitly to prevent mkdir errors
+          # Create build directories manually to avoid Makefile directory creation errors
           mkdir -p build/src build/data
           
-          # Build using explicit ARM toolchain variables to override default CC
-          make CC=arm-none-eabi-gcc AR=arm-none-eabi-ar AS=arm-none-eabi-as OBJCOPY=arm-none-eabi-objcopy AGT_PATH=$(pwd)/tools/agbcc
+          # Build the ROM
+          # NOTRACE=1: Skips the problematic internal tool-building logic
+          # TOOLCHAIN_PREFIX/CC/CPP/etc: Forces usage of arm-none-eabi tools
+          make NOTRACE=1 \
+               TOOLCHAIN_PREFIX=arm-none-eabi- \
+               AGT_PATH=$(pwd)/tools/agbcc \
+               CC=arm-none-eabi-gcc \
+               CPP=arm-none-eabi-cpp \
+               AS=arm-none-eabi-as \
+               AR=arm-none-eabi-ar \
+               LD=arm-none-eabi-ld \
+               OBJCOPY=arm-none-eabi-objcopy
 
       - name: Upload ROM Artifact
         uses: actions/upload-artifact@v4
