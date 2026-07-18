@@ -39,21 +39,20 @@ jobs:
         run: |
           mkdir -p build/src build/data
           mkdir -p include/dummy
-          
-          # Only define NULL; let the project's types.h handle all integer types
           echo "#define NULL ((void*)0)" > include/dummy/stddef.h
-          # Create an empty stdint.h to satisfy the #include <stdint.h> call
           touch include/dummy/stdint.h
           
           DUMMY_PATH=$(pwd)/include/dummy
-          ROM_FLAGS="-nostdinc -ffreestanding -I$DUMMY_PATH -Iinclude -include include/gba/gba.h"
           
+          # Force these flags via CFLAGS so they persist through sub-makes
+          export CFLAGS="-nostdinc -ffreestanding -I$DUMMY_PATH -Iinclude -include include/gba/gba.h"
           export PATH=$(pwd)/tools/agbcc/bin:$(pwd)/tools/preproc:$(pwd)/tools/scaninc:$PATH
           
           make TOOLCHAIN_PREFIX=arm-none-eabi- \
                MKDIR="mkdir -p" \
-               CC="arm-none-eabi-gcc $ROM_FLAGS" \
-               CPP="arm-none-eabi-cpp $ROM_FLAGS" \
+               CFLAGS="$CFLAGS" \
+               CC="arm-none-eabi-gcc $CFLAGS" \
+               CPP="arm-none-eabi-cpp $CFLAGS" \
                MODERNCC="gcc" \
                AS=arm-none-eabi-as \
                AR=arm-none-eabi-ar \
