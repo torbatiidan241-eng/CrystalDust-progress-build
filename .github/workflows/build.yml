@@ -40,25 +40,21 @@ jobs:
           mkdir -p build/src build/data
           mkdir -p include/dummy
           echo "typedef unsigned int size_t; typedef int ptrdiff_t;" > include/dummy/stddef.h
-          
-          # Set absolute path for the dummy header
           DUMMY_PATH=$(pwd)/include/dummy
           
-          # Define the cross-compiler configuration
-          CROSS_COMPILE_FLAGS="-nostdinc -ffreestanding -I$DUMMY_PATH -Iinclude -include include/gba/gba.h"
+          # ROM_FLAGS: Applied only to GBA code to ensure isolation
+          ROM_FLAGS="-nostdinc -ffreestanding -I$DUMMY_PATH -Iinclude -include include/gba/gba.h"
           
-          # Export variables globally
-          export CC="arm-none-eabi-gcc $CROSS_COMPILE_FLAGS"
-          export CPP="arm-none-eabi-cpp $CROSS_COMPILE_FLAGS"
-          export MODERNCC="arm-none-eabi-gcc $CROSS_COMPILE_FLAGS"
           export PATH=$(pwd)/tools/agbcc/bin:$(pwd)/tools/preproc:$(pwd)/tools/scaninc:$PATH
           
-          # Build with all variable overrides
+          # Build:
+          # CC/CPP use ROM_FLAGS for isolation
+          # MODERNCC uses standard 'gcc' for host tools to avoid header conflicts
           make TOOLCHAIN_PREFIX=arm-none-eabi- \
                MKDIR="mkdir -p" \
-               CC="$CC" \
-               CPP="$CPP" \
-               MODERNCC="$MODERNCC" \
+               CC="arm-none-eabi-gcc $ROM_FLAGS" \
+               CPP="arm-none-eabi-cpp $ROM_FLAGS" \
+               MODERNCC="gcc" \
                AS=arm-none-eabi-as \
                AR=arm-none-eabi-ar \
                LD=arm-none-eabi-ld \
