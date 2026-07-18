@@ -100,7 +100,7 @@ s%@sched_prefix@%%g
 s%@sched_cflags@%%g
 s%@gcc_tooldir@%$(libsubdir)/$(unlibsubdir)/../$(target_alias)%g
 s%@dollar@%%g
-s%@objdir@%/c/Users/PC/Documents/GitHub/CrystalDust-progress-build/agbcc/gcc_arm%g
+s%@objdir@%/c/Users/PC/Documents/GitHub/CrystalDust-progress-build/tools/agbcc/gcc_arm%g
 s%@subdirs@%%g
 s%@all_languages@%%g
 s%@all_boot_languages@%%g
@@ -153,7 +153,7 @@ s%@target_overrides@%%g
 /@host_overrides@/r Make-host
 s%@host_overrides@%%g
 s%@cross_defines@%CROSS=-DCROSS_COMPILE%g
-/@cross_overrides@/r /c/Users/PC/Documents/GitHub/CrystalDust-progress-build/agbcc/gcc_arm/cross-make
+/@cross_overrides@/r /c/Users/PC/Documents/GitHub/CrystalDust-progress-build/tools/agbcc/gcc_arm/cross-make
 s%@cross_overrides@%%g
 /@build_overrides@/r /dev/null
 s%@build_overrides@%%g
@@ -504,7 +504,7 @@ target_list='all.build all.cross start.encap rest.encap 	info dvi 	install-norma
 target_overrides='Make-target'
 host_overrides='Make-host'
 cross_defines='CROSS=-DCROSS_COMPILE'
-cross_overrides='/c/Users/PC/Documents/GitHub/CrystalDust-progress-build/agbcc/gcc_arm/cross-make'
+cross_overrides='/c/Users/PC/Documents/GitHub/CrystalDust-progress-build/tools/agbcc/gcc_arm/cross-make'
 build_overrides='/dev/null'
 
 

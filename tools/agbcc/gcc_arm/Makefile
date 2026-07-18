@@ -185,7 +185,7 @@ host_canonical = i386-pc-linux-gnu
 # Use the tools from the build tree, if they are available.
 
 # objdir is set by configure.
-objdir = /c/Users/PC/Documents/GitHub/CrystalDust-progress-build/agbcc/gcc_arm
+objdir = /c/Users/PC/Documents/GitHub/CrystalDust-progress-build/tools/agbcc/gcc_arm
 
 AR_FOR_TARGET = ` \
   if [ -f $(objdir)/../binutils/ar ] ; then \
