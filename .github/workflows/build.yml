@@ -26,13 +26,12 @@ jobs:
 
       - name: Build tools
         run: |
-          # Grant execute permission to the build script
-          chmod +x tools/agbcc/build.sh
-          # Now run the script
-          cd tools/agbcc
-          ./build.sh
-          # Return to root
-          cd ../..
+          # Remove the failed folder
+          rm -rf tools/agbcc
+          # Clone the official repo which contains the pre-compiled tools
+          git clone https://github.com/pret/agbcc tools/agbcc
+          # Grant execute permissions to the binaries directly
+          chmod -R +x tools/agbcc
 
       - name: Build ROM
         run: make
