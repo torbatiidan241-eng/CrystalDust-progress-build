@@ -44,16 +44,21 @@ jobs:
           # Set absolute path for the dummy header
           DUMMY_PATH=$(pwd)/include/dummy
           
-          # Export compiler variables globally so the Makefile inherits them
-          export CC="arm-none-eabi-gcc -nostdinc -ffreestanding -I$DUMMY_PATH -Iinclude -include include/gba/gba.h"
-          export CPP="arm-none-eabi-cpp -nostdinc -ffreestanding -I$DUMMY_PATH -Iinclude -include include/gba/gba.h"
+          # Define the cross-compiler configuration
+          CROSS_COMPILE_FLAGS="-nostdinc -ffreestanding -I$DUMMY_PATH -Iinclude -include include/gba/gba.h"
+          
+          # Export variables globally
+          export CC="arm-none-eabi-gcc $CROSS_COMPILE_FLAGS"
+          export CPP="arm-none-eabi-cpp $CROSS_COMPILE_FLAGS"
+          export MODERNCC="arm-none-eabi-gcc $CROSS_COMPILE_FLAGS"
           export PATH=$(pwd)/tools/agbcc/bin:$(pwd)/tools/preproc:$(pwd)/tools/scaninc:$PATH
           
-          # Build with explicit overrides
+          # Build with all variable overrides
           make TOOLCHAIN_PREFIX=arm-none-eabi- \
                MKDIR="mkdir -p" \
                CC="$CC" \
                CPP="$CPP" \
+               MODERNCC="$MODERNCC" \
                AS=arm-none-eabi-as \
                AR=arm-none-eabi-ar \
                LD=arm-none-eabi-ld \
