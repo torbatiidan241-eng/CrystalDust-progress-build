@@ -10,7 +10,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      # This step fixes the "File name too long" error
       - name: Set up Git config
         run: git config --global core.symlinks false
 
@@ -27,19 +26,19 @@ jobs:
 
       - name: Build tools
         run: |
-          # Manually build tools and ensure they are in the PATH
+          # Remove the folder so cloning works
+          rm -rf tools/agbcc
           git clone https://github.com/pret/agbcc tools/agbcc
           cd tools/agbcc && ./build.sh && cd ../..
           chmod -R +x tools/agbcc
 
       - name: Patch Makefile
         run: |
-          # This removes the line that forces tool building to prevent the 'mkdir' and 'stddef' errors
+          # Remove the line that forces tool building
           sed -i '/make_tools.mk/d' Makefile
 
       - name: Build ROM
         run: |
-          # Use explicit ARM compiler paths
           export PATH=$(pwd)/tools/agbcc:$PATH
           make CC=arm-none-eabi-gcc CPP=arm-none-eabi-cpp AS=arm-none-eabi-as AR=arm-none-eabi-ar LD=arm-none-eabi-ld OBJCOPY=arm-none-eabi-objcopy
 
