@@ -39,19 +39,36 @@ jobs:
         run: |
           mkdir -p build/src build/data
           
-          # Add these two lines to create the files in your project's include folder
+          # Create dummy headers in the include folder
           echo "#define NULL ((void*)0)" > include/stddef.h
           echo "typedef unsigned char uint8_t; typedef unsigned short uint16_t; typedef unsigned int uint32_t;" > include/stdint.h
           
+          # Create the force_types.h file to handle the u64/long long compatibility
+          cat <<EOF > include/force_types.h
+          #ifndef FORCE_TYPES_H
+          #define FORCE_TYPES_H
+          typedef unsigned int u32;
+          typedef int s32;
+          typedef volatile unsigned int vu32;
+          typedef volatile int vs32;
+          #define u64 u32
+          #define s64 s32
+          #define vu64 vu32
+          #define vs64 vs32
+          #endif
+          EOF
+          
           export PATH=$(pwd)/tools/agbcc/bin:$(pwd)/tools/preproc:$(pwd)/tools/scaninc:$PATH
           
+          # Build with -include force_types.h to patch the compiler's view of types
           make TOOLCHAIN_PREFIX=arm-none-eabi- \
-               CC="agbcc" \
+               CC="agbcc -include force_types.h" \
                CPP="agbcc -E" \
                AS=arm-none-eabi-as \
                AR=arm-none-eabi-ar \
                LD=arm-none-eabi-ld \
                OBJCOPY=arm-none-eabi-objcopy
+
       - name: Upload ROM Artifact
         uses: actions/upload-artifact@v4
         with:
