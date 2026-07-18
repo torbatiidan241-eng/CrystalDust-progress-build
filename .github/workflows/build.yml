@@ -29,32 +29,30 @@ jobs:
           # Build agbcc
           rm -rf tools/agbcc
           git clone https://github.com/pret/agbcc tools/agbcc
-          cd tools/agbcc && ./build.sh && cd ../..
-          chmod -R +x tools/agbcc
+          cd tools/agbcc && ./build.sh && mkdir -p bin && cp agbcc bin/ && cd ../..
           
-          # Manually build other required tools
-          make -C tools/scaninc
-          make -C tools/ramscrgen
-          make -C tools/gbagfx
-          make -C tools/gbafix
-
-      - name: Patch Makefile
-        run: |
-          # Remove tool-building logic that crashes on Linux
-          sed -i '/make_tools.mk/d' Makefile
+          # Build other required tools and place them in their expected subdirectories
+          for tool in scaninc preproc ramscrgen gbagfx gbafix; do
+              make -C tools/$tool
+              mkdir -p tools/$tool
+              cp tools/$tool/$tool tools/$tool/ || true
+          done
 
       - name: Build ROM
         run: |
           # Create build directories manually
           mkdir -p build/src build/data
           
-          # Define ARM include path dynamically
+          # Define ARM include path
           ARM_INC=$(echo /usr/lib/gcc/arm-none-eabi/*/include | cut -d' ' -f1)
           
-          # Build ROM with forced ARM toolchain and explicit include paths
-          make NOTRACE=1 \
+          # Add tools to path for the build
+          export PATH=$(pwd)/tools/agbcc/bin:$(pwd)/tools/preproc:$(pwd)/tools/scaninc:$PATH
+          
+          # Execute build with forced ARM toolchain
+          # We define MKDIR to a dummy command to prevent 'missing operand' crashes
+          make TOOLCHAIN_PREFIX=arm-none-eabi- \
                MKDIR="mkdir -p" \
-               TOOLCHAIN_PREFIX=arm-none-eabi- \
                CC="arm-none-eabi-gcc -I$ARM_INC" \
                CPP="arm-none-eabi-cpp -I$ARM_INC" \
                AS=arm-none-eabi-as \
