@@ -40,8 +40,8 @@ jobs:
           mkdir -p build/src build/data
           mkdir -p include/dummy
           
-          # Create dummy headers to satisfy source requirements without system conflicts
-          echo "typedef unsigned int size_t; typedef int ptrdiff_t;" > include/dummy/stddef.h
+          # Create dummy headers with NULL and standard integer types
+          echo "typedef unsigned int size_t; typedef int ptrdiff_t; #define NULL ((void*)0)" > include/dummy/stddef.h
           echo "typedef unsigned char uint8_t; typedef unsigned short uint16_t; typedef unsigned int uint32_t; typedef unsigned long long uint64_t; typedef signed char int8_t; typedef signed short int16_t; typedef signed int int32_t; typedef signed long long int64_t;" > include/dummy/stdint.h
           
           DUMMY_PATH=$(pwd)/include/dummy
@@ -49,9 +49,7 @@ jobs:
           
           export PATH=$(pwd)/tools/agbcc/bin:$(pwd)/tools/preproc:$(pwd)/tools/scaninc:$PATH
           
-          # Build:
-          # CC/CPP use ROM_FLAGS for GBA code isolation
-          # MODERNCC uses standard 'gcc' for host tools
+          # Build with isolated ROM flags and standard host compiler for tools
           make TOOLCHAIN_PREFIX=arm-none-eabi- \
                MKDIR="mkdir -p" \
                CC="arm-none-eabi-gcc $ROM_FLAGS" \
