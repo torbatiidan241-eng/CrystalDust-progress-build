@@ -39,14 +39,12 @@ jobs:
         run: |
           mkdir -p build/src build/data
           
-          # Inject headers directly into the project's include folder
+          # Add these two lines to create the files in your project's include folder
           echo "#define NULL ((void*)0)" > include/stddef.h
           echo "typedef unsigned char uint8_t; typedef unsigned short uint16_t; typedef unsigned int uint32_t;" > include/stdint.h
           
           export PATH=$(pwd)/tools/agbcc/bin:$(pwd)/tools/preproc:$(pwd)/tools/scaninc:$PATH
           
-          # Clean build: Let the Makefile handle its own CC/CPP 
-          # but ensure the tool paths are correctly exported.
           make TOOLCHAIN_PREFIX=arm-none-eabi- \
                CC="agbcc" \
                CPP="agbcc -E" \
