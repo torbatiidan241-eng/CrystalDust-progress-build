@@ -43,17 +43,17 @@ jobs:
           # Create build directories
           mkdir -p build/src build/data
           
-          # Define ARM include path
-          ARM_INC=$(echo /usr/lib/gcc/arm-none-eabi/*/include | cut -d' ' -f1)
-          
           # Add tools to path
           export PATH=$(pwd)/tools/agbcc/bin:$(pwd)/tools/preproc:$(pwd)/tools/scaninc:$PATH
           
-          # Build ROM with forced ARM toolchain and -nostdinc to block system headers
+          # Build ROM with forced ARM toolchain
+          # -nostdinc: Prevents system header inclusion
+          # -ffreestanding: Tells compiler no standard C library exists
+          # -Iinclude: Forces use of project-specific headers
           make TOOLCHAIN_PREFIX=arm-none-eabi- \
                MKDIR="mkdir -p" \
-               CC="arm-none-eabi-gcc -nostdinc -I$ARM_INC -Iinclude -include include/gba/gba.h" \
-               CPP="arm-none-eabi-cpp -nostdinc -I$ARM_INC -Iinclude -include include/gba/gba.h" \
+               CC="arm-none-eabi-gcc -nostdinc -ffreestanding -Iinclude -include include/gba/gba.h" \
+               CPP="arm-none-eabi-cpp -nostdinc -ffreestanding -Iinclude -include include/gba/gba.h" \
                AS=arm-none-eabi-as \
                AR=arm-none-eabi-ar \
                LD=arm-none-eabi-ld \
