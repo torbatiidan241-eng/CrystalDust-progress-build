@@ -26,7 +26,9 @@ jobs:
 
       - name: Build tools
         run: |
-          # Build agbcc specifically
+          # Grant execute permission to the build script
+          chmod +x tools/agbcc/build.sh
+          # Now run the script
           cd tools/agbcc
           ./build.sh
           # Return to root
