@@ -1,49 +1,20 @@
-name: Build ROM
-
-on:
-  push:
-    branches:
-      - progress
-  workflow_dispatch:
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Set up Git config
-        run: git config --global core.symlinks false
-
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
-          ref: progress
-
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential binutils-arm-none-eabi gcc-arm-none-eabi libpng-dev libc6-dev
-
-      - name: Build tools
-        run: |
-          rm -rf tools/agbcc
-          git clone https://github.com/pret/agbcc tools/agbcc
-          cd tools/agbcc && ./build.sh && mkdir -p bin && cp agbcc bin/ && cd ../..
-          for tool in scaninc preproc ramscrgen gbagfx gbafix; do
-              make -C tools/$tool
-              mkdir -p tools/$tool
-              cp tools/$tool/$tool tools/$tool/ || true
-          done
-
-      - name: Build ROM
+- name: Build ROM
         run: |
           mkdir -p build/src build/data
           
-          # Create dummy headers in the include folder
+          # 1. Define the full path to the tools
+          export TOOLS_DIR=$(pwd)/tools
+          export PATH="$TOOLS_DIR/agbcc/bin:$TOOLS_DIR/preproc:$TOOLS_DIR/scaninc:$PATH"
+          
+          # 2. Verify agbcc is accessible
+          echo "Checking for agbcc:"
+          which agbcc || echo "agbcc not found in PATH"
+          
+          # 3. Create necessary dummy headers
           echo "#define NULL ((void*)0)" > include/stddef.h
           echo "typedef unsigned char uint8_t; typedef unsigned short uint16_t; typedef unsigned int uint32_t;" > include/stdint.h
           
-          # Create the force_types.h file to handle the u64/long long compatibility
+          # 4. Create force_types.h
           cat <<EOF > include/force_types.h
           #ifndef FORCE_TYPES_H
           #define FORCE_TYPES_H
@@ -58,9 +29,7 @@ jobs:
           #endif
           EOF
           
-          export PATH=$(pwd)/tools/agbcc/bin:$(pwd)/tools/preproc:$(pwd)/tools/scaninc:$PATH
-          
-          # Build with -include force_types.h to patch the compiler's view of types
+          # 5. Build with absolute path reference if needed
           make TOOLCHAIN_PREFIX=arm-none-eabi- \
                CC="agbcc -include force_types.h" \
                CPP="agbcc -E" \
@@ -68,9 +37,3 @@ jobs:
                AR=arm-none-eabi-ar \
                LD=arm-none-eabi-ld \
                OBJCOPY=arm-none-eabi-objcopy
-
-      - name: Upload ROM Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: crystal-dust-rom
-          path: "*.gba"
