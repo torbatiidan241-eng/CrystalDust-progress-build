@@ -26,21 +26,38 @@ jobs:
 
       - name: Build tools
         run: |
-          # Remove the folder so cloning works
+          # Build agbcc
           rm -rf tools/agbcc
           git clone https://github.com/pret/agbcc tools/agbcc
           cd tools/agbcc && ./build.sh && cd ../..
           chmod -R +x tools/agbcc
+          
+          # Manually build other required tools to prevent 'No such file' errors
+          make -C tools/scaninc
+          make -C tools/ramscrgen
+          make -C tools/gbagfx
+          make -C tools/gbafix
 
       - name: Patch Makefile
         run: |
-          # Remove the line that forces tool building
+          # Remove tool-building logic that crashes on Linux
           sed -i '/make_tools.mk/d' Makefile
 
       - name: Build ROM
         run: |
-          export PATH=$(pwd)/tools/agbcc:$PATH
-          make CC=arm-none-eabi-gcc CPP=arm-none-eabi-cpp AS=arm-none-eabi-as AR=arm-none-eabi-ar LD=arm-none-eabi-ld OBJCOPY=arm-none-eabi-objcopy
+          # Create build directories manually
+          mkdir -p build/src build/data
+          
+          # Build ROM using the tools we manually compiled
+          # NOTRACE=1 skips the problematic auto-build logic
+          make NOTRACE=1 \
+               TOOLCHAIN_PREFIX=arm-none-eabi- \
+               CC=arm-none-eabi-gcc \
+               CPP=arm-none-eabi-cpp \
+               AS=arm-none-eabi-as \
+               AR=arm-none-eabi-ar \
+               LD=arm-none-eabi-ld \
+               OBJCOPY=arm-none-eabi-objcopy
 
       - name: Upload ROM Artifact
         uses: actions/upload-artifact@v4
