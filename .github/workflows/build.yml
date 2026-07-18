@@ -30,13 +30,16 @@ jobs:
           git clone https://github.com/pret/agbcc tools/agbcc
           chmod -R +x tools/agbcc
 
-      - name: Prepare build directory
-        run: mkdir -p build
-
       - name: Build ROM
         run: |
+          # Create build directories explicitly
           mkdir -p build/src build/data
-          make TOOLCHAIN_PREFIX=arm-none-eabi- CFLAGS="-I/usr/lib/gcc/arm-none-eabi/YOUR_VERSION/include"
+          # Export the AGT_PATH and update system PATH to force usage of cloned tools
+          export AGT_PATH=$(pwd)/tools/agbcc
+          export PATH=$PATH:$AGT_PATH
+          # Build with the explicit path variable
+          make AGT_PATH=$AGT_PATH TOOLCHAIN_PREFIX=arm-none-eabi-
+
       - name: Upload ROM Artifact
         uses: actions/upload-artifact@v4
         with:
