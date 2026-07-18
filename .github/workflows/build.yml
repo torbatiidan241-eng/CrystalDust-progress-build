@@ -10,9 +10,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Set up Git config
-        run: git config --global core.symlinks false
-
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
@@ -26,27 +23,21 @@ jobs:
 
       - name: Build tools
         run: |
-          rm -rf tools/agbcc
+          # Manually build tools and ensure they are in the PATH
           git clone https://github.com/pret/agbcc tools/agbcc
+          cd tools/agbcc && ./build.sh && cd ../..
           chmod -R +x tools/agbcc
+
+      - name: Patch Makefile
+        run: |
+          # This removes the line that forces tool building to prevent the 'mkdir' and 'stddef' errors
+          sed -i '/make_tools.mk/d' Makefile
 
       - name: Build ROM
         run: |
-          # Create build directories manually to avoid Makefile directory creation errors
-          mkdir -p build/src build/data
-          
-          # Build the ROM
-          # NOTRACE=1: Skips the problematic internal tool-building logic
-          # TOOLCHAIN_PREFIX/CC/CPP/etc: Forces usage of arm-none-eabi tools
-          make NOTRACE=1 \
-               TOOLCHAIN_PREFIX=arm-none-eabi- \
-               AGT_PATH=$(pwd)/tools/agbcc \
-               CC=arm-none-eabi-gcc \
-               CPP=arm-none-eabi-cpp \
-               AS=arm-none-eabi-as \
-               AR=arm-none-eabi-ar \
-               LD=arm-none-eabi-ld \
-               OBJCOPY=arm-none-eabi-objcopy
+          # Use explicit ARM compiler paths
+          export PATH=$(pwd)/tools/agbcc:$PATH
+          make CC=arm-none-eabi-gcc CPP=arm-none-eabi-cpp AS=arm-none-eabi-as AR=arm-none-eabi-ar LD=arm-none-eabi-ld OBJCOPY=arm-none-eabi-objcopy
 
       - name: Upload ROM Artifact
         uses: actions/upload-artifact@v4
