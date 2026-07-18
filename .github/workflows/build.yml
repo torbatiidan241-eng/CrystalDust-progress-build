@@ -26,12 +26,9 @@ jobs:
 
       - name: Build tools
         run: |
-          # Build agbcc
           rm -rf tools/agbcc
           git clone https://github.com/pret/agbcc tools/agbcc
           cd tools/agbcc && ./build.sh && mkdir -p bin && cp agbcc bin/ && cd ../..
-          
-          # Build other required tools
           for tool in scaninc preproc ramscrgen gbagfx gbafix; do
               make -C tools/$tool
               mkdir -p tools/$tool
@@ -40,25 +37,23 @@ jobs:
 
       - name: Build ROM
         run: |
-          # Create build directories
           mkdir -p build/src build/data
-          
-          # Create a dummy stddef.h to satisfy the compiler without pulling in system headers
           mkdir -p include/dummy
           echo "typedef unsigned int size_t; typedef int ptrdiff_t;" > include/dummy/stddef.h
           
-          # Add tools to path
+          # Set absolute path for the dummy header
+          DUMMY_PATH=$(pwd)/include/dummy
+          
+          # Export compiler variables globally so the Makefile inherits them
+          export CC="arm-none-eabi-gcc -nostdinc -ffreestanding -I$DUMMY_PATH -Iinclude -include include/gba/gba.h"
+          export CPP="arm-none-eabi-cpp -nostdinc -ffreestanding -I$DUMMY_PATH -Iinclude -include include/gba/gba.h"
           export PATH=$(pwd)/tools/agbcc/bin:$(pwd)/tools/preproc:$(pwd)/tools/scaninc:$PATH
           
-          # Build ROM with forced ARM toolchain
-          # -nostdinc: Prevents system header inclusion
-          # -ffreestanding: Tells compiler no standard C library exists
-          # -Iinclude/dummy: Redirects stddef.h requests to our safe dummy file
-          # -Iinclude: Forces use of project-specific headers
+          # Build with explicit overrides
           make TOOLCHAIN_PREFIX=arm-none-eabi- \
                MKDIR="mkdir -p" \
-               CC="arm-none-eabi-gcc -nostdinc -ffreestanding -Iinclude/dummy -Iinclude -include include/gba/gba.h" \
-               CPP="arm-none-eabi-cpp -nostdinc -ffreestanding -Iinclude/dummy -Iinclude -include include/gba/gba.h" \
+               CC="$CC" \
+               CPP="$CPP" \
                AS=arm-none-eabi-as \
                AR=arm-none-eabi-ar \
                LD=arm-none-eabi-ld \
