@@ -39,13 +39,13 @@ jobs:
         run: |
           mkdir -p build/src build/data
           
-          # Path to agbcc headers that handle GBA types natively
+          # Inject dummy headers directly into the agbcc include path
+          echo "#define NULL ((void*)0)" > tools/agbcc/include/stddef.h
+          echo "typedef unsigned char uint8_t; typedef unsigned short uint16_t; typedef unsigned int uint32_t;" > tools/agbcc/include/stdint.h
+          
           export AGBSPECIFIC_INC=$(pwd)/tools/agbcc/include
           export PATH=$(pwd)/tools/agbcc/bin:$(pwd)/tools/preproc:$(pwd)/tools/scaninc:$PATH
           
-          # Build:
-          # Use 'agbcc' for ROM files to ensure proper GBA type recognition
-          # Use standard 'gcc' for host tools (MODERNCC)
           make TOOLCHAIN_PREFIX=arm-none-eabi- \
                MKDIR="mkdir -p" \
                CC="agbcc -I$AGBSPECIFIC_INC -Iinclude" \
