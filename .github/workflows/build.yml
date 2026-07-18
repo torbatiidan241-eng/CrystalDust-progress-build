@@ -39,18 +39,21 @@ jobs:
         run: |
           mkdir -p build/src build/data
           
-          # Add tools to PATH so make can find them
+          # Inject headers directly into the project's include folder
+          echo "#define NULL ((void*)0)" > include/stddef.h
+          echo "typedef unsigned char uint8_t; typedef unsigned short uint16_t; typedef unsigned int uint32_t;" > include/stdint.h
+          
           export PATH=$(pwd)/tools/agbcc/bin:$(pwd)/tools/preproc:$(pwd)/tools/scaninc:$PATH
           
-          # Pass the variables to make without stripping the internal Makefile flags
+          # Clean build: Let the Makefile handle its own CC/CPP 
+          # but ensure the tool paths are correctly exported.
           make TOOLCHAIN_PREFIX=arm-none-eabi- \
                CC="agbcc" \
-               CPP="arm-none-eabi-cpp" \
+               CPP="agbcc -E" \
                AS=arm-none-eabi-as \
                AR=arm-none-eabi-ar \
                LD=arm-none-eabi-ld \
                OBJCOPY=arm-none-eabi-objcopy
-
       - name: Upload ROM Artifact
         uses: actions/upload-artifact@v4
         with:
