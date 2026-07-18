@@ -4,16 +4,14 @@ on:
   push:
     branches:
       - progress
-  pull_request:
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Set up Git config for symlinks
-        run: |
-          git config --global core.symlinks false
+      - name: Set up Git config
+        run: git config --global core.symlinks false
 
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -27,7 +25,12 @@ jobs:
           sudo apt-get install -y build-essential binutils-arm-none-eabi gcc-arm-none-eabi libpng-dev
 
       - name: Build tools
-        run: make tools
+        run: |
+          # Build agbcc specifically
+          cd tools/agbcc
+          ./build.sh
+          # Return to root
+          cd ../..
 
       - name: Build ROM
         run: make
