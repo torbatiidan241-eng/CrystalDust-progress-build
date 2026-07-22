@@ -27,6 +27,9 @@ jobs:
 
       - name: Build Tools and ROM
         run: |
+          cd tools/agbcc
+          ./build.sh
+          cd ../..
           make tools
           make
 
