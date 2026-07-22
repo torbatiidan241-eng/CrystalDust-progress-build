@@ -28,7 +28,7 @@ jobs:
       - name: Build Tools and ROM
         run: |
           cd tools/agbcc
-          chmod +x build.sh
+          chmod +x build.sh gcc/move-if-change
           ./build.sh
           cd ../..
           make tools
