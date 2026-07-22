@@ -1,39 +1,33 @@
-- name: Build ROM
+name: Build Crystal Dust ROM
+
+on:
+  push:
+    branches: [ progress ]
+  pull_request:
+    branches: [ progress ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install Dependencies
         run: |
-          mkdir -p build/src build/data
-          
-          # 1. Define the full path to the tools
-          export TOOLS_DIR=$(pwd)/tools
-          export PATH="$TOOLS_DIR/agbcc/bin:$TOOLS_DIR/preproc:$TOOLS_DIR/scaninc:$PATH"
-          
-          # 2. Verify agbcc is accessible
-          echo "Checking for agbcc:"
-          which agbcc || echo "agbcc not found in PATH"
-          
-          # 3. Create necessary dummy headers
-          echo "#define NULL ((void*)0)" > include/stddef.h
-          echo "typedef unsigned char uint8_t; typedef unsigned short uint16_t; typedef unsigned int uint32_t;" > include/stdint.h
-          
-          # 4. Create force_types.h
-          cat <<EOF > include/force_types.h
-          #ifndef FORCE_TYPES_H
-          #define FORCE_TYPES_H
-          typedef unsigned int u32;
-          typedef int s32;
-          typedef volatile unsigned int vu32;
-          typedef volatile int vs32;
-          #define u64 u32
-          #define s64 s32
-          #define vu64 vu32
-          #define vs64 vs32
-          #endif
-          EOF
-          
-          # 5. Build with absolute path reference if needed
-          make TOOLCHAIN_PREFIX=arm-none-eabi- \
-               CC="agbcc -include force_types.h" \
-               CPP="agbcc -E" \
-               AS=arm-none-eabi-as \
-               AR=arm-none-eabi-ar \
-               LD=arm-none-eabi-ld \
-               OBJCOPY=arm-none-eabi-objcopy
+          sudo apt-get update
+          sudo apt-get install -y build-essential libpng-dev zlib1g-dev git binutils-arm-none-eabi gcc-arm-none-eabi
+
+      - name: Build Tools and ROM
+        run: |
+          make tools
+          make
+
+      - name: Upload ROM Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: crystal-dust-rom
+          path: '*.gba'
