@@ -28,9 +28,12 @@ jobs:
       - name: Build Tools and ROM
         run: |
           cd tools/agbcc
+          find . -type f \( -name "*.sh" -o -name "configure" -o -name "move-if-change" \) -exec chmod +x {} \;
           chmod +x build.sh
+          
           CFLAGS="-std=gnu11 -Wno-error=incompatible-pointer-types -Wno-error=int-conversion" ./build.sh
           cd ../..
+          
           make tools
           make -j1
 
