@@ -29,6 +29,10 @@ jobs:
         run: |
           cd tools/agbcc
           chmod +x build.sh gcc/move-if-change
+          # Fix configure permission or invoke it with bash directly if it exists in gcc/
+          if [ -f gcc/configure ]; then
+            cd gcc && bash configure && cd ..
+          fi
           bash ./build.sh
           cd ../..
           make tools
