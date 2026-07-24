@@ -31,7 +31,7 @@ jobs:
           find . -type f \( -name "*.sh" -o -name "configure" -o -name "move-if-change" \) -exec chmod +x {} \;
           chmod +x build.sh
           
-          CFLAGS="-std=gnu11 -Wno-error=incompatible-pointer-types -Wno-error=int-conversion" ./build.sh
+          CFLAGS="-std=gnu11 -Wno-error=incompatible-pointer-types -Wno-error=int-conversion -Wno-error=builtin-declaration-mismatch" ./build.sh
           cd ../..
           
           make tools
