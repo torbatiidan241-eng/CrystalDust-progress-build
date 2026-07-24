@@ -27,9 +27,11 @@ jobs:
 
       - name: Build Tools and ROM
         run: |
-          cd tools/agbcc/gcc
-          make -f Makefile.in || make
-          cd ../../../
+          cd tools/agbcc
+          # Grant executable permissions to everything inside agbcc recursively
+          chmod -R +x .
+          ./build.sh
+          cd ../..
           make tools
           make
 
