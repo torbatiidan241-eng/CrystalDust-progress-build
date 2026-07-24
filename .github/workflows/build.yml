@@ -28,7 +28,7 @@ jobs:
       - name: Build Tools and ROM
         run: |
           cd tools/agbcc
-          chmod +x build.sh configure gcc/move-if-change
+          chmod +x build.sh gcc/move-if-change
           find . -name "*.sh" -exec chmod +x {} \;
           ./build.sh
           cd ../..
