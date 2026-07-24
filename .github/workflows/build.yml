@@ -1,99 +1,45 @@
-name: Build ROM
+name: Build Crystal Dust ROM
 
 on:
   push:
-    branches:
-      - progress
-  workflow_dispatch:
+    branches: [ progress ]
+  pull_request:
+    branches: [ progress ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    steps:
-      - name: Set up Git config
-        run: git config --global core.symlinks false
 
-      - name: Checkout repository
+    steps:
+      - name: Configure Git Settings
+        run: |
+          git config --global core.symlinks false
+
+      - name: Check out repository
         uses: actions/checkout@v4
         with:
           submodules: recursive
-          ref: progress
 
-      - name: Install dependencies
+      - name: Install Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential binutils-arm-none-eabi gcc-arm-none-eabi libpng-dev libc6-dev
+          sudo apt-get install -y build-essential libpng-dev zlib1g-dev git binutils-arm-none-eabi gcc-arm-none-eabi
 
-<<<<<<< Updated upstream
-      - name: Build tools
+      - name: Build Tools and ROM
         run: |
-=======
-<<<<<<< HEAD
-      - name: Build ROM
-        run: |
-          mkdir -p build/src build/data
-          
-          # Inject dummy headers
-          echo "#define NULL ((void*)0)" > tools/agbcc/include/stddef.h
-          echo "typedef unsigned char uint8_t; typedef unsigned short uint16_t; typedef unsigned int uint32_t;" > tools/agbcc/include/stdint.h
-          
-          export AGBSPECIFIC_INC=$(pwd)/tools/agbcc/include
-          export PATH=$(pwd)/tools/agbcc/bin:$(pwd)/tools/preproc:$(pwd)/tools/scaninc:$PATH
-          
-          # The -include force_types.h flag is the key here
-          make TOOLCHAIN_PREFIX=arm-none-eabi- \
-               MKDIR="mkdir -p" \
-               CC="agbcc -nostdinc -Iinclude -I$AGBSPECIFIC_INC -include force_types.h" \
-               CPP="arm-none-eabi-cpp -Iinclude" \
-               MODERNCC="gcc" \
-               AS=arm-none-eabi-as \
-               AR=arm-none-eabi-ar \
-               LD=arm-none-eabi-ld \
-               OBJCOPY=arm-none-eabi-objcopy
-=======
-      - name: Build tools
-        run: |
->>>>>>> Stashed changes
-          rm -rf tools/agbcc
-          git clone https://github.com/pret/agbcc tools/agbcc
-          cd tools/agbcc && ./build.sh && mkdir -p bin && cp agbcc bin/ && cd ../..
-          for tool in scaninc preproc ramscrgen gbagfx gbafix; do
-              make -C tools/$tool
-              mkdir -p tools/$tool
-              cp tools/$tool/$tool tools/$tool/ || true
-          done
-<<<<<<< Updated upstream
-=======
->>>>>>> 48a380418b26b56c494028cffcbda1ee12d93e1d
->>>>>>> Stashed changes
-
-      - name: Build ROM
-        run: |
-          mkdir -p build/src build/data
-          
-          # Create minimal dummy headers in the agbcc include path
-          # These satisfy the compiler's search for standard headers without pulling in system-conflicting code
-          echo "#define NULL ((void*)0)" > tools/agbcc/include/stddef.h
-          echo "typedef unsigned char uint8_t; typedef unsigned short uint16_t; typedef unsigned int uint32_t; typedef signed char int8_t; typedef signed short int16_t; typedef signed int int32_t;" > tools/agbcc/include/stdint.h
-          
-          export AGBSPECIFIC_INC=$(pwd)/tools/agbcc/include
-          export PATH=$(pwd)/tools/agbcc/bin:$(pwd)/tools/preproc:$(pwd)/tools/scaninc:$PATH
-          
-          # Build:
-          # -Iinclude is placed first so project headers take precedence over everything else.
-          # -nostdinc keeps the environment isolated for agbcc.
-          make TOOLCHAIN_PREFIX=arm-none-eabi- \
-               MKDIR="mkdir -p" \
-               CC="agbcc -nostdinc -Iinclude -I$AGBSPECIFIC_INC" \
-               CPP="arm-none-eabi-cpp -Iinclude" \
-               MODERNCC="gcc" \
-               AS=arm-none-eabi-as \
-               AR=arm-none-eabi-ar \
-               LD=arm-none-eabi-ld \
-               OBJCOPY=arm-none-eabi-objcopy
+          cd tools/agbcc
+          chmod +x build.sh gcc/move-if-change
+          # Fix configure permission or invoke it with bash directly if it exists in gcc/
+          if [ -f gcc/configure ]; then
+            cd gcc && bash configure && cd ..
+          fi
+          bash ./build.sh
+          cd ../..
+          make tools
+          make
 
       - name: Upload ROM Artifact
         uses: actions/upload-artifact@v4
         with:
           name: crystal-dust-rom
-          path: "*.gba"
+          path: '*.gba'
