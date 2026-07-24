@@ -28,12 +28,11 @@ jobs:
       - name: Build Tools and ROM
         run: |
           cd tools/agbcc
-          # Grant executable permissions to everything inside agbcc recursively
-          chmod -R +x .
-          ./build.sh
+          chmod +x build.sh
+          CFLAGS="-std=gnu11 -Wno-error=incompatible-pointer-types -Wno-error=int-conversion" ./build.sh
           cd ../..
           make tools
-          make
+          make -j1
 
       - name: Upload ROM Artifact
         uses: actions/upload-artifact@v4
