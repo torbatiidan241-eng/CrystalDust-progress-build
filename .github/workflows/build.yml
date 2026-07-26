@@ -11,10 +11,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+<<<<<<< HEAD
       - name: Configure Git options
         run: |
           git config --global core.longpaths true
           git config --global core.symlinks false
+=======
+      - name: Configure Git for long paths and symlinks
+        run: |
+          git config --global core.longpaths true
+>>>>>>> 0b7ac2e90f821747e4030dd1d4ca84d88f420893
 
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -37,4 +43,8 @@ jobs:
           name: pokemon-crystaldust-rom
           path: |
             *.gba
+<<<<<<< HEAD
             *.map
+=======
+            *.map
+>>>>>>> 0b7ac2e90f821747e4030dd1d4ca84d88f420893
