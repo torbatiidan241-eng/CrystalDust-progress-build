@@ -1,44 +1,40 @@
-name: Build Crystal Dust ROM
+name: Build ROM
 
 on:
   push:
-    branches: [ progress ]
+    branches: [ "progress" ]
   pull_request:
-    branches: [ progress ]
+    branches: [ "progress" ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Configure Git Settings
+      - name: Configure Git options
         run: |
+          git config --global core.longpaths true
           git config --global core.symlinks false
 
-      - name: Check out repository
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
           submodules: recursive
 
-      - name: Install Dependencies
+      - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential libpng-dev zlib1g-dev git binutils-arm-none-eabi gcc-arm-none-eabi
+          sudo apt-get install -y build-essential libpng-dev liblzma-dev pkg-config
 
-      - name: Build Tools and ROM
+      - name: Build tools and ROM
         run: |
-          cd tools/agbcc
-          find . -type f \( -name "*.sh" -o -name "configure" -o -name "move-if-change" \) -exec chmod +x {} \;
-          chmod +x build.sh
-          
-          CFLAGS="-std=gnu11 -Wno-error=incompatible-pointer-types -Wno-error=int-conversion -Wno-error=builtin-declaration-mismatch" ./build.sh
-          cd ../..
-          
-          make tools
-          make -j1
+          make CFLAGS="-std=gnu89 -Wno-error"
+          make
 
       - name: Upload ROM Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: crystal-dust-rom
-          path: '*.gba'
+          name: pokemon-crystaldust-rom
+          path: |
+            *.gba
+            *.map
