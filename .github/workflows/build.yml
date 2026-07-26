@@ -2,9 +2,9 @@ name: Build ROM
 
 on:
   push:
-    branches: [ "*" ]
+    branches: [ "progress" ]
   pull_request:
-    branches: [ "*" ]
+    branches: [ "progress" ]
 
 jobs:
   build:
