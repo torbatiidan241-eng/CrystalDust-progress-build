@@ -43,7 +43,15 @@ jobs:
           chmod +x build.sh
           ./build.sh
           cd ../..
-          make tools
+          make -C tools/scaninc
+          make -C tools/ramscrgen
+          make -C tools/preproc
+          make -C tools/bin2c
+          make -C tools/jsonproc
+          make -C tools/mapjson
+          make -C tools/mid2agb
+          make -C tools/rsfont
+          make -C tools/aif2pcm
 
       - name: Build CrystalDust ROM
         run: |
