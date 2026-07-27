@@ -1,4 +1,4 @@
-name: Build ROM
+name: Build CrystalDust ROM
 
 on:
   push:
@@ -11,38 +11,30 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Configure Git options
-        run: |
-          git config --global core.longpaths true
-          git config --global core.symlinks false
-
-      - name: Checkout repository
+      - name: Checkout Repository
         uses: actions/checkout@v4
         with:
           submodules: recursive
-          fetch-depth: 1
 
-      - name: Install dependencies
+      - name: Install Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential libpng-dev liblzma-dev pkg-config
+          sudo apt-get install -y build-essential libpng-dev pkg-config git
 
-      - name: Build agbcc compiler
+      - name: Fix Makefile and Make Tools Compatibility
+        run: |
+          sed -i '163s/.*/infoshell = $(shell $1)/' Makefile
+          sed -i 's/\$(TOOLDIRS):/aif2pcm bin2c gbafix gbagfx jsonproc mapjson mid2agb preproc ramscrgen rsfont scaninc:/g' Makefile
+          sed -i 's/\$(TOOLDIRS):/aif2pcm bin2c gbafix gbagfx jsonproc mapjson mid2agb preproc ramscrgen rsfont scaninc:/g' make_tools.mk
+
+      - name: Build AGBCC and Tools
         run: |
           cd tools/agbcc
+          chmod +x build.sh configure
           ./build.sh
-          ./install.sh ../..
           cd ../..
+          make tools
 
-      - name: Build tools and ROM
+      - name: Build CrystalDust ROM
         run: |
-          make CFLAGS="-std=gnu89 -Wno-error"
-          make
-
-      - name: Upload ROM Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: pokemon-crystaldust-rom
-          path: |
-            *.gba
-            *.map
+          make -j$(nproc)
