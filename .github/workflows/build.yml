@@ -19,7 +19,11 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
-          submodules: recursive
+          submodules: false
+
+      - name: Initialize Submodules Manually
+        run: |
+          git submodule update --init --recursive
 
       - name: Install Dependencies
         run: |
