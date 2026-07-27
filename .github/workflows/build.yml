@@ -13,8 +13,8 @@ jobs:
     steps:
       - name: Configure Git Settings
         run: |
+          git config --global core.symlinks false
           git config --global core.longpaths true
-          git config --global core.symlinks true
 
       - name: Checkout Repository
         uses: actions/checkout@v4
