@@ -11,9 +11,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Configure Git Long Paths
+      - name: Configure Git Settings
         run: |
           git config --global core.longpaths true
+          git config --global core.symlinks true
 
       - name: Checkout Repository
         uses: actions/checkout@v4
