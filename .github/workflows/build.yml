@@ -21,14 +21,15 @@ jobs:
         with:
           submodules: false
 
-      - name: Initialize Submodules Manually
-        run: |
-          git submodule update --init --recursive
-
       - name: Install Dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential libpng-dev pkg-config git
+
+      - name: Clone and Setup AGBCC
+        run: |
+          rm -rf tools/agbcc
+          git clone https://github.com/pret/agbcc.git tools/agbcc
 
       - name: Fix Makefile and Make Tools Compatibility
         run: |
@@ -39,7 +40,7 @@ jobs:
       - name: Build AGBCC and Tools
         run: |
           cd tools/agbcc
-          chmod +x build.sh configure
+          chmod +x build.sh
           ./build.sh
           cd ../..
           make tools
