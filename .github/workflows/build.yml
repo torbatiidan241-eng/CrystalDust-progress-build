@@ -43,7 +43,8 @@ jobs:
           chmod +x build.sh
           ./build.sh
           mkdir -p bin
-          cp agbcc cc1 bin/
+          cp agbcc bin/
+          find . -name "cc1" -exec cp {} bin/ \;
           cd ../..
           make -C tools/scaninc
           make -C tools/ramscrgen
