@@ -11,6 +11,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Configure Git Long Paths
+        run: |
+          git config --global core.longpaths true
+
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
@@ -24,8 +28,8 @@ jobs:
       - name: Fix Makefile and Make Tools Compatibility
         run: |
           sed -i '163s/.*/infoshell = $(shell $1)/' Makefile
-          sed -i 's/\$(TOOLDIRS):/aif2pcm bin2c gbafix gbagfx jsonproc mapjson mid2agb preproc ramscrgen rsfont scaninc:/g' Makefile
-          sed -i 's/\$(TOOLDIRS):/aif2pcm bin2c gbafix gbagfx jsonproc mapjson mid2agb preproc ramscrgen rsfont scaninc:/g' make_tools.mk
+          sed -i 's/\$(TOOLDIRS):/aif2pcm bin2c gbafix jsonproc mapjson mid2agb preproc ramscrgen rsfont scaninc:/g' Makefile
+          sed -i 's/\$(TOOLDIRS):/aif2pcm bin2c gbafix jsonproc mapjson mid2agb preproc ramscrgen rsfont scaninc:/g' make_tools.mk
 
       - name: Build AGBCC and Tools
         run: |
