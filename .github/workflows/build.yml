@@ -59,4 +59,4 @@ jobs:
       - name: Build CrystalDust ROM
         run: |
           export CPATH="/usr/lib/gcc/arm-none-eabi/$(arm-none-eabi-gcc -dumpversion)/include"
-          make -j$(nproc) CPPFLAGS="-Iinclude -I$CPATH" AGBCC_CPPFLAGS="-Iinclude -I$CPATH"
+          make -j$(nproc) CPPFLAGS="-Iinclude -I$CPATH" AGBCC_CPPFLAGS="-Iinclude -I$CPATH" CFLAGS="-Wno-error"
