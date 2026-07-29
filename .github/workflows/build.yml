@@ -56,9 +56,9 @@ jobs:
           make -C tools/rsfont
           make -C tools/aif2pcm
 
-      - name: Fix Strings Array Declarations
+      - name: Fix Strings Syntax in include/strings.h
         run: |
-          sed -i 's/u8 Matchcall_/u8[] Matchcall_/g' include/strings.h || true
+          sed -i '3666,3688s/^/\/\//' include/strings.h || true
 
       - name: Build CrystalDust ROM
         run: |
