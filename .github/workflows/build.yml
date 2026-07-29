@@ -24,7 +24,7 @@ jobs:
       - name: Install Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential libpng-dev pkg-config git gcc-arm-none-eabi binutils-arm-none-eabi
+          sudo apt-get install -y build-essential libpng-dev pkg-config git gcc-arm-none-eabi binutils-arm-none-eabi python3
 
       - name: Clone and Setup AGBCC
         run: |
@@ -56,9 +56,9 @@ jobs:
           make -C tools/rsfont
           make -C tools/aif2pcm
 
-      - name: Fix Strings Syntax in include/strings.h
+      - name: Clean Build Artifacts
         run: |
-          sed -i '3666,3688s/^/\/\//' include/strings.h || true
+          make clean || true
 
       - name: Build CrystalDust ROM
         run: |
