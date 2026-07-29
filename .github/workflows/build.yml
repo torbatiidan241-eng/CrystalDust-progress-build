@@ -31,13 +31,11 @@ jobs:
           rm -rf tools/agbcc
           git clone https://github.com/pret/agbcc.git tools/agbcc
 
-      - name: Fix Makefile and Make Tools Compatibility
+      - name: Fix Makefile Compatibility
         run: |
           sed -i '163s/.*/infoshell = $(shell $1)/' Makefile
-          sed -i 's/\$(TOOLDIRS):/aif2pcm bin2c gbafix jsonproc mapjson mid2agb preproc ramscrgen rsfont scaninc gbagfx:/g' Makefile || true
-          sed -i 's/\$(TOOLDIRS):/aif2pcm bin2c gbafix jsonproc mapjson mid2agb preproc ramscrgen rsfont scaninc:/g' make_tools.mk || true
 
-      - name: Build AGBCC and Tools Explicitly
+      - name: Build All Required Tools
         run: |
           cd tools/agbcc
           chmod +x build.sh
@@ -46,18 +44,9 @@ jobs:
           cp agbcc bin/
           find . -name "cc1" -exec cp {} bin/ \;
           cd ../..
-          make -C tools/scaninc
-          make -C tools/ramscrgen
-          make -C tools/preproc
-          make -C tools/bin2c
-          make -C tools/jsonproc
-          make -C tools/mapjson
-          make -C tools/mid2agb
-          make -C tools/rsfont
-          make -C tools/aif2pcm
-          make -C tools/gbagfx || true
+          make tools
 
-      - name: Build CrystalDust ROM
+      - name: Build CrystalDust ROM Single-Threaded
         run: |
           export CPATH="/usr/lib/gcc/arm-none-eabi/$(arm-none-eabi-gcc -dumpversion)/include"
-          make -j$(nproc) CPPFLAGS="-Iinclude -I$CPATH -std=gnu89" AGBCC_CPPFLAGS="-Iinclude -I$CPATH" CFLAGS="-w -std=gnu89" AGBCC_CFLAGS="-w"
+          make CPPFLAGS="-Iinclude -I$CPATH -std=gnu89" AGBCC_CPPFLAGS="-Iinclude -I$CPATH" CFLAGS="-w -std=gnu89" AGBCC_CFLAGS="-w"
