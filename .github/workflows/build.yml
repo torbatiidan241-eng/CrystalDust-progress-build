@@ -34,7 +34,7 @@ jobs:
       - name: Fix Makefile and Make Tools Compatibility
         run: |
           sed -i '163s/.*/infoshell = $(shell $1)/' Makefile
-          sed -i 's/\$(TOOLDIRS):/aif2pcm bin2c gbafix jsonproc mapjson mid2agb preproc ramscrgen rsfont scaninc gbagfx gsf libagfl:/" Makefile || true
+          sed -i 's/\$(TOOLDIRS):/aif2pcm bin2c gbafix jsonproc mapjson mid2agb preproc ramscrgen rsfont scaninc gbagfx:/g' Makefile || true
           sed -i 's/\$(TOOLDIRS):/aif2pcm bin2c gbafix jsonproc mapjson mid2agb preproc ramscrgen rsfont scaninc:/g' make_tools.mk || true
 
       - name: Build AGBCC and Tools Explicitly
@@ -55,14 +55,7 @@ jobs:
           make -C tools/mid2agb
           make -C tools/rsfont
           make -C tools/aif2pcm
-          make -C tools/gbagfx || make -C tools/gbagfx || true
-
-      - name: Ensure All Graphic Tools Exist
-        run: |
-          mkdir -p tools/gbagfx
-          if [ ! -f tools/gbagfx/gbagfx ]; then
-            gcc tools/gbagfx/*.c -o tools/gbagfx/gbagfx -lpng || true
-          fi
+          make -C tools/gbagfx || true
 
       - name: Build CrystalDust ROM
         run: |
