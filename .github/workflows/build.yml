@@ -35,7 +35,7 @@ jobs:
         run: |
           sed -i '163s/.*/infoshell = $(shell $1)/' Makefile
 
-      - name: Build All Required Tools
+      - name: Build AGBCC and Tools Manually
         run: |
           cd tools/agbcc
           chmod +x build.sh
@@ -44,7 +44,16 @@ jobs:
           cp agbcc bin/
           find . -name "cc1" -exec cp {} bin/ \;
           cd ../..
-          make tools
+          make -C tools/scaninc
+          make -C tools/ramscrgen
+          make -C tools/preproc
+          make -C tools/bin2c
+          make -C tools/jsonproc
+          make -C tools/mapjson
+          make -C tools/mid2agb
+          make -C tools/rsfont
+          make -C tools/aif2pcm
+          cd tools/gbagfx && make clean && gcc -Wall -Wextra -Wno-sign-compare -std=gnu99 -O2 -DPNG_SKIP_SETJMP_CHECK main.c convert_png.c gfx.c jasc_pal.c act.c lz.c rl.c util.c font.c huff.c -o gbagfx -lpng -lz && cd ../..
 
       - name: Build CrystalDust ROM Single-Threaded
         run: |
