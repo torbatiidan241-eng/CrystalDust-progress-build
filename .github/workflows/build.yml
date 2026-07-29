@@ -56,11 +56,7 @@ jobs:
           make -C tools/rsfont
           make -C tools/aif2pcm
 
-      - name: Clean Build Artifacts
-        run: |
-          make clean || true
-
       - name: Build CrystalDust ROM
         run: |
           export CPATH="/usr/lib/gcc/arm-none-eabi/$(arm-none-eabi-gcc -dumpversion)/include"
-          make -j$(nproc) CPPFLAGS="-Iinclude -I$CPATH" AGBCC_CPPFLAGS="-Iinclude -I$CPATH" CFLAGS="-w" AGBCC_CFLAGS="-w"
+          make -j$(nproc) CPPFLAGS="-Iinclude -I$CPATH -std=gnu89" AGBCC_CPPFLAGS="-Iinclude -I$CPATH" CFLAGS="-w -std=gnu89" AGBCC_CFLAGS="-w"
