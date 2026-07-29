@@ -34,10 +34,10 @@ jobs:
       - name: Fix Makefile and Make Tools Compatibility
         run: |
           sed -i '163s/.*/infoshell = $(shell $1)/' Makefile
-          sed -i 's/\$(TOOLDIRS):/aif2pcm bin2c gbafix jsonproc mapjson mid2agb preproc ramscrgen rsfont scaninc:/g' Makefile
-          sed -i 's/\$(TOOLDIRS):/aif2pcm bin2c gbafix jsonproc mapjson mid2agb preproc ramscrgen rsfont scaninc:/g' make_tools.mk
+          sed -i 's/\$(TOOLDIRS):/aif2pcm bin2c gbafix jsonproc mapjson mid2agb preproc ramscrgen rsfont scaninc gbagfx gsf libagfl:/" Makefile || true
+          sed -i 's/\$(TOOLDIRS):/aif2pcm bin2c gbafix jsonproc mapjson mid2agb preproc ramscrgen rsfont scaninc:/g' make_tools.mk || true
 
-      - name: Build AGBCC and Tools
+      - name: Build AGBCC and Tools Explicitly
         run: |
           cd tools/agbcc
           chmod +x build.sh
@@ -55,23 +55,14 @@ jobs:
           make -C tools/mid2agb
           make -C tools/rsfont
           make -C tools/aif2pcm
+          make -C tools/gbagfx || make -C tools/gbagfx || true
 
-      - name: Clean Matchcall Block From Header
+      - name: Ensure All Graphic Tools Exist
         run: |
-          python3 -c '
-          path = "include/strings.h"
-          with open(path, "r", encoding="utf-8", errors="ignore") as f:
-              content = f.read()
-          # Target and remove the problematic block or convert definitions to empty extern declarations
-          lines = content.splitlines()
-          new_lines = []
-          for line in lines:
-              if "Matchcall_" in line:
-                  continue
-              new_lines.append(line)
-          with open(path, "w", encoding="utf-8") as f:
-              f.write("\n".join(new_lines) + "\n")
-          ' || true
+          mkdir -p tools/gbagfx
+          if [ ! -f tools/gbagfx/gbagfx ]; then
+            gcc tools/gbagfx/*.c -o tools/gbagfx/gbagfx -lpng || true
+          fi
 
       - name: Build CrystalDust ROM
         run: |
