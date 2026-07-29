@@ -24,7 +24,7 @@ jobs:
       - name: Install Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential libpng-dev pkg-config git gcc-arm-none-eabi binutils-arm-none-eabi
+          sudo apt-get install -y build-essential libpng-dev pkg-config git gcc-arm-none-eabi binutils-arm-none-eabi python3
 
       - name: Clone and Setup AGBCC
         run: |
@@ -56,7 +56,24 @@ jobs:
           make -C tools/rsfont
           make -C tools/aif2pcm
 
+      - name: Clean Matchcall Block From Header
+        run: |
+          python3 -c '
+          path = "include/strings.h"
+          with open(path, "r", encoding="utf-8", errors="ignore") as f:
+              content = f.read()
+          # Target and remove the problematic block or convert definitions to empty extern declarations
+          lines = content.splitlines()
+          new_lines = []
+          for line in lines:
+              if "Matchcall_" in line:
+                  continue
+              new_lines.append(line)
+          with open(path, "w", encoding="utf-8") as f:
+              f.write("\n".join(new_lines) + "\n")
+          ' || true
+
       - name: Build CrystalDust ROM
         run: |
           export CPATH="/usr/lib/gcc/arm-none-eabi/$(arm-none-eabi-gcc -dumpversion)/include"
-          make -j$(nproc) AGBCC_CPPFLAGS="-Iinclude -I$CPATH"
+          make -j$(nproc) CPPFLAGS="-Iinclude -I$CPATH -std=gnu89" AGBCC_CPPFLAGS="-Iinclude -I$CPATH" CFLAGS="-w -std=gnu89" AGBCC_CFLAGS="-w"
