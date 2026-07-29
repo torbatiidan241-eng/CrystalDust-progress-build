@@ -56,7 +56,11 @@ jobs:
           make -C tools/rsfont
           make -C tools/aif2pcm
 
+      - name: Fix Strings Array Declarations
+        run: |
+          sed -i 's/u8 Matchcall_/u8[] Matchcall_/g' include/strings.h || true
+
       - name: Build CrystalDust ROM
         run: |
           export CPATH="/usr/lib/gcc/arm-none-eabi/$(arm-none-eabi-gcc -dumpversion)/include"
-          make -j$(nproc) CPPFLAGS="-Iinclude -I$CPATH" AGBCC_CPPFLAGS="-Iinclude -I$CPATH" AGBCC_CFLAGS="-w"
+          make -j$(nproc) CPPFLAGS="-Iinclude -I$CPATH" AGBCC_CPPFLAGS="-Iinclude -I$CPATH" CFLAGS="-w" AGBCC_CFLAGS="-w"
