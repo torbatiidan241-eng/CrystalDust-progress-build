@@ -1,553 +1,330 @@
-#ifndef GUARD_STRINGS_H
-#define GUARD_STRINGS_H
+#ifndef GUARD_SPRITE_H
+#define GUARD_SPRITE_H
 
-// Placeholders
-extern const u8 gText_ExpandedPlaceholder_Empty[];
-extern const u8 gText_ExpandedPlaceholder_Kun[];
-extern const u8 gText_ExpandedPlaceholder_Chan[];
-extern const u8 gText_ExpandedPlaceholder_Sapphire[];
-extern const u8 gText_ExpandedPlaceholder_Ruby[];
-extern const u8 gText_ExpandedPlaceholder_Emerald[];
-extern const u8 gText_ExpandedPlaceholder_Aqua[];
-extern const u8 gText_ExpandedPlaceholder_Magma[];
-extern const u8 gText_ExpandedPlaceholder_Pokemon[];
-extern const u8 gText_ExpandedPlaceholder_Poke[];
-extern const u8 gText_ExpandedPlaceholder_Pokedex[];
-extern const u8 gText_ExpandedPlaceholder_Groudon[];
-extern const u8 gText_ExpandedPlaceholder_Brendan[];
-extern const u8 gText_ExpandedPlaceholder_May[];
+#define MAX_SPRITES 64
+#define SPRITE_NONE 0xFF
+#define SPRITE_INVALID_TAG 0xFFFF
 
-extern const u8 gText_FromSpace[];
+struct SpriteSheet
+{
+    const void *data;  // Raw uncompressed pixel data
+    u16 size;
+    u16 tag;
+};
 
-extern const u8 gText_Lv50[];
-extern const u8 gText_OpenLevel[];
+struct CompressedSpriteSheet
+{
+    const u32 *data;  // LZ77 compressed pixel data
+    u16 size;        // Uncompressed size of pixel data
+    u16 tag;
+};
 
-extern const u8 gText_Mom[];
-extern const u8 gText_Dad[];
+struct SpriteFrameImage
+{
+    const void *data;
+    u16 size;
+};
 
-extern const u8 gText_GetsAPokeBlockQuestion[];
-extern const u8 gText_WontEatAnymore[];
-extern const u8 gText_WasEnhanced[];
-extern const u8 gText_NothingChanged[];
-extern const u8 gText_NatureSlash[];
+#define obj_frame_tiles(ptr) {.data = (u8 *)ptr, .size = sizeof ptr}
 
-extern const u8 gText_Cool[];
-extern const u8 gText_Beauty[];
-extern const u8 gText_Cute[];
-extern const u8 gText_Smart[];
-extern const u8 gText_Tough[];
+#define overworld_frame(ptr, width, height, frame) {.data = (u8 *)ptr + (width * height * frame * 64)/2, .size = (width * height * 64)/2}
 
-extern const u8 gText_Normal[];
-extern const u8 gText_Super[];
-extern const u8 gText_Hyper[];
-extern const u8 gText_Master[];
+struct SpritePalette
+{
+    const u16 *data;  // Raw uncompressed palette data
+    u16 tag;
+};
 
-extern const u8 gText_Cool2[];
-extern const u8 gText_Beauty2[];
-extern const u8 gText_Cute2[];
-extern const u8 gText_Smart2[];
-extern const u8 gText_Tough2[];
+struct CompressedSpritePalette
+{
+    const u32 *data;  // LZ77 compressed palette data
+    u16 tag;
+};
 
-extern const u8 gText_Items[];
-extern const u8 gText_Key_Items[];
-extern const u8 gText_Poke_Balls[];
-extern const u8 gText_TMs_Hms[];
-extern const u8 gText_Berries2[];
+struct AnimFrameCmd
+{
+    // If the sprite has an array of images, this is the array index.
+    // If the sprite has a sheet, this is the tile offset.
+    u32 imageValue:16;
 
-extern const u8 gText_Single2[];
-extern const u8 gText_Double2[];
-extern const u8 gText_Multi[];
-extern const u8 gText_MultiLink[];
+    u32 duration:6;
+    u32 hFlip:1;
+    u32 vFlip:1;
+};
 
-extern const u8 gText_Single[];
-extern const u8 gText_Double[];
+struct AnimLoopCmd
+{
+    u32 type:16;
+    u32 count:6;
+};
 
-extern const u8 gText_Spicy[];
-extern const u8 gText_Dry[];
-extern const u8 gText_Sweet[];
-extern const u8 gText_Bitter[];
-extern const u8 gText_Sour[];
+struct AnimJumpCmd
+{
+    u32 type:16;
+    u32 target:6;
+};
 
-extern const u8 gText_StowCase[];
-extern const u8 gText_LvVar1[];
+// The first halfword of this union specifies the type of command.
+// If it -2, then it is a jump command. If it is -1, then it is the end of the script.
+// Otherwise, it is the imageValue for a frame command.
+union AnimCmd
+{
+    s16 type;
+    struct AnimFrameCmd frame;
+    struct AnimLoopCmd loop;
+    struct AnimJumpCmd jump;
+};
 
-extern const u8 gText_Spicy2[];
-extern const u8 gText_Dry2[];
-extern const u8 gText_Sweet2[];
-extern const u8 gText_Bitter2[];
-extern const u8 gText_Sour2[];
+#define ANIMCMD_FRAME(...) \
+    {.frame = {__VA_ARGS__}}
+#define ANIMCMD_LOOP(_count) \
+    {.loop = {.type = -3, .count = _count}}
+#define ANIMCMD_JUMP(_target) \
+    {.jump = {.type = -2, .target = _target}}
+#define ANIMCMD_END \
+    {.type = -1}
 
-extern const u8 gText_Excellent[];
-extern const u8 gText_VeryGood[];
-extern const u8 gText_Good[];
-extern const u8 gText_SoSo[];
-extern const u8 gText_Bad[];
-extern const u8 gText_TheWorst[];
+struct AffineAnimFrameCmd
+{
+    s16 xScale;
+    s16 yScale;
+    u8 rotation;
+    u8 duration;
+};
 
-extern const u8 Roulette_Text_ControlsInstruction[];
-extern const u8 Roulette_Text_KeepPlaying[];
-extern const u8 Roulette_Text_Jackpot[];
-extern const u8 Roulette_Text_ItsAHit[];
-extern const u8 Roulette_Text_NothingDoing[];
-extern const u8 Roulette_Text_YouveWonXCoins[];
-extern const u8 Roulette_Text_BoardWillBeCleared[];
-extern const u8 Roulette_Text_CoinCaseIsFull[];
-extern const u8 Roulette_Text_NoCoinsLeft[];
-extern const u8 Roulette_Text_PlayMinimumWagerIsX[];
-extern const u8 Roulette_Text_SpecialRateTable[];
-extern const u8 Roulette_Text_NotEnoughCoins[];
+struct AffineAnimLoopCmd
+{
+    s16 type;
+    s16 count;
+};
 
-extern const u8 gText_Slots[];
-extern const u8 gText_Roulette[];
-extern const u8 gText_Jackpot[];
+struct AffineAnimJumpCmd
+{
+    s16 type;
+    u16 target;
+};
 
-extern const u8 gText_YouDontHaveThreeCoins[];
-extern const u8 gText_QuitTheGame[];
-extern const u8 gText_YouveGot9999Coins[];
-extern const u8 gText_YouveRunOutOfCoins[];
-extern const u8 gText_ReelTimeHelp[];
+struct AffineAnimEndCmdAlt
+{
+    s16 type;
+    u16 val;
+};
 
-extern const u8 gText_First[];
-extern const u8 gText_Second[];
-extern const u8 gText_Third[];
+union AffineAnimCmd
+{
+    s16 type;
+    struct AffineAnimFrameCmd frame;
+    struct AffineAnimLoopCmd loop;
+    struct AffineAnimJumpCmd jump;
+    struct AffineAnimEndCmdAlt end; // unused in code
+};
 
-extern const u8 gText_NoDecorations[];
-extern const u8 gText_NoDecorationsInUse[];
+#define AFFINEANIMCMDTYPE_LOOP 0x7FFD
+#define AFFINEANIMCMDTYPE_JUMP 0x7FFE
+#define AFFINEANIMCMDTYPE_END  0x7FFF
 
-extern const u8 gText_Exit[];
-extern const u8 gText_Cancel[];
+#define AFFINEANIMCMD_FRAME(_xScale, _yScale, _rotation, _duration) \
+    {.frame = {.xScale = _xScale, .yScale = _yScale, .rotation = _rotation, .duration = _duration}}
+#define AFFINEANIMCMD_SIZE(_xScale, _yScale, _rotation) \
+    {.frame = {.xScale = Q_8_8(_xScale), .yScale = Q_8_8(_yScale), .rotation = _rotation, .duration = 0}}
+#define AFFINEANIMCMD_LOOP(_count) \
+    {.loop = {.type = AFFINEANIMCMDTYPE_LOOP, .count = _count}}
+#define AFFINEANIMCMD_JUMP(_target) \
+    {.jump = {.type = AFFINEANIMCMDTYPE_JUMP, .target = _target}}
+#define AFFINEANIMCMD_END \
+    {.type = AFFINEANIMCMDTYPE_END}
+#define AFFINEANIMCMD_END_ALT(_val) \
+    {.end = {.type = AFFINEANIMCMDTYPE_END, .val = _val}}
 
-extern const u8 gText_ThrowAwayVar1[];
-extern const u8 gText_Var1ThrownAway[];
+struct AffineAnimState
+{
+    u8 animNum;
+    u8 animCmdIndex;
+    u8 delayCounter;
+    u8 loopCounter;
+    s16 xScale;
+    s16 yScale;
+    u16 rotation;
+};
 
-extern const u8 gText_Color161Shadow161[];
-extern const u8 gText_GoBackPrevMenu[];
-extern const u8 gText_CantPlaceInRoom[];
-extern const u8 gText_NoMoreDecorations[];
-extern const u8 gText_NoMoreDecorations2[];
-extern const u8 gText_InUseAlready[];
-extern const u8 gText_CancelDecorating[];
-extern const u8 gText_PlaceItHere[];
-extern const u8 gText_CantBePlacedHere[];
-extern const u8 gText_DecorationReturnedToPC[];
-extern const u8 gText_StopPuttingAwayDecorations[];
-extern const u8 gText_ReturnDecorationToPC[];
-extern const u8 gText_NoDecorationHere[];
-extern const u8 gText_DecorationWillBeDiscarded[];
-extern const u8 gText_CantThrowAwayInUse[];
-extern const u8 gText_DecorationThrownAway[];
+enum
+{
+    SUBSPRITES_OFF,
+    SUBSPRITES_ON,
+    SUBSPRITES_IGNORE_PRIORITY, // on but priority is ignored
+};
 
-extern const u8 gText_PokeBalls[];
-extern const u8 gText_Berries[];
-extern const u8 gText_Berry[];
+struct Subsprite
+{
+    s8 x; // was u16 in R/S
+    s8 y; // was u16 in R/S
+    u16 shape:2;
+    u16 size:2;
+    u16 tileOffset:10;
+    u16 priority:2;
+};
 
-extern const u8 gText_Desk[];
-extern const u8 gText_Chair[];
-extern const u8 gText_Plant[];
-extern const u8 gText_Ornament[];
-extern const u8 gText_Mat[];
-extern const u8 gText_Poster[];
+struct SubspriteTable
+{
+    u8 subspriteCount;
+    const struct Subsprite *subsprites;
+};
 
-extern const u8 gText_PutOutSelectedDecorItem[];
-extern const u8 gText_StoreChosenDecorInPC[];
-extern const u8 gText_ThrowAwayUnwantedDecors[];
-extern const u8 gText_Doll[];
-extern const u8 gText_Cushion[];
-extern const u8 gText_Decorate[];
-extern const u8 gText_PutAway[];
-extern const u8 gText_Toss2[];
-extern const u8 gText_Hoenn[];
-extern const u8 gText_Ferry[];
-extern const u8 gText_SecretBase[];
-extern const u8 gText_Hideout[];
-extern const u8 gText_GoldenrodDept[];
-extern const u8 gText_CeladonDept[];
-extern const u8 gText_FlyToWhere[];
-extern const u8 gText_PokemonLeague[];
-extern const u8 gText_PokemonCenter[];
-extern const u8 gText_ApostropheSBase[];
-extern const u8 gText_NoRegistry[];
-extern const u8 gText_OkayToDeleteFromRegistry[];
-extern const u8 gText_RegisteredDataDeleted[];
-extern const u8 gText_DelRegist[];
-extern const u8 gText_CommErrorEllipsis[];
-extern const u8 gText_MoveCloserToLinkPartner[];
-extern const u8 gText_CommErrorCheckConnections[];
-extern const u8 gText_ABtnTitleScreen[];
-extern const u8 gText_ABtnRegistrationCounter[];
-extern const u8 gText_MixingRecords[];
-extern const u8 gText_RecordMixingComplete[];
-extern const u8 gText_EmptyString2[];
-extern const u8 gText_Confirm3[];
-extern const u8 gText_Cancel4[];
-extern const u8 gText_PkmnFainted3[];
-extern const u8 gText_Coins[];
-extern const u8 gText_Var1Coins[];
-extern const u8 gText_Points[];
-extern const u8 gText_Var1Points[];
-extern const u8 gText_Silver[];
-extern const u8 gText_Gold[];
+struct Sprite;
 
-extern const u8 gText_Var1AteTheVar2[];
-extern const u8 gText_Var1HappilyAteVar2[];
-extern const u8 gText_Var1DisdainfullyAteVar2[];
+typedef void (*SpriteCallback)(struct Sprite *);
 
-extern const u8 gText_RedPokeblock[];
-extern const u8 gText_BluePokeblock[];
-extern const u8 gText_PinkPokeblock[];
-extern const u8 gText_GreenPokeblock[];
-extern const u8 gText_YellowPokeblock[];
-extern const u8 gText_PurplePokeblock[];
-extern const u8 gText_IndigoPokeblock[];
-extern const u8 gText_BrownPokeblock[];
-extern const u8 gText_LiteBluePokeblock[];
-extern const u8 gText_OlivePokeblock[];
-extern const u8 gText_GrayPokeblock[];
-extern const u8 gText_BlackPokeblock[];
-extern const u8 gText_WhitePokeblock[];
-extern const u8 gText_GoldPokeblock[];
+struct SpriteTemplate
+{
+    u16 tileTag;
+    u16 paletteTag;
+    const struct OamData *oam;
+    const union AnimCmd *const *anims;
+    const struct SpriteFrameImage *images;
+    const union AffineAnimCmd *const *affineAnims;
+    SpriteCallback callback;
+};
 
-extern const u8 gMenuText_Use[];
-extern const u8 gMenuText_Toss[];
-extern const u8 gMenuText_Give[];
-extern const u8 gMenuText_Give2[];
-extern const u8 gMenuText_Register[];
-extern const u8 gMenuText_Check[];
-extern const u8 gMenuText_Walk[];
-extern const u8 gMenuText_Deselect[];
-extern const u8 gMenuText_CheckTag[];
-extern const u8 gMenuText_Confirm[];
-extern const u8 gMenuText_Show[];
-extern const u8 gMenuText_Give2[];
+// UB: template pointer is often used to point to temporary storage,
+// then later dereferenced after being freed. Usually this won't
+// be visible in-game, but this is (part of) what causes the item
+// icon palette to flicker when changing items in the bag.
+struct Sprite
+{
+             u16 tileTag;       // copy from SpriteTemplate to prevent use after free
+             u16 paletteTag;    // copy from SpriteTemplate to prevent use after free
+    /*0x00*/ struct OamData oam;
+    /*0x08*/ const union AnimCmd *const *anims;
+    /*0x0C*/ const struct SpriteFrameImage *images;
+    /*0x10*/ const union AffineAnimCmd *const *affineAnims;
+    /*0x14*/ const struct SpriteTemplate *template;
+    /*0x18*/ const struct SubspriteTable *subspriteTables;
+    /*0x1C*/ SpriteCallback callback;
 
-extern const u8 gText_WithdrawPokemon[];
-extern const u8 gText_WithdrawMonDescription[];
-extern const u8 gText_DepositPokemon[];
-extern const u8 gText_DepositMonDescription[];
-extern const u8 gText_MovePokemon[];
-extern const u8 gText_MoveMonDescription[];
-extern const u8 gText_MoveItems[];
-extern const u8 gText_MoveItemsDescription[];
-extern const u8 gText_SeeYa[];
-extern const u8 gText_SeeYaDescription[];
+    /*0x20*/ s16 x, y;
+    /*0x24*/ s16 x2, y2;
+    /*0x28*/ s8 centerToCornerVecX;
+    /*0x29*/ s8 centerToCornerVecY;
 
-extern const u8 gText_EggNickname[];
-extern const u8 gText_Pokemon[];
-extern const u8 gText_InParty[];
-extern const u8 gText_InGameClockUsable[];
+    /*0x2A*/ u8 animNum;
+    /*0x2B*/ u8 animCmdIndex;
+    /*0x2C*/ u8 animDelayCounter:6;
+             bool8 animPaused:1;
+             bool8 affineAnimPaused:1;
+    /*0x2D*/ u8 animLoopCounter;
 
-// reset rtc screen texts
-extern const u8 gText_Day[];
-extern const u8 gText_Colon3[];
-extern const u8 gText_Confirm2[];
-extern const u8 gText_PresentTime[];
-extern const u8 gText_PreviousTime[];
-extern const u8 gText_ResetRTCConfirmCancel[];
-extern const u8 gText_NoSaveFileCantSetTime[];
-extern const u8 gText_PleaseResetTime[];
-extern const u8 gText_ClockHasBeenReset[];
-extern const u8 gText_SaveCompleted[];
-extern const u8 gText_SaveFailed[];
+    // general purpose data fields
+    /*0x2E*/ s16 data[8];
 
-// menu texts
-extern const u8 gText_MenuPokedex[];
-extern const u8 gText_MenuPokemon[];
-extern const u8 gText_MenuBag[];
-extern const u8 gText_MenuPokegear[];
-extern const u8 gText_MenuPlayer[];
-extern const u8 gText_MenuSave[];
-extern const u8 gText_MenuOption[];
-extern const u8 gText_MenuExit[];
-extern const u8 gText_MenuRetire[];
-extern const u8 gText_MenuRest[];
-extern const u8 gText_Floor1[];
-extern const u8 gText_Floor2[];
-extern const u8 gText_Floor3[];
-extern const u8 gText_Floor4[];
-extern const u8 gText_Floor5[];
-extern const u8 gText_Floor6[];
-extern const u8 gText_Floor7[];
-extern const u8 gText_Peak[];
-extern const u8 gText_SafariBallStock[];
-extern const u8 gText_BugCatchingContestStatus[];
-extern const u8 gText_BugCatchingContestNoneCaught[];
-extern const u8 gText_BattlePyramidFloor[];
+    /*0x3E*/ bool16 inUse:1;               //1
+             bool16 coordOffsetEnabled:1;  //2
+             bool16 invisible:1;           //4
+             bool16 flags_3:1;             //8
+             bool16 flags_4:1;             //0x10
+             bool16 flags_5:1;             //0x20
+             bool16 flags_6:1;             //0x40
+             bool16 flags_7:1;             //0x80
+    /*0x3F*/ bool16 hFlip:1;               //1
+             bool16 vFlip:1;               //2
+             bool16 animBeginning:1;       //4
+             bool16 affineAnimBeginning:1; //8
+             bool16 animEnded:1;           //0x10
+             bool16 affineAnimEnded:1;     //0x20
+             bool16 usingSheet:1;          //0x40
+             bool16 flags_f:1;             //0x80
 
-extern const u8 gText_MenuOptionPokedex[];
-extern const u8 gText_MenuOptionPokemon[];
-extern const u8 gText_MenuOptionBag[];
-extern const u8 gText_MenuOptionPokegear[];
-extern const u8 gText_MenuOptionSave[];
-extern const u8 gText_MenuOptionOption[];
-extern const u8 gText_MenuOptionExit[];
+    /*0x40*/ u16 sheetTileStart;
 
-// save menu texts
-extern const u8 gText_ConfirmSave[];
-extern const u8 gText_DifferentSaveFile[];
-extern const u8 gText_AlreadySavedFile[];
-extern const u8 gText_SavingDontTurnOff[];
-extern const u8 gText_PlayerSavedGame[];
-extern const u8 gText_SaveError[];
-extern const u8 gText_SavingDontTurnOffPower[];
-extern const u8 gText_SavingPlayer[];
-extern const u8 gText_SavingBadges[];
-extern const u8 gText_SavingPokedex[];
-extern const u8 gText_SavingTime[];
+    /*0x42*/ u8 subspriteTableNum:6;
+             u8 subspriteMode:2;
 
-// Battle pyramid menu texts
-extern const u8 gText_BattlePyramidConfirmRest[];
-extern const u8 gText_BattlePyramidConfirmRetire[];
+    /*0x43*/ u8 subpriority;
+};
 
-// option menu texts
-extern const u8 gText_TextSpeedSlow[];
-extern const u8 gText_TextSpeedMid[];
-extern const u8 gText_TextSpeedFast[];
-extern const u8 gText_BattleSceneOn[];
-extern const u8 gText_BattleSceneOff[];
-extern const u8 gText_BattleStyleShift[];
-extern const u8 gText_BattleStyleSet[];
-extern const u8 gText_SoundMono[];
-extern const u8 gText_SoundStereo[];
-extern const u8 gText_FrameTypeNumber[];
-extern const u8 gText_FrameType[];
-extern const u8 gText_ButtonTypeNormal[];
-extern const u8 gText_ButtonTypeLR[];
-extern const u8 gText_ButtonTypeLEqualsA[];
-extern const u8 gText_PickSwitchCancel[];
-extern const u8 gText_Option[];
-extern const u8 gText_OptionMenu[];
-extern const u8 gText_TextSpeed[];
-extern const u8 gText_BattleScene[];
-extern const u8 gText_BattleStyle[];
-extern const u8 gText_Sound[];
-extern const u8 gText_Frame[];
-extern const u8 gText_OptionMenuCancel[];
-extern const u8 gText_ButtonMode[];
+struct OamMatrix
+{
+    s16 a;
+    s16 b;
+    s16 c;
+    s16 d;
+};
 
-extern const u8 gText_MaleSymbol[];
-extern const u8 gText_FemaleSymbol[];
+extern const struct OamData gDummyOamData;
+extern const union AnimCmd *const gDummySpriteAnimTable[];
+extern const union AffineAnimCmd *const gDummySpriteAffineAnimTable[];
+extern const struct SpriteTemplate gDummySpriteTemplate;
 
-extern const u8 gText_SelectorArrow3[];
-extern const u8 gText_YesNo[];
+extern u8 gReservedSpritePaletteCount;
+extern struct Sprite gSprites[];
+extern u8 gOamLimit;
+extern u16 gReservedSpriteTileCount;
+extern s16 gSpriteCoordOffsetX;
+extern s16 gSpriteCoordOffsetY;
+extern struct OamMatrix gOamMatrices[];
+extern bool8 gAffineAnimsDisabled;
 
-// main menu/birch speech text
-extern const u8 gText_SaveFileErased[];
-extern const u8 gText_SaveFileCorrupted[];
-extern const u8 gText_No1MSubCircuit[];
-extern const u8 gText_BatteryRunDry[];
-extern const u8 gText_MainMenuNewGame[];
-extern const u8 gText_MainMenuOption[];
-extern const u8 gText_MainMenuContinue[];
-extern const u8 gText_MainMenuMysteryGift2[];
-extern const u8 gText_MainMenuMysteryEvents[];
-extern const u8 gText_MainMenuMysteryGift[];
-extern const u8 gText_BuildVersionMismatch[];
-extern const u8 gText_WirelessNotConnected[];
-extern const u8 gText_MysteryGiftCantUse[];
-extern const u8 gText_MysteryEventsCantUse[];
-extern const u8 gText_SetClock_WokeMeUp[];
-extern const u8 gText_SetClock_WhatTime[];
-extern const u8 gText_SetClock_Whoa[];
-extern const u8 gText_SetClock_TimeNotSet[];
-extern const u8 gText_SetClock_TimeSet[];
-extern const u8 gText_SetClock_InTheMorning[];
-extern const u8 gText_SetClock_InTheAfternoon[];
-extern const u8 gText_SetClock_InTheEvening[];
-extern const u8 gText_SetClock_AtNight[];
-extern const u8 gText_SetClock_Midnight[];
-extern const u8 gText_SetClock_Noon[];
-extern const u8 gText_SetClock_IOverslept[];
-extern const u8 gText_SetClock_YikesIOverslept[];
-extern const u8 gText_SetClock_SoDark[];
-extern const u8 gText_Oak_Welcome[];
-extern const u8 gText_Oak_Pokemon[];
-extern const u8 gText_Oak_Pokemon2[];
-extern const u8 gText_Oak_MainSpeech[];
-extern const u8 gText_Oak_MainSpeech2[];
-extern const u8 gText_Oak_BoyOrGirl[];
-extern const u8 gText_Oak_WhatsYourName[];
-extern const u8 gText_Oak_SoItsPlayer[];
-extern const u8 gText_Oak_AreYouReady[];
-extern const u8 gText_ContinueMenuPlayer[];
-extern const u8 gText_ContinueMenuTime[];
-extern const u8 gText_ContinueMenuPokedex[];
-extern const u8 gText_ContinueMenuBadges[];
-extern const u8 gText_OakBoy[];
-extern const u8 gText_OakGirl[];
-extern const u8 gText_DefaultNameChris[];
-extern const u8 gText_DefaultNameMat[];
-extern const u8 gText_DefaultNameAllan[];
-extern const u8 gText_DefaultNameJon[];
-extern const u8 gText_DefaultNameGold[];
-extern const u8 gText_DefaultNameHiro[];
-extern const u8 gText_DefaultNameTaylor[];
-extern const u8 gText_DefaultNameKarl[];
-extern const u8 gText_DefaultNameSilver[];
-extern const u8 gText_DefaultNameKamon[];
-extern const u8 gText_DefaultNameOscar[];
-extern const u8 gText_DefaultNameMax[];
-extern const u8 gText_DefaultNameDiego[];
-extern const u8 gText_DefaultNameAdam[];
-extern const u8 gText_DefaultNameRaymond[];
-extern const u8 gText_DefaultNameIan[];
-extern const u8 gText_DefaultNameRutvik[];
-extern const u8 gText_DefaultNameKamron[];
-extern const u8 gText_DefaultNameJimmy[];
-extern const u8 gText_DefaultNameTanek[];
-extern const u8 gText_DefaultNameKris[];
-extern const u8 gText_DefaultNameAmanda[];
-extern const u8 gText_DefaultNameJuana[];
-extern const u8 gText_DefaultNameJodi[];
-extern const u8 gText_DefaultNameCrystal[];
-extern const u8 gText_DefaultNameMarina[];
-extern const u8 gText_DefaultNameSierra[];
-extern const u8 gText_DefaultNameJenny[];
-extern const u8 gText_DefaultNameLorrie[];
-extern const u8 gText_DefaultNameHannah[];
-extern const u8 gText_DefaultNameGina[];
-extern const u8 gText_DefaultNameColette[];
-extern const u8 gText_DefaultNameKatie[];
-extern const u8 gText_DefaultNameSarah[];
-extern const u8 gText_DefaultNameAlyx[];
-extern const u8 gText_DefaultNameEllie[];
-extern const u8 gText_DefaultNameJoyce[];
-extern const u8 gText_DefaultNameNancy[];
-extern const u8 gText_DefaultNameBarbara[];
-extern const u8 gText_DefaultNameJill[];
+void ResetSpriteData(void);
+void AnimateSprites(void);
+void BuildOamBuffer(void);
+u8 CreateSprite(const struct SpriteTemplate *template, s16 x, s16 y, u8 subpriority);
+u8 CreateSpriteAtEnd(const struct SpriteTemplate *template, s16 x, s16 y, u8 subpriority);
+u8 CreateInvisibleSprite(void (*callback)(struct Sprite *));
+u8 CreateSpriteAndAnimate(const struct SpriteTemplate *template, s16 x, s16 y, u8 subpriority);
+void DestroySprite(struct Sprite *sprite);
+void ResetOamRange(u8 a, u8 b);
+void LoadOam(void);
+void SetOamMatrix(u8 matrixNum, u16 a, u16 b, u16 c, u16 d);
+void CalcCenterToCornerVec(struct Sprite *sprite, u8 shape, u8 size, u8 affineMode);
+void SpriteCallbackDummy(struct Sprite *sprite);
+void ProcessSpriteCopyRequests(void);
+void RequestSpriteFrameImageCopy(u16 index, u16 tileNum, const struct SpriteFrameImage *images);
+void RequestSpriteCopy(const u8 *src, u8 *dest, u16 size);
+void FreeSpriteTiles(struct Sprite *sprite);
+void FreeSpritePalette(struct Sprite *sprite);
+void FreeSpriteOamMatrix(struct Sprite *sprite);
+void DestroySpriteAndFreeResources(struct Sprite *sprite);
+void sub_800142C(u32 a1, u32 a2, u16 *a3, u16 a4, u32 a5);
+void AnimateSprite(struct Sprite *sprite);
+void sub_8007E18(struct Sprite* sprite, s16 a2, s16 a3);
+void StartSpriteAnim(struct Sprite *sprite, u8 animNum);
+void StartSpriteAnimIfDifferent(struct Sprite *sprite, u8 animNum);
+void SeekSpriteAnim(struct Sprite *sprite, u8 animCmdIndex);
+void StartSpriteAffineAnim(struct Sprite *sprite, u8 animNum);
+void StartSpriteAffineAnimIfDifferent(struct Sprite *sprite, u8 animNum);
+void ChangeSpriteAffineAnim(struct Sprite *sprite, u8 animNum);
+void ChangeSpriteAffineAnimIfDifferent(struct Sprite *sprite, u8 animNum);
+void SetSpriteSheetFrameTileNum(struct Sprite *sprite);
+u8 AllocOamMatrix(void);
+void FreeOamMatrix(u8 matrixNum);
+void InitSpriteAffineAnim(struct Sprite *sprite);
+void SetOamMatrixRotationScaling(u8 matrixNum, s16 xScale, s16 yScale, u16 rotation);
+u16 LoadSpriteSheet(const struct SpriteSheet *sheet);
+void LoadSpriteSheets(const struct SpriteSheet *sheets);
+u16 AllocTilesForSpriteSheet(struct SpriteSheet *sheet);
+void AllocTilesForSpriteSheets(struct SpriteSheet *sheets);
+void LoadTilesForSpriteSheet(const struct SpriteSheet *sheet);
+void LoadTilesForSpriteSheets(struct SpriteSheet *sheets);
+void FreeSpriteTilesByTag(u16 tag);
+void FreeSpriteTileRanges(void);
+u16 GetSpriteTileStartByTag(u16 tag);
+u16 GetSpriteTileTagByTileStart(u16 start);
+void RequestSpriteSheetCopy(const struct SpriteSheet *sheet);
+u16 LoadSpriteSheetDeferred(const struct SpriteSheet *sheet);
+void FreeAllSpritePalettes(void);
+u8 LoadSpritePalette(const struct SpritePalette *palette);
+u8 LoadSpritePaletteDayNight(const struct SpritePalette *palette);
+void LoadSpritePalettes(const struct SpritePalette *palettes);
+u8 AllocSpritePalette(u16 tag);
+u8 IndexOfSpritePaletteTag(u16 tag);
+u16 GetSpritePaletteTagByPaletteNum(u8 paletteNum);
+void FreeSpritePaletteByTag(u16 tag);
+void SetSubspriteTables(struct Sprite *sprite, const struct SubspriteTable *subspriteTables);
+bool8 AddSpriteToOamBuffer(struct Sprite *object, u32 *oamIndex);
+bool8 AddSubspritesToOamBuffer(struct Sprite *sprite, struct OamData *destOam, u32 *oamIndex);
+void CopyToSprites(u8 *src);
+void CopyFromSprites(u8 *dest);
+u8 SpriteTileAllocBitmapOp(u16 bit, u8 op);
+void ClearSpriteCopyRequests(void);
+void ResetAffineAnimData(void);
 
-extern const u8 gText_BirchInTrouble[];
-extern const u8 gText_ConfirmStarterChoice[];
-
-// mystery event menu text
-extern const u8 gText_EventSafelyLoaded[];
-extern const u8 gText_LoadErrorEndingSession[];
-extern const u8 gText_PressAToLoadEvent[];
-extern const u8 gText_LoadingEvent[];
-extern const u8 gText_DontRemoveCableTurnOff[];
-extern const u8 gText_LinkStandby2[];
-
-// berry tag screen text
-extern const u8 gBerryFirmnessString_VerySoft[];
-extern const u8 gBerryFirmnessString_Soft[];
-extern const u8 gBerryFirmnessString_Hard[];
-extern const u8 gBerryFirmnessString_VeryHard[];
-extern const u8 gBerryFirmnessString_SuperHard[];
-extern const u8 gText_BerryTag[];
-extern const u8 gText_NumberVar1Var2[];
-extern const u8 gText_SizeSlash[];
-extern const u8 gText_Var1DotVar2[];
-extern const u8 gText_ThreeMarks[];
-extern const u8 gText_FirmSlash[];
-
-// item menu screen text
-extern const u8 gText_CloseBag[];
-extern const u8 gText_NumberItem_HM[];
-extern const u8 gText_NumberItem_TMBerry[];
-extern const u8 gText_xVar1[];
-extern const u8 gText_ReturnToVar1[];
-extern const u8 gText_SelectorArrow2[];
-extern const u8 gText_MoveVar1Where[];
-extern const u8 gText_Var1IsSelected[];
-extern const u8 gText_TossHowManyVar1s[];
-extern const u8 gText_ConfirmTossItems[];
-extern const u8 gText_ThrewAwayVar2Var1s[];
-extern const u8 gText_CantWriteMail[];
-extern const u8 gText_NoPokemon[];
-extern const u8 gText_Var1CantBeHeld[];
-extern const u8 gText_Var1CantBeHeldHere[];
-extern const u8 gText_CantBuyKeyItem[];
-extern const u8 gText_HowManyToSell[];
-extern const u8 gText_ICanPayVar1[];
-extern const u8 gText_TurnedOverVar1ForVar2[];
-extern const u8 gText_DepositHowManyVar1[];
-extern const u8 gText_CantStoreImportantItems[];
-extern const u8 gText_DepositedVar2Var1s[];
-extern const u8 gText_NoRoomForItems[];
-extern const u8 gText_ThreeDashes[];
-extern const u8 gText_SevenDashes[];
-extern const u8 *const gPocketNamesStringsTable[];
-
-// party menu text
-extern const u8 gText_PkmnHPRestoredByVar2[];
-extern const u8 gText_CantBeUsedOnPkmn[];
-extern const u8 gText_CancelParticipation[];
-extern const u8 gText_PkmnWasGivenItem[];
-extern const u8 gText_ReceivedItemFromPkmn[];
-extern const u8 gText_PkmnAlreadyHoldingItemSwitch[];
-extern const u8 gText_SwitchedPkmnItem[];
-extern const u8 gText_BagFullCouldNotRemoveItem[];
-extern const u8 gText_PkmnCantParticipate[];
-extern const u8 gText_PkmnNotHolding[];
-extern const u8 gText_ThrowAwayItem[];
-extern const u8 gText_ItemThrownAway[];
-extern const u8 gText_SendMailToPC[];
-extern const u8 gText_MailSentToPC[];
-extern const u8 gText_PCMailboxFull[];
-extern const u8 gText_MailMessageWillBeLost[];
-extern const u8 gText_MailTakenFromPkmn[];
-extern const u8 gText_NoMoreThanVar1Pkmn[];
-extern const u8 gText_PkmnCantBeTradedNow[];
-extern const u8 gText_EggCantBeTradedNow[];
-extern const u8 gText_OnlyPkmnForBattle[];
-extern const u8 gJPText_AreYouSureYouWantToSpinTradeMon[];
-extern const u8 gText_PauseUntilPress[];
-extern const u8 gText_CantUseUntilNewBadge[];
-extern const u8 gText_ReturnToHealingSpot[];
-extern const u8 gText_EscapeFromHere[];
-extern const u8 gText_PkmnCuredOfPoison[];
-extern const u8 gText_PkmnWokeUp2[];
-extern const u8 gText_PkmnBurnHealed[];
-extern const u8 gText_PkmnThawedOut[];
-extern const u8 gText_PkmnCuredOfParalysis[];
-extern const u8 gText_PkmnGotOverInfatuation[];
-extern const u8 gText_PkmnBecameHealthy[];
-extern const u8 gText_HP3[];
-extern const u8 gText_SpAtk3[];
-extern const u8 gText_SpDef3[];
-extern const u8 gText_PkmnBaseVar2StatIncreased[];
-extern const u8 gText_MovesPPIncreased[];
-extern const u8 gText_PPWasRestored[];
-extern const u8 gText_WontHaveEffect[];
-extern const u8 gText_PkmnSnappedOutOfConfusion[];
-extern const u8 gText_PkmnFriendlyBaseVar2Fell[];
-extern const u8 gText_PkmnFriendlyBaseVar2CantFall[];
-extern const u8 gText_PkmnAdoresBaseVar2Fell[];
-extern const u8 gText_PkmnAlreadyKnows[];
-extern const u8 gText_PkmnCantLearnMove[];
-extern const u8 gText_PkmnNeedsToReplaceMove[];
-extern const u8 gText_PkmnLearnedMove3[];
-extern const u8 gText_WhichMoveToForget[];
-extern const u8 gText_12PoofForgotMove[];
-extern const u8 gText_StopLearningMove2[];
-extern const u8 gText_MoveNotLearned[];
-extern const u8 gText_PkmnElevatedToLvVar2[];
-extern const u8 gText_RemoveMailBeforeItem[];
-extern const u8 gText_PkmnHoldingItemCantHoldMail[];
-extern const u8 gText_MailTransferredFromMailbox[];
-extern const u8 gText_CancelBattle[];
-extern const u8 gText_ReturnToWaitingRoom[];
-extern const u8 gText_CancelChallenge[];
-extern const u8 gText_AbandonBugCatchingContest[];
-extern const u8 gText_CantSwitchWithAlly[];
-extern const u8 gText_PkmnHasNoEnergy[];
-extern const u8 gText_EggCantBattle[];
-extern const u8 gText_PkmnAlreadySelected[];
-extern const u8 gText_PkmnAlreadyInBattle[];
-extern const u8 gText_PkmnCantSwitchOut[];
-extern const u8 gText_MaxHP[];
-extern const u8 gText_Attack[];
-extern const u8 gText_Defense[];
-extern const u8 gText_SpAtk[];
-extern const u8 gText_SpDef[];
-extern const u8 gText_Speed[];
-extern const u8 gText_Dash[];
-extern const u8 gText_Plus[];
-
-//pokedex text
-extern const u8 gText_CryOf[];
-extern const u8 gText_SizeComparedTo[];
-extern const u8 gText_PokedexRegistration[];
-extern const u8 gText_PokedexInfo[];
-extern const u8 gText_NumberClear01[];
-extern const u8 gText_5MarksPokemon[];
-extern const u8 gText
+#endif //GUARD_SPRITE_H
