@@ -438,7 +438,6 @@ extern const u8 gText_SizeSlash[];
 extern const u8 gText_Var1DotVar2[];
 extern const u8 gText_ThreeMarks[];
 extern const u8 gText_FirmSlash[];
-
 // item menu screen text
 extern const u8 gText_CloseBag[];
 extern const u8 gText_NumberItem_HM[];
