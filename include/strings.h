@@ -218,7 +218,6 @@ extern const u8 gMenuText_Deselect[];
 extern const u8 gMenuText_CheckTag[];
 extern const u8 gMenuText_Confirm[];
 extern const u8 gMenuText_Show[];
-extern const u8 gMenuText_Give2[];
 
 extern const u8 gText_WithdrawPokemon[];
 extern const u8 gText_WithdrawMonDescription[];
@@ -438,6 +437,7 @@ extern const u8 gText_SizeSlash[];
 extern const u8 gText_Var1DotVar2[];
 extern const u8 gText_ThreeMarks[];
 extern const u8 gText_FirmSlash[];
+
 // item menu screen text
 extern const u8 gText_CloseBag[];
 extern const u8 gText_NumberItem_HM[];
@@ -542,11 +542,12 @@ extern const u8 gText_Speed[];
 extern const u8 gText_Dash[];
 extern const u8 gText_Plus[];
 
-//pokedex text
+// pokedex text
 extern const u8 gText_CryOf[];
 extern const u8 gText_SizeComparedTo[];
 extern const u8 gText_PokedexRegistration[];
 extern const u8 gText_PokedexInfo[];
 extern const u8 gText_NumberClear01[];
 extern const u8 gText_5MarksPokemon[];
-extern const u8 gText
+
+#endif // GUARD_STRINGS_H
