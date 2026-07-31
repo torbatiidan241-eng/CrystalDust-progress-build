@@ -2,7 +2,7 @@
 #define GUARD_POKEMON_H
 
 #include "constants/pokemon.h"
-#include "../sprite.h"
+#include "sprite.h"
 
 struct PokemonSubstruct0
 {
