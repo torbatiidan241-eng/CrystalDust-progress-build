@@ -31,13 +31,11 @@ jobs:
           rm -rf tools/agbcc
           git clone https://github.com/pret/agbcc.git tools/agbcc
 
-      - name: Fix Makefile and Make Tools Compatibility
+      - name: Fix Makefile Compatibility
         run: |
           sed -i '163s/.*/infoshell = $(shell $1)/' Makefile
-          sed -i 's/\$(TOOLDIRS):/aif2pcm bin2c gbafix jsonproc mapjson mid2agb preproc ramscrgen rsfont scaninc:/g' Makefile
-          sed -i 's/\$(TOOLDIRS):/aif2pcm bin2c gbafix jsonproc mapjson mid2agb preproc ramscrgen rsfont scaninc:/g' make_tools.mk
 
-      - name: Build AGBCC and Tools
+      - name: Build AGBCC and Tools Manually
         run: |
           cd tools/agbcc
           chmod +x build.sh
@@ -55,25 +53,9 @@ jobs:
           make -C tools/mid2agb
           make -C tools/rsfont
           make -C tools/aif2pcm
+          cd tools/gbagfx && make clean && gcc -Wall -Wextra -Wno-sign-compare -std=gnu99 -O2 -DPNG_SKIP_SETJMP_CHECK main.c convert_png.c gfx.c jasc_pal.c act.c lz.c rl.c util.c font.c huff.c -o gbagfx -lpng -lz && cd ../..
 
-      - name: Clean Matchcall Block From Header
-        run: |
-          python3 -c '
-          path = "include/strings.h"
-          with open(path, "r", encoding="utf-8", errors="ignore") as f:
-              content = f.read()
-          # Target and remove the problematic block or convert definitions to empty extern declarations
-          lines = content.splitlines()
-          new_lines = []
-          for line in lines:
-              if "Matchcall_" in line:
-                  continue
-              new_lines.append(line)
-          with open(path, "w", encoding="utf-8") as f:
-              f.write("\n".join(new_lines) + "\n")
-          ' || true
-
-      - name: Build CrystalDust ROM
+      - name: Build CrystalDust ROM Single-Threaded
         run: |
           export CPATH="/usr/lib/gcc/arm-none-eabi/$(arm-none-eabi-gcc -dumpversion)/include"
-          make -j$(nproc) CPPFLAGS="-Iinclude -I$CPATH -std=gnu89" AGBCC_CPPFLAGS="-Iinclude -I$CPATH" CFLAGS="-w -std=gnu89" AGBCC_CFLAGS="-w"
+          make CPPFLAGS="-Iinclude -I$CPATH -std=gnu89" AGBCC_CPPFLAGS="-Iinclude -I$CPATH" CFLAGS="-w -std=gnu89" AGBCC_CFLAGS="-w"
