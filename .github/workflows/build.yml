@@ -1,61 +1,33 @@
-name: Build CrystalDust ROM
+name: Build CrystalDust
 
 on:
   push:
-    branches: [ "progress" ]
+    branches: [ "progrees" ]
   pull_request:
-    branches: [ "progress" ]
+    branches: [ "progrees" ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Configure Git Settings
-        run: |
-          git config --global core.symlinks false
-          git config --global core.longpaths true
-
-      - name: Checkout Repository
+      - name: Check out repository
         uses: actions/checkout@v4
         with:
-          submodules: false
+          submodules: recursive
+          ref: progrees
 
-      - name: Install Dependencies
+      - name: Install Host Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential libpng-dev pkg-config git gcc-arm-none-eabi binutils-arm-none-eabi python3
+          sudo apt-get install -y build-essential libpng-dev pkg-config git curl bzip2
 
-      - name: Clone and Setup AGBCC
+      - name: Download and Setup ARM GCC 10 (Compatible Toolchain)
         run: |
-          rm -rf tools/agbcc
-          git clone https://github.com/pret/agbcc.git tools/agbcc
+          curl -L -o gcc-arm-none-eabi.tar.bz2 https://developer.arm.com/-/media/Files/downloads/gnu-rm/10.3-2021.10/gcc-arm-none-eabi-10.3-2021.10-x86_64-linux.tar.bz2
+          tar -xf gcc-arm-none-eabi.tar.bz2
+          echo "$PWD/gcc-arm-none-eabi-10.3-2021.10/bin" >> $GITHUB_PATH
 
-      - name: Fix Makefile Compatibility
+      - name: Build Modern ROM
         run: |
-          sed -i '163s/.*/infoshell = $(shell $1)/' Makefile
-
-      - name: Build AGBCC and Tools Manually
-        run: |
-          cd tools/agbcc
-          chmod +x build.sh
-          ./build.sh
-          mkdir -p bin
-          cp agbcc bin/
-          find . -name "cc1" -exec cp {} bin/ \;
-          cd ../..
-          make -C tools/scaninc
-          make -C tools/ramscrgen
-          make -C tools/preproc
-          make -C tools/bin2c
-          make -C tools/jsonproc
-          make -C tools/mapjson
-          make -C tools/mid2agb
-          make -C tools/rsfont
-          make -C tools/aif2pcm
-          cd tools/gbagfx && make clean && gcc -Wall -Wextra -Wno-sign-compare -std=gnu99 -O2 -DPNG_SKIP_SETJMP_CHECK main.c convert_png.c gfx.c jasc_pal.c act.c lz.c rl.c util.c font.c huff.c -o gbagfx -lpng -lz && cd ../..
-
-      - name: Build CrystalDust ROM Single-Threaded
-        run: |
-          export CPATH="/usr/lib/gcc/arm-none-eabi/$(arm-none-eabi-gcc -dumpversion)/include"
-          make CPPFLAGS="-Iinclude -I$CPATH -std=gnu89" AGBCC_CPPFLAGS="-Iinclude -I$CPATH" CFLAGS="-w -std=gnu89" AGBCC_CFLAGS="-w"
+          arm-none-eabi-gcc --version
+          make modern -j$(nproc)
