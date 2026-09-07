@@ -40,15 +40,15 @@ jobs:
           fi
           
           if [ -d "agbcc" ]; then
+            chmod -R +x agbcc
             cd agbcc
-            chmod +x build.sh install.sh
-            sh build.sh
+            ./build.sh
             ./install.sh ..
             cd ..
           elif [ -d "tools/agbcc" ]; then
+            chmod -R +x tools/agbcc
             cd tools/agbcc
-            chmod +x build.sh install.sh
-            sh build.sh
+            ./build.sh
             ./install.sh ../..
             cd ../..
           fi
