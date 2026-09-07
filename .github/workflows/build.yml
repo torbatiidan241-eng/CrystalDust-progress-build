@@ -41,11 +41,13 @@ jobs:
           
           if [ -d "agbcc" ]; then
             cd agbcc
+            chmod +x build.sh configure install.sh
             ./build.sh
             ./install.sh ..
             cd ..
           elif [ -d "tools/agbcc" ]; then
             cd tools/agbcc
+            chmod +x build.sh configure install.sh
             ./build.sh
             ./install.sh ../..
             cd ../..
