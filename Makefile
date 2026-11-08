@@ -5,13 +5,6 @@ ifeq (compare,$(MAKECMDGOALS))
   COMPARE := 1
 endif
 
-# don't use dkP's base_tools anymore
-# because the redefinition of $(CC) conflicts
-# with when we want to use $(CC) to preprocess files
-# thus, manually create the variables for the bin
-# files, or use arm-none-eabi binaries on the system
-# if dkP is not installed on this system
-
 ifneq (,$(TOOLCHAIN))
 ifneq ($(wildcard $(TOOLCHAIN)/bin),)
 export PATH := $(TOOLCHAIN)/bin:$(PATH)
@@ -22,11 +15,8 @@ PREFIX := arm-none-eabi-
 OBJCOPY := $(PREFIX)objcopy
 OBJDUMP := $(PREFIX)objdump
 AS := $(PREFIX)as
-
 LD := $(PREFIX)ld
 
-# note: the makefile must be set up so MODERNCC is never called
-# if MODERN=0
 MODERNCC := $(PREFIX)gcc
 PATH_MODERNCC := PATH=$(TOOLCHAIN)/bin:PATH $(MODERNCC)
 
@@ -41,8 +31,8 @@ GAME_CODE   := BPEE
 MAKER_CODE  := 01
 REVISION    := 0
 MODERN      ?= 0
-DEBUG		?= 0
-RELEASE_ID  ?= 0
+DEBUG       ?= 0
+RELEASE_ID  := 0
 
 ifeq (modern,$(MAKECMDGOALS))
   MODERN := 1
@@ -52,13 +42,6 @@ ifeq (debug,$(MAKECMDGOALS))
   DEBUG := 1
 endif
 
-# use arm-none-eabi-cpp for macOS
-# as macOS's default compiler is clang
-# and clang's preprocessor will warn on \u
-# when preprocessing asm files, expecting a unicode literal
-# we can't unconditionally use arm-none-eabi-cpp
-# as installations which install binutils-arm-none-eabi
-# don't come with it
 ifneq ($(MODERN),1)
   ifeq ($(shell uname -s),Darwin)
     CPP := $(PREFIX)cpp
@@ -150,36 +133,24 @@ TOOLS = $(foreach tool,$(TOOLBASE),tools/$(tool)/$(tool)$(EXE))
 
 MAKEFLAGS += --no-print-directory
 
-# Clear the default suffixes
 .SUFFIXES:
-# Don't delete intermediate files
 .SECONDARY:
-# Delete files that weren't built properly
 .DELETE_ON_ERROR:
-
-# Secondary expansion is required for dependency variables in object rules.
 .SECONDEXPANSION:
 
 .PHONY: all rom clean compare tidy tools mostlyclean clean-tools $(TOOLDIRS) berry_fix libagbsyscall modern tidymodern tidynonmodern
 
 infoshell = $(foreach line, $(shell $1 | sed "s/ /__SPACE__/g"), $(info $(subst __SPACE__, ,$(line))))
 
-# Build tools when building the rom
-# Disable dependency scanning for clean/tidy/tools
-# Use a separate minimal makefile for speed
-# Since we don't need to reload most of this makefile
 ifeq (,$(filter-out all rom compare modern berry_fix libagbsyscall syms,$(MAKECMDGOALS)))
 $(call infoshell, $(MAKE) -f make_tools.mk)
 else
 NODEP ?= 1
 endif
 
-# check if we need to scan dependencies based on the rule
 ifeq (,$(MAKECMDGOALS))
   SCAN_DEPS ?= 1
 else
-  # clean, tidy, tools, mostlyclean, clean-tools, $(TOOLDIRS), tidymodern, tidynonmodern don't even build the ROM
-  # berry_fix and libagbsyscall do their own thing
   ifeq (,$(filter-out clean tidy tools mostlyclean clean-tools $(TOOLDIRS) tidymodern tidynonmodern berry_fix libagbsyscall,$(MAKECMDGOALS)))
     SCAN_DEPS ?= 0
   else
@@ -201,7 +172,6 @@ C_ASM_OBJS := $(patsubst $(C_SUBDIR)/%.s,$(C_BUILDDIR)/%.o,$(C_ASM_SRCS))
 ASM_SRCS := $(wildcard $(ASM_SUBDIR)/*.s)
 ASM_OBJS := $(patsubst $(ASM_SUBDIR)/%.s,$(ASM_BUILDDIR)/%.o,$(ASM_SRCS))
 
-# get all the data/*.s files EXCEPT the ones with specific rules
 REGULAR_DATA_ASM_SRCS := $(filter-out $(DATA_ASM_SUBDIR)/maps.s $(DATA_ASM_SUBDIR)/map_events.s, $(wildcard $(DATA_ASM_SUBDIR)/*.s))
 
 DATA_ASM_SRCS := $(wildcard $(DATA_ASM_SUBDIR)/*.s)
@@ -239,7 +209,6 @@ ifeq ($(COMPARE),1)
 	@$(SHA1) rom.sha1
 endif
 
-# For contributors to make sure a change didn't affect the contents of the ROM.
 compare: ; @echo Silly you, this isn\'t pokeemerald!
 
 clean: mostlyclean clean-tools
@@ -269,7 +238,7 @@ tidynonmodern:
 tidymodern:
 	rm -f $(MODERN_ROM_NAME) $(MODERN_ELF_NAME) $(MODERN_MAP_NAME)
 	rm -rf $(MODERN_OBJ_DIR_NAME)
-	
+
 ifneq ($(MODERN),0)
 $(C_BUILDDIR)/berry_crush.o: override CFLAGS += -Wno-address-of-packed-member
 endif
@@ -337,10 +306,6 @@ $(C_BUILDDIR)/agb_flash_mx.o: CC1 := tools/agbcc/bin/agbcc$(EXE)
 $(C_BUILDDIR)/agb_flash_mx.o: CFLAGS := -O -mthumb-interwork
 
 endif
-
-# The dep rules have to be explicit or else missing files won't be reported.
-# As a side effect, they're evaluated immediately instead of when the rule is invoked.
-# It doesn't look like $(shell) can be deferred so there might not be a better way.
 
 ifeq ($(SCAN_DEPS),1)
 ifeq ($(NODEP),1)
@@ -448,7 +413,12 @@ LD_SCRIPT_DEPS :=
 endif
 
 $(OBJ_DIR)/ld_script.ld: $(LD_SCRIPT) $(LD_SCRIPT_DEPS)
-	cd $(OBJ_DIR) && sed "s#tools/#../../tools/#g" ../../$(LD_SCRIPT) > ld_script.ld
+	@if [ -f "../../$(LD_SCRIPT)" ]; then \
+		cd $(OBJ_DIR) && sed "s#tools/#../../tools/#g" ../../$(LD_SCRIPT) > ld_script.ld; \
+	else \
+		echo "Error: Template script ../../$(LD_SCRIPT) is missing!"; \
+		exit 1; \
+	fi
 
 $(ELF): $(OBJ_DIR)/ld_script.ld $(OBJS) berry_fix libagbsyscall
 	@echo "cd $(OBJ_DIR) && $(LD) $(LDFLAGS) -T ld_script.ld -o ../../$@ <objects> <lib>"
@@ -474,10 +444,6 @@ berry_fix:
 
 libagbsyscall:
 	@$(MAKE) -C libagbsyscall TOOLCHAIN=$(TOOLCHAIN) MODERN=$(MODERN)
-
-###################
-### Symbol file ###
-###################
 
 $(SYM): $(ELF)
 	$(OBJDUMP) -t $< | sort -u | grep -E "^0[2389]" | $(PERL) -p -e 's/^(\w{8}) (\w).{6} \S+\t(\w{8}) (\S+)$$/\1 \2 \3 \4/g' > $@
