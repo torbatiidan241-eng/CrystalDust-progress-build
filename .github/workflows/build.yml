@@ -1,120 +1,45 @@
-name: CI Build - CrystalDust (Progress)
+name: Build CrystalDust (progress)
 
 on:
   push:
-    branches:
-      - progress
-      - main
+    branches: [ "progress" ]
   pull_request:
-    branches:
-      - progress
-      - main
+    branches: [ "progress" ]
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
     container:
-      image: devkitpro/devkitarm:latest
+      image: ghcr.io/pret/pokedecomp:latest
 
     steps:
-      - name: Checkout repository
+      - name: Disable Git symlinks prior to checkout
+        run: |
+          git config --global core.symlinks false
+
+      - name: Checkout progress branch
         uses: actions/checkout@v4
         with:
-          submodules: false
-          fetch-depth: 0
+          ref: progress
 
-      - name: Mark workspace as safe directory
+      - name: Repair corrupted agbcc symlinks
         run: |
-          git config --global --add safe.directory "$GITHUB_WORKSPACE"
-        shell: sh -e {0}
+          rm -f tools/agbcc/gcc_arm/obstack.c tools/agbcc/gcc_arm/splay-tree.c
+          ln -s ../../gcc/obstack.c tools/agbcc/gcc_arm/obstack.c
+          ln -s ../../gcc/splay-tree.c tools/agbcc/gcc_arm/splay-tree.c
 
-      - name: Ensure submodules are initialized
+      - name: Build tools and agbcc
         run: |
-          git submodule update --init --recursive || git submodule update --init || true
-        shell: sh -e {0}
+          make -C tools/agbcc
+          make tools
 
-      - name: Install build dependencies
+      - name: Build CrystalDust ROM
         run: |
-          apt-get update && apt-get install -y --no-install-recommends \
-            build-essential \
-            git \
-            libpng-dev \
-            pkg-config \
-            python3 \
-            python3-pip
+          make -j$(nproc)
 
-      - name: Cache agbcc and build tools
-        uses: actions/cache@v3
-        with:
-          path: |
-            tools/agbcc
-            tools/ramscrgen
-            tools/gbagfx
-            tools/scaninc
-            tools/preproc
-          key: ${{ runner.os }}-build-tools-${{ hashFiles('tools/**') }}
-
-      - name: Build and install agbcc
-        run: |
-          if [ ! -f tools/agbcc/agbcc ]; then
-            export CFLAGS="-fcommon -Wno-implicit-int -Wno-implicit-function-declaration -Wno-error=incompatible-pointer-types"
-            if [ -d "tools/agbcc" ] && [ -f "tools/agbcc/build.sh" ]; then
-              cd tools/agbcc
-              ./build.sh
-              ./install.sh ../..
-              cd ../..
-            else
-              echo "Directory tools/agbcc is missing or incomplete. Attempting manual clone..."
-              git clone https://github.com/pret/agbcc.git tools/agbcc
-              cd tools/agbcc
-              ./build.sh
-              ./install.sh ../..
-              cd ../..
-            fi
-          fi
-        shell: sh -e {0}
-
-      - name: Setup Base ROM
-        run: |
-          if [ -f "baserom.gba" ]; then
-            cp baserom.gba CrystalDust_legacy.gba
-            cp baserom.gba CrystalDust.gba
-            echo "Copied baserom.gba to expected target filenames."
-          else
-            echo "Warning: baserom.gba not found in root directory!"
-          fi
-        shell: sh -e {0}
-
-      - name: Build host binaries
-        run: |
-          if [ -f "tools/Makefile" ]; then
-            make -C tools
-          else
-            echo "No Makefile found in tools/. Building individual tools manually..."
-            for tool in gbagfx scaninc preproc ramscrgen; do
-              if [ -d "tools/$tool" ] && [ -f "tools/$tool/Makefile" ]; then
-                make -C "tools/$tool"
-              fi
-            done
-          fi
-        shell: sh -e {0}
-
-      - name: Build ROM
-        run: |
-          if make -n crystaldust.gba >/dev/null 2>&1; then
-            make -j$(nproc) crystaldust.gba
-          elif make -n pokeemerald.gba >/dev/null 2>&1; then
-            make -j$(nproc) pokeemerald.gba
-          else
-            echo "Building default target from Makefile..."
-            make -j$(nproc)
-          fi
-
-      - name: Upload Build Artifacts
+      - name: Upload compiled GBA ROM
         uses: actions/upload-artifact@v4
         with:
-          name: crystaldust-rom-progress
-          path: |
-            *.gba
-            *.map
+          name: CrystalDust-progress-rom
+          path: "*.gba"
