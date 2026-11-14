@@ -16,10 +16,11 @@ jobs:
         run: |
           git config --global core.symlinks false
 
-      - name: Checkout repository
+      - name: Checkout repository with submodules
         uses: actions/checkout@v4
         with:
           ref: progress
+          submodules: recursive
 
       - name: Install build dependencies
         run: |
