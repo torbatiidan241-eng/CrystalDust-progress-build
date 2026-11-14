@@ -33,9 +33,9 @@ jobs:
           ln -s ../../gcc/obstack.c tools/agbcc/gcc_arm/obstack.c
           ln -s ../../gcc/splay-tree.c tools/agbcc/gcc_arm/splay-tree.c
 
-      - name: Build agbcc and tools
+      - name: Build agbcc and repository tools
         run: |
-          make -C tools/agbcc
+          make agbcc
           make tools
 
       - name: Compile ROM
