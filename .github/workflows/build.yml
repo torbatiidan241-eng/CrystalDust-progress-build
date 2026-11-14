@@ -1,4 +1,4 @@
-name: Build CrystalDust (progress)
+name: Build CrystalDust ROM
 
 on:
   push:
@@ -10,18 +10,21 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/pret/pokedecomp:latest
 
     steps:
       - name: Disable Git symlinks prior to checkout
         run: |
           git config --global core.symlinks false
 
-      - name: Checkout progress branch
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
           ref: progress
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential libpng-dev
 
       - name: Repair corrupted agbcc symlinks
         run: |
@@ -29,16 +32,16 @@ jobs:
           ln -s ../../gcc/obstack.c tools/agbcc/gcc_arm/obstack.c
           ln -s ../../gcc/splay-tree.c tools/agbcc/gcc_arm/splay-tree.c
 
-      - name: Build tools and agbcc
+      - name: Build agbcc and tools
         run: |
           make -C tools/agbcc
           make tools
 
-      - name: Build CrystalDust ROM
+      - name: Compile ROM
         run: |
           make -j$(nproc)
 
-      - name: Upload compiled GBA ROM
+      - name: Upload compiled ROM artifact
         uses: actions/upload-artifact@v4
         with:
           name: CrystalDust-progress-rom
